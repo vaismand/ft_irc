@@ -1,23 +1,21 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ircserv.cpp                                        :+:      :+:    :+:   */
+/*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: dvaisman <dvaisman@student.42vienna.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/01/08 11:38:22 by dvaisman          #+#    #+#             */
-/*   Updated: 2025/01/24 13:20:29 by dvaisman         ###   ########.fr       */
+/*   Created: 2025/01/24 13:38:10 by dvaisman          #+#    #+#             */
+/*   Updated: 2025/01/24 13:38:30 by dvaisman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <iostream>
+#include "../inc/Server.hpp"
 
-int main(int argc, char **argv)
+Server::Server()
 {
-	if (argc != 3)
-	{
-		std::cerr << "Usage: " << argv[0] << " <port>" << " <pass>" << std::endl;
-		return 1;
-	}
-	return 0;
+}
+
+Server::~Server()
+{
 }
