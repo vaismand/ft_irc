@@ -6,11 +6,12 @@
 /*   By: dvaisman <dvaisman@student.42vienna.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/24 13:38:10 by dvaisman          #+#    #+#             */
-/*   Updated: 2025/02/04 12:12:29 by dvaisman         ###   ########.fr       */
+/*   Updated: 2025/02/04 13:14:14 by dvaisman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/Server.hpp"
+#include "../inc/Client.hpp"
 
 Server::~Server()
 {
@@ -35,33 +36,27 @@ void Server::bindSocket()
 {
 	struct sockaddr_in server_addr;
 
-    // Create the socket
     _socket = socket(AF_INET, SOCK_STREAM, 0);
     if (_socket < 0)
         throw std::runtime_error("Error: Failed to create socket.");
 
-    // Set socket options (SO_REUSEADDR to reuse port)
     int opt = 1;
     setsockopt(_socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 
-    // Configure server address
     memset(&server_addr, 0, sizeof(server_addr));
     server_addr.sin_family = AF_INET;
     server_addr.sin_addr.s_addr = INADDR_ANY;
-    server_addr.sin_port = htons(std::stoi(_port));
+    server_addr.sin_port = htons(std::atoi(_port.c_str()));
+    std::cout << "Port: " << _port << " " << server_addr.sin_port << " " << _socket << std::endl;
 
-    // Bind the socket
     if (bind(_socket, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0)
         throw std::runtime_error("Error: Bind failed.");
-
-    // Start listening
     if (listen(_socket, 10) < 0)
         throw std::runtime_error("Error: Listen failed.");
 
-    // Add server socket to poll set
     struct pollfd server_pollfd;
     server_pollfd.fd = _socket;
-    server_pollfd.events = POLLIN;
+    server_pollfd.events = POLLIN; 
     _pollfds.push_back(server_pollfd);
 
     std::cout << "Server started, listening on port " << _port << std::endl;
@@ -110,7 +105,7 @@ void Server::addClient()
     client_pollfd.events = POLLIN;
     _pollfds.push_back(client_pollfd);
 
-    _clients[client_fd] = Client(client_fd);
+    //_clients[client_fd] = Client(client_fd);
 
     std::cout << "New client connected: " << client_fd << std::endl;
 }

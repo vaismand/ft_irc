@@ -6,17 +6,25 @@
 /*   By: dvaisman <dvaisman@student.42vienna.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/08 11:38:22 by dvaisman          #+#    #+#             */
-/*   Updated: 2025/01/24 13:20:29 by dvaisman         ###   ########.fr       */
+/*   Updated: 2025/02/04 12:56:50 by dvaisman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <iostream>
+#include "../inc/Server.hpp"
 
 int main(int argc, char **argv)
 {
 	if (argc != 3)
 	{
-		std::cerr << "Usage: " << argv[0] << " <port>" << " <pass>" << std::endl;
+		std::cerr << "Usage: " << argv[0] << " <port>" << " <password>" << std::endl;
+		return 1;
+	}
+	Server server(argv[1], argv[2]);
+	try {
+		server.run();
+	} catch (const std::exception &e) {
+		std::cerr << e.what() << std::endl;
 		return 1;
 	}
 	return 0;

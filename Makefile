@@ -4,7 +4,9 @@ CXX = c++
 CXXFLAGS = -Wall -Wextra -Werror -std=c++98
 
 SRC = src/ircserv.cpp \
-		src/Server.cpp
+		src/Server.cpp \
+		src/Client.cpp \
+		src/Channel.cpp \
 
 OBJ = $(SRC:.cpp=.o)
 
