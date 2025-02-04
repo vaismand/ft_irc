@@ -1,23 +1,22 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ircserv.cpp                                        :+:      :+:    :+:   */
+/*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: dvaisman <dvaisman@student.42vienna.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/01/08 11:38:22 by dvaisman          #+#    #+#             */
-/*   Updated: 2025/01/24 13:20:29 by dvaisman         ###   ########.fr       */
+/*   Created: 2025/01/24 13:37:03 by dvaisman          #+#    #+#             */
+/*   Updated: 2025/01/24 13:37:49 by dvaisman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#pragma once
+
 #include <iostream>
 
-int main(int argc, char **argv)
+class Client
 {
-	if (argc != 3)
-	{
-		std::cerr << "Usage: " << argv[0] << " <port>" << " <pass>" << std::endl;
-		return 1;
-	}
-	return 0;
-}
+	public:
+		Client();
+		~Client();
+};
