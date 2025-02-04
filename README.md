@@ -5,8 +5,9 @@ https://github.com/barimehdi77/ft_irc
 
 Check server_test.cpp and client_test.cpp to see how it work - compile and first run server, then client
 
-Server - David
+Server - David:
+1. Server is running with port >1024 and any password
 
-Client - Ruben
+Channel - Ruben
 
 Parsing - Dani
