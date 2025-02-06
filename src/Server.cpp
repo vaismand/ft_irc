@@ -6,7 +6,7 @@
 /*   By: dvaisman <dvaisman@student.42vienna.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/24 13:38:10 by dvaisman          #+#    #+#             */
-/*   Updated: 2025/02/04 14:38:31 by dvaisman         ###   ########.fr       */
+/*   Updated: 2025/02/04 15:43:32 by dvaisman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -161,7 +161,8 @@ void Server::removeClient(int fd)
 
     for (size_t i = 0; i < _pollfds.size(); i++)
     {
-        if (_pollfds[i].fd == fd) {
+        if (_pollfds[i].fd == fd)
+        {
             _pollfds.erase(_pollfds.begin() + i);
             break;
         }
