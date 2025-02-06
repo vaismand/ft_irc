@@ -3,18 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rpinchas <rpinchas@student.42.fr>          +#+  +:+       +#+        */
+/*   By: dvaisman <dvaisman@student.42vienna.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/24 13:38:34 by dvaisman          #+#    #+#             */
-/*   Updated: 2025/02/04 21:10:07 by rpinchas         ###   ########.fr       */
+/*   Updated: 2025/02/06 11:12:28 by dvaisman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/Client.hpp"
 
-Client::Client() {
-	
-}
+Client::Client() {}
 
 Client::Client(int fd, const std::string& ip) : _fd(fd), _ip(ip) 
 {
@@ -22,9 +20,7 @@ Client::Client(int fd, const std::string& ip) : _fd(fd), _ip(ip)
 }
 
 
-Client::Client(const Client& ref) : _fd(ref._fd), _ip(ref._ip) {
-	
-}
+Client::Client(const Client& ref) : _fd(ref._fd), _ip(ref._ip) {}
 
 
 Client::~Client()

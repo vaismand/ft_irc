@@ -6,7 +6,7 @@
 /*   By: dvaisman <dvaisman@student.42vienna.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/24 13:38:10 by dvaisman          #+#    #+#             */
-/*   Updated: 2025/02/06 10:18:33 by dvaisman         ###   ########.fr       */
+/*   Updated: 2025/02/06 12:20:25 by dvaisman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -106,6 +106,33 @@ void Server::addClient()
     _clients.insert(std::make_pair(client_fd, Client(client_fd, inet_ntoa(client_addr.sin_addr))));
 
     std::cout << "New client connected: " << client_fd << std::endl;
+    send(client_fd, "Please authenticate using PASS <password>\n", 42, 0);
+}
+
+void Server::checkAuth(int fd, const char *buffer)
+{
+    if (strncmp(buffer, "PASS ", 5) == 0)
+    {
+        std::string received_pass = buffer + 5;
+        if (received_pass == _pass)
+        {
+            std::cout << "Client " << fd << " authenticated successfully." << std::endl;
+            _clients[fd].SetStatus(REGISTERED);
+            send(fd, "Password accepted.\n", 19, 0);
+        }
+        else
+        {
+            std::cout << "Client " << fd << " sent wrong password. Disconnecting..." << std::endl;
+            send(fd, "Incorrect password. Connection closed.\n", 38, 0);
+            removeClient(fd);
+        }
+        return;
+    }
+    if (_clients[fd].GetStatus() != REGISTERED)
+    {
+        send(fd, "Error: You must authenticate first using PASS <password>: ", 59, 0);
+        return;
+    }
 }
 
 void Server::handleClient(int fd)
@@ -120,7 +147,7 @@ void Server::handleClient(int fd)
         return;
     }
     buffer[bytes_received] = '\0';
-
+    
     int len = strlen(buffer);
     while (len > 0 && (buffer[len - 1] == '\n' || buffer[len - 1] == '\r'))
     {
@@ -128,29 +155,7 @@ void Server::handleClient(int fd)
         len--;
     }
     std::cout << "Received from " << fd << ": " << buffer << std::endl;
-    
-    // if (strncmp(buffer, "PASS ", 5) == 0)
-    // {
-    //     std::string received_pass = buffer + 5;
-    //     if (received_pass == _pass)
-    //     {
-    //         std::cout << "Client " << fd << " authenticated successfully." << std::endl;
-    //         _clients[fd].setAuthenticated(true);
-    //         send(fd, "Password accepted.\n", 19, 0);
-    //     }
-    //     else
-    //     {
-    //         std::cout << "Client " << fd << " sent wrong password. Disconnecting..." << std::endl;
-    //         send(fd, "Incorrect password. Connection closed.\n", 38, 0);
-    //         removeClient(fd);
-    //     }
-    //     return;
-    // }
-    // if (!_clients[fd].isAuthenticated())
-    // {
-    //     send(fd, "Error: You must authenticate first using PASS <password>\n", 55, 0);
-    //     return;
-    // }
+    checkAuth(fd, buffer);
 }
 
 void Server::removeClient(int fd)
