@@ -6,7 +6,7 @@
 /*   By: dvaisman <dvaisman@student.42vienna.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/24 13:38:10 by dvaisman          #+#    #+#             */
-/*   Updated: 2025/02/04 15:43:32 by dvaisman         ###   ########.fr       */
+/*   Updated: 2025/02/06 10:18:33 by dvaisman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,8 +19,7 @@ Server::~Server()
 		close(_socket);
 }
 
-Server::Server(const std::string &port, const std::string &pass) : _port(port), _pass(pass), _socket(-1)
-{
+Server::Server(const std::string &port, const std::string &pass) : _port(port), _pass(pass), _socket(-1) {
 }
 
 Server::Server(const Server &src) : _port(src._port), _pass(src._pass)
@@ -64,7 +63,6 @@ void Server::bindSocket()
 void Server::run()
 {
     bindSocket();
-
     while (true)
 	{
         int poll_count = poll(_pollfds.data(), _pollfds.size(), -1);
@@ -77,10 +75,12 @@ void Server::run()
 		{
             if (_pollfds[i].revents & POLLIN)
 			{
-                if (_pollfds[i].fd == _socket)
+                if (_pollfds[i].fd == _socket) {
                     addClient();
-                else
+                }
+                else {
                     handleClient(_pollfds[i].fd);
+                }
             }
         }
     }
@@ -103,8 +103,7 @@ void Server::addClient()
     client_pollfd.fd = client_fd;
     client_pollfd.events = POLLIN;
     _pollfds.push_back(client_pollfd);
-
-    //_clients[client_fd] = Client(client_fd);
+    _clients.insert(std::make_pair(client_fd, Client(client_fd, inet_ntoa(client_addr.sin_addr))));
 
     std::cout << "New client connected: " << client_fd << std::endl;
 }
