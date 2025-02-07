@@ -6,7 +6,7 @@
 /*   By: rpinchas <rpinchas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/24 13:38:10 by dvaisman          #+#    #+#             */
-/*   Updated: 2025/02/06 14:42:21 by rpinchas         ###   ########.fr       */
+/*   Updated: 2025/02/07 11:45:38 by rpinchas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -103,7 +103,8 @@ void Server::addClient()
     client_pollfd.fd = client_fd;
     client_pollfd.events = POLLIN;
     _pollfds.push_back(client_pollfd);
-    _clients.insert(std::make_pair(client_fd, Client(client_fd, inet_ntoa(client_addr.sin_addr))));
+    Client newClient = Client(client_fd, inet_ntoa(client_addr.sin_addr));
+    _clients[client_fd] = &newClient;
 
     std::cout << "New client connected: " << client_fd << std::endl;
     send(client_fd, "Please authenticate using PASS <password>\n", 42, 0);
@@ -117,7 +118,7 @@ void Server::checkAuth(int fd, const char *buffer)
         if (received_pass == _pass)
         {
             std::cout << "Client " << fd << " authenticated successfully." << std::endl;
-            _clients[fd].setStatus(REGISTERED);
+            _clients[fd]->setStatus(REGISTERED);
             send(fd, "Password accepted.\n", 19, 0);
         }
         else
@@ -128,7 +129,7 @@ void Server::checkAuth(int fd, const char *buffer)
         }
         return;
     }
-    if (_clients[fd].getStatus() != REGISTERED)
+    if (_clients[fd]->getStatus() != REGISTERED)
     {
         send(fd, "Error: You must authenticate first using PASS <password>: ", 59, 0);
         return;

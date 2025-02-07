@@ -6,7 +6,7 @@
 /*   By: rpinchas <rpinchas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/24 13:37:03 by dvaisman          #+#    #+#             */
-/*   Updated: 2025/02/06 14:52:22 by rpinchas         ###   ########.fr       */
+/*   Updated: 2025/02/07 11:48:02 by rpinchas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,6 @@ enum AuthState {
 class Client
 {
 	public:
-		Client();
 		Client(int fd, const std::string& ip);
 		~Client();
 		Client (const Client& ref);

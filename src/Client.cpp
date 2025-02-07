@@ -6,13 +6,11 @@
 /*   By: rpinchas <rpinchas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/24 13:38:34 by dvaisman          #+#    #+#             */
-/*   Updated: 2025/02/06 14:31:12 by rpinchas         ###   ########.fr       */
+/*   Updated: 2025/02/07 11:48:09 by rpinchas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/Client.hpp"
-
-Client::Client() {}
 
 Client::Client(int fd, const std::string& ip) : _fd(fd), _ip(ip) 
 {

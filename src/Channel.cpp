@@ -1,7 +1,7 @@
 
 #include "../inc/Channel.hpp"
 
-Channel::Channel() {}
+Channel::Channel(std::string& name, std::string& pass) : _cName(name), _cPass(pass), _cTopic(""), _isInviteOnly(false) {}
 
 Channel::~Channel() {}
 

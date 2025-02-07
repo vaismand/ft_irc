@@ -6,7 +6,7 @@
 /*   By: rpinchas <rpinchas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/24 13:36:57 by dvaisman          #+#    #+#             */
-/*   Updated: 2025/02/06 15:50:28 by rpinchas         ###   ########.fr       */
+/*   Updated: 2025/02/07 22:14:29 by rpinchas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,8 +38,8 @@ class Server
 		const std::string _pass;
 		int _socket;
 		std::vector <struct pollfd> _pollfds;
-		std::map <int, Client> _clients;
-		std::map _channel;
+		std::map <int, Client*> _clients;
+		std::map <int, Channel*> _channel;
 		Server();
 		Server(const Server &src);
 		Server &operator=(const Server &src);
