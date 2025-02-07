@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dvaisman <dvaisman@student.42vienna.com    +#+  +:+       +#+        */
+/*   By: rpinchas <rpinchas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/24 13:36:57 by dvaisman          #+#    #+#             */
-/*   Updated: 2025/02/06 12:20:10 by dvaisman         ###   ########.fr       */
+/*   Updated: 2025/02/06 15:50:28 by rpinchas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,8 +39,7 @@ class Server
 		int _socket;
 		std::vector <struct pollfd> _pollfds;
 		std::map <int, Client> _clients;
-		Client _Client;
-		//Channel _Channel;
+		std::map _channel;
 		Server();
 		Server(const Server &src);
 		Server &operator=(const Server &src);

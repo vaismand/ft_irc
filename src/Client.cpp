@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dvaisman <dvaisman@student.42vienna.com    +#+  +:+       +#+        */
+/*   By: rpinchas <rpinchas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/24 13:38:34 by dvaisman          #+#    #+#             */
-/*   Updated: 2025/02/06 11:12:28 by dvaisman         ###   ########.fr       */
+/*   Updated: 2025/02/06 14:31:12 by rpinchas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,16 +45,16 @@ void Client::ClientInit() {
 	_isAdmin = false;
 }
 
-// ----- Getter Functions -----
-std::string Client::GetUser() const { return _username; }
-std::string Client::GetNick() const { return _nickname; }
-AuthState Client::GetStatus() const { return _status; }
-bool Client::GetRights() const { return _isAdmin; }
+// ----- getter Functions -----
+std::string Client::getUser() const { return _username; }
+std::string Client::getNick() const { return _nickname; }
+AuthState Client::getStatus() const { return _status; }
+bool Client::getRights() const { return _isAdmin; }
 
-// ----- Setter Functions -----
-void Client::SetUser(const std::string& name) { _username = name; }
-void Client::SetNick(const std::string& name) { _nickname = name; }
-void Client::SetStatus(AuthState status) { _status = status; }
-void Client::SetRights() { _isAdmin = !_isAdmin; }
+// ----- setter Functions -----
+void Client::setUser(const std::string& name) { _username = name; }
+void Client::setNick(const std::string& name) { _nickname = name; }
+void Client::setStatus(AuthState status) { _status = status; }
+void Client::setRights() { _isAdmin = !_isAdmin; }
 
 

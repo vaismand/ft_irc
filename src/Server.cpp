@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dvaisman <dvaisman@student.42vienna.com    +#+  +:+       +#+        */
+/*   By: rpinchas <rpinchas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/24 13:38:10 by dvaisman          #+#    #+#             */
-/*   Updated: 2025/02/06 12:20:25 by dvaisman         ###   ########.fr       */
+/*   Updated: 2025/02/06 14:42:21 by rpinchas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -117,7 +117,7 @@ void Server::checkAuth(int fd, const char *buffer)
         if (received_pass == _pass)
         {
             std::cout << "Client " << fd << " authenticated successfully." << std::endl;
-            _clients[fd].SetStatus(REGISTERED);
+            _clients[fd].setStatus(REGISTERED);
             send(fd, "Password accepted.\n", 19, 0);
         }
         else
@@ -128,7 +128,7 @@ void Server::checkAuth(int fd, const char *buffer)
         }
         return;
     }
-    if (_clients[fd].GetStatus() != REGISTERED)
+    if (_clients[fd].getStatus() != REGISTERED)
     {
         send(fd, "Error: You must authenticate first using PASS <password>: ", 59, 0);
         return;
