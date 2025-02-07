@@ -6,7 +6,7 @@
 /*   By: dvaisman <dvaisman@student.42vienna.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/24 13:36:57 by dvaisman          #+#    #+#             */
-/*   Updated: 2025/02/06 12:20:10 by dvaisman         ###   ########.fr       */
+/*   Updated: 2025/02/06 14:06:37 by dvaisman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,6 +50,7 @@ class Server
 		void removeClient(int fd);
 		void handleClient(int fd);
 		void checkAuth(int fd, const char *buffer);
+		void sendTimeStamps(int fd);
 	public:
 		Server(const std::string &port, const std::string &pass);
 		~Server();

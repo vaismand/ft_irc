@@ -6,7 +6,7 @@
 /*   By: dvaisman <dvaisman@student.42vienna.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/24 13:38:10 by dvaisman          #+#    #+#             */
-/*   Updated: 2025/02/06 12:20:25 by dvaisman         ###   ########.fr       */
+/*   Updated: 2025/02/06 15:31:29 by dvaisman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -106,33 +106,53 @@ void Server::addClient()
     _clients.insert(std::make_pair(client_fd, Client(client_fd, inet_ntoa(client_addr.sin_addr))));
 
     std::cout << "New client connected: " << client_fd << std::endl;
-    send(client_fd, "Please authenticate using PASS <password>\n", 42, 0);
+    std::cout << "Client IP: " << inet_ntoa(client_addr.sin_addr) << std::endl;
+    std::cout << "Client fd: " << client_fd << std::endl;
+    std::cout << "Client count: " << _clients.size() << std::endl;
+    // sendTimeStamps(client_fd);
+    // send(client_fd, "Please authenticate using PASS <password>\n", 43, 0);
+    // sendTimeStamps(client_fd);
+}
+
+void Server::sendTimeStamps(int fd)
+{
+    time_t now = time(0);
+    struct tm *timeinfo = localtime(&now);
+    char buffer[80];
+    strftime(buffer, 80, "%H:%M: ", timeinfo);
+    send(fd, buffer, strlen(buffer), 0);
 }
 
 void Server::checkAuth(int fd, const char *buffer)
 {
-    if (strncmp(buffer, "PASS ", 5) == 0)
+    static int pass_tries = 0;
+    std::string received_pass = buffer + 5;
+    if (received_pass == _pass)
     {
-        std::string received_pass = buffer + 5;
-        if (received_pass == _pass)
+        std::cout << "Client " << fd << " authenticated successfully." << std::endl;
+        _clients[fd].SetStatus(REGISTERED);
+        sendTimeStamps(fd);
+        send(fd, "Password accepted.\n", 19, 0);
+    }
+    else
+    {
+        pass_tries++;
+        if (pass_tries >= 3)
         {
-            std::cout << "Client " << fd << " authenticated successfully." << std::endl;
-            _clients[fd].SetStatus(REGISTERED);
-            send(fd, "Password accepted.\n", 19, 0);
+            std::cout << "Client " << fd << " exceeded maximum password attempts." << std::endl;
+            sendTimeStamps(fd);
+            send(fd, "Error: Maximum password attempts exceeded. Closing connection.\n", 61, 0);
+            pass_tries = 0;
+            removeClient(fd);
         }
         else
         {
-            std::cout << "Client " << fd << " sent wrong password. Disconnecting..." << std::endl;
-            send(fd, "Incorrect password. Connection closed.\n", 38, 0);
-            removeClient(fd);
+            std::cout << "Client " << fd << " failed to authenticate." << std::endl;
+            sendTimeStamps(fd);
+            send(fd, "Error: Invalid password. Please try again.\n", 43, 0);
         }
-        return;
     }
-    if (_clients[fd].GetStatus() != REGISTERED)
-    {
-        send(fd, "Error: You must authenticate first using PASS <password>: ", 59, 0);
-        return;
-    }
+    return;
 }
 
 void Server::handleClient(int fd)
@@ -147,15 +167,69 @@ void Server::handleClient(int fd)
         return;
     }
     buffer[bytes_received] = '\0';
-    
-    int len = strlen(buffer);
-    while (len > 0 && (buffer[len - 1] == '\n' || buffer[len - 1] == '\r'))
+
+    // Split buffer into separate commands
+    std::string data(buffer);
+    size_t pos;
+    while ((pos = data.find("\r\n")) != std::string::npos) 
     {
-        buffer[len - 1] = '\0';
-        len--;
+        std::string command = data.substr(0, pos);
+        data.erase(0, pos + 2);
+
+        if (command.empty()) 
+            continue;
+
+        std::cout << "Received from " << fd << ": " << command << std::endl;
+
+        if (command.find("CAP LS") == 0)
+        {
+            send(fd, "CAP * LS :multi-prefix away-notify\r\n", 36, 0);
+            continue;
+        }
+
+        if (command.find("CAP REQ") == 0)
+        {
+            send(fd, "CAP * ACK :multi-prefix away-notify\r\n", 38, 0);
+            send(fd, "CAP END\r\n", 10, 0);  // End capability negotiation
+            continue;
+        }
+
+        if (_clients[fd].GetStatus() != REGISTERED)
+        {
+            if (command.find("PASS ") == 0)
+            {
+                checkAuth(fd, command.c_str());
+                continue;
+            }
+
+            if (!data.empty())
+            {
+                send(fd, "Error: You must authenticate first using PASS <password>\r\n", 58, 0);
+                sendTimeStamps(fd);
+                continue;
+            }
+        }
+
+        if (command.find("NICK ") == 0)
+        {
+            std::string nickname = command.substr(5);
+            _clients[fd].SetNick(nickname);
+            send(fd, "Nickname set.\r\n", 15, 0);
+            continue;
+        }
+
+        if (command.find("USER ") == 0)
+        {
+            send(fd, "User registered.\r\n", 18, 0);
+            continue;
+        }
+
+        if (command.find("JOIN ") == 0)
+        {
+            send(fd, "Joined channel.\r\n", 17, 0);
+            continue;
+        }
     }
-    std::cout << "Received from " << fd << ": " << buffer << std::endl;
-    checkAuth(fd, buffer);
 }
 
 void Server::removeClient(int fd)
