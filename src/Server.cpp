@@ -6,7 +6,7 @@
 /*   By: dvaisman <dvaisman@student.42vienna.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/24 13:38:10 by dvaisman          #+#    #+#             */
-/*   Updated: 2025/02/06 15:31:29 by dvaisman         ###   ########.fr       */
+/*   Updated: 2025/02/07 10:04:22 by dvaisman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -227,6 +227,13 @@ void Server::handleClient(int fd)
         if (command.find("JOIN ") == 0)
         {
             send(fd, "Joined channel.\r\n", 17, 0);
+            continue;
+        }
+
+        if (command.find("PING ") == 0)
+        {
+            std::string pongResponse = "PONG " + command.substr(5) + "\r\n";
+            send(fd, pongResponse.c_str(), pongResponse.size(), 0);
             continue;
         }
     }
