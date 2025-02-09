@@ -6,7 +6,7 @@
 /*   By: dvaisman <dvaisman@student.42vienna.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/24 13:38:10 by dvaisman          #+#    #+#             */
-/*   Updated: 2025/02/09 19:18:25 by dvaisman         ###   ########.fr       */
+/*   Updated: 2025/02/09 19:20:20 by dvaisman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,7 +92,7 @@ Client &Server::getClient(int fd)
     if (_clients.find(fd) == _clients.end()) {
         throw std::runtime_error("Error: Client not found.");
     }
-    return _clients[fd];
+    return *_clients.at(fd);
 }
 
 std::string Server::getClientNick(int fd) const
@@ -100,7 +100,7 @@ std::string Server::getClientNick(int fd) const
     if (_clients.find(fd) == _clients.end()) {
         throw std::runtime_error("Error: Client not found.");
     }
-    return _clients.at(fd).GetNick();
+    return _clients.at(fd)->getNick();
 }
 
 void Server::addClientToChannel(int fd, const std::string &channel)
@@ -175,7 +175,7 @@ void Server::checkAuth(int fd, const char *buffer)
         }
         return;
     }
-    if (_clients[fd].GetStatus() != REGISTERED)
+    if (_clients[fd]->getStatus() == UNREGISTERED)
     {
         send(fd, "Error: You must authenticate first using PASS <password>: ", 59, 0);
         return;
@@ -195,7 +195,7 @@ void Server::handleClient(int fd)
     }
 
     buffer[bytes_received] = '\0';
-    std::string &clientBuffer = _clients[fd].buffer; // Store partial messages
+    std::string &clientBuffer = _clients[fd]->buffer;
     clientBuffer += buffer;
 
     size_t pos;
@@ -210,7 +210,7 @@ void Server::handleClient(int fd)
         std::cout << "Received from " << fd << ": " << command << std::endl;
 
         try {
-            Command cmd;  // Create a Command instance
+            Command cmd;
             cmd.executeCommand(*this, fd, command);
         } catch (const std::exception &e) {
             std::cerr << "Command execution error: " << e.what() << std::endl;

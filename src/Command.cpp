@@ -6,7 +6,7 @@
 /*   By: dvaisman <dvaisman@student.42vienna.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/07 12:50:25 by dvaisman          #+#    #+#             */
-/*   Updated: 2025/02/07 13:06:12 by dvaisman         ###   ########.fr       */
+/*   Updated: 2025/02/09 19:20:49 by dvaisman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,7 @@ void Command::executeCommand(Server &server, int fd, const std::string &command)
 void Command::commandNick(Server &server, int fd, const std::string &command)
 {
     std::string nickname = command.substr(5);
-    server.getClient(fd).SetNick(nickname);
+    server.getClient(fd).setNick(nickname);
     std::string msg = "Nickname set to " + nickname + "\r\n";
     send(fd, msg.c_str(), msg.size(), 0);
 }
