@@ -6,7 +6,7 @@
 /*   By: dvaisman <dvaisman@student.42vienna.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/24 13:37:03 by dvaisman          #+#    #+#             */
-/*   Updated: 2025/02/06 15:25:18 by dvaisman         ###   ########.fr       */
+/*   Updated: 2025/02/07 13:03:01 by dvaisman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,7 @@ class Client
 		void SetStatus(AuthState status);
 		void SetRights();
 
+		std::string buffer;
 	private:
 
 		int _fd;

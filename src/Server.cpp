@@ -6,12 +6,13 @@
 /*   By: dvaisman <dvaisman@student.42vienna.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/24 13:38:10 by dvaisman          #+#    #+#             */
-/*   Updated: 2025/02/07 10:04:22 by dvaisman         ###   ########.fr       */
+/*   Updated: 2025/02/07 13:03:05 by dvaisman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/Server.hpp"
 #include "../inc/Client.hpp"
+#include "../inc/Command.hpp"
 
 Server::~Server()
 {
@@ -86,6 +87,35 @@ void Server::run()
     }
 }
 
+Client &Server::getClient(int fd)
+{
+    if (_clients.find(fd) == _clients.end()) {
+        throw std::runtime_error("Error: Client not found.");
+    }
+    return _clients[fd];
+}
+
+std::string Server::getClientNick(int fd) const
+{
+    if (_clients.find(fd) == _clients.end()) {
+        throw std::runtime_error("Error: Client not found.");
+    }
+    return _clients.at(fd).GetNick();
+}
+
+void Server::addClientToChannel(int fd, const std::string &channel)
+{
+    (void)fd;
+    (void)channel;
+}
+
+void Server::broadcastToChannel(const std::string &channel, const std::string &msg)
+{
+    (void)channel;
+    (void)msg;
+}
+
+
 void Server::addClient()
 {
     struct sockaddr_in client_addr;
@@ -109,9 +139,6 @@ void Server::addClient()
     std::cout << "Client IP: " << inet_ntoa(client_addr.sin_addr) << std::endl;
     std::cout << "Client fd: " << client_fd << std::endl;
     std::cout << "Client count: " << _clients.size() << std::endl;
-    // sendTimeStamps(client_fd);
-    // send(client_fd, "Please authenticate using PASS <password>\n", 43, 0);
-    // sendTimeStamps(client_fd);
 }
 
 void Server::sendTimeStamps(int fd)
@@ -155,6 +182,8 @@ void Server::checkAuth(int fd, const char *buffer)
     return;
 }
 
+#include "../inc/Command.hpp"
+
 void Server::handleClient(int fd)
 {
     char buffer[1024];
@@ -166,78 +195,32 @@ void Server::handleClient(int fd)
         removeClient(fd);
         return;
     }
-    buffer[bytes_received] = '\0';
 
-    // Split buffer into separate commands
-    std::string data(buffer);
+    buffer[bytes_received] = '\0';
+    std::string &clientBuffer = _clients[fd].buffer; // Store partial messages
+    clientBuffer += buffer;
+
     size_t pos;
-    while ((pos = data.find("\r\n")) != std::string::npos) 
+    while ((pos = clientBuffer.find("\r\n")) != std::string::npos) 
     {
-        std::string command = data.substr(0, pos);
-        data.erase(0, pos + 2);
+        std::string command = clientBuffer.substr(0, pos);
+        clientBuffer.erase(0, pos + 2);
 
         if (command.empty()) 
             continue;
 
         std::cout << "Received from " << fd << ": " << command << std::endl;
 
-        if (command.find("CAP LS") == 0)
-        {
-            send(fd, "CAP * LS :multi-prefix away-notify\r\n", 36, 0);
-            continue;
-        }
-
-        if (command.find("CAP REQ") == 0)
-        {
-            send(fd, "CAP * ACK :multi-prefix away-notify\r\n", 38, 0);
-            send(fd, "CAP END\r\n", 10, 0);  // End capability negotiation
-            continue;
-        }
-
-        if (_clients[fd].GetStatus() != REGISTERED)
-        {
-            if (command.find("PASS ") == 0)
-            {
-                checkAuth(fd, command.c_str());
-                continue;
-            }
-
-            if (!data.empty())
-            {
-                send(fd, "Error: You must authenticate first using PASS <password>\r\n", 58, 0);
-                sendTimeStamps(fd);
-                continue;
-            }
-        }
-
-        if (command.find("NICK ") == 0)
-        {
-            std::string nickname = command.substr(5);
-            _clients[fd].SetNick(nickname);
-            send(fd, "Nickname set.\r\n", 15, 0);
-            continue;
-        }
-
-        if (command.find("USER ") == 0)
-        {
-            send(fd, "User registered.\r\n", 18, 0);
-            continue;
-        }
-
-        if (command.find("JOIN ") == 0)
-        {
-            send(fd, "Joined channel.\r\n", 17, 0);
-            continue;
-        }
-
-        if (command.find("PING ") == 0)
-        {
-            std::string pongResponse = "PONG " + command.substr(5) + "\r\n";
-            send(fd, pongResponse.c_str(), pongResponse.size(), 0);
-            continue;
+        try {
+            Command cmd;  // Create a Command instance
+            cmd.executeCommand(*this, fd, command);
+        } catch (const std::exception &e) {
+            std::cerr << "Command execution error: " << e.what() << std::endl;
+            send(fd, "Error processing command.\r\n", 26, 0);
         }
     }
 }
+
 
 void Server::removeClient(int fd)
 {

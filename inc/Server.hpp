@@ -6,7 +6,7 @@
 /*   By: dvaisman <dvaisman@student.42vienna.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/24 13:36:57 by dvaisman          #+#    #+#             */
-/*   Updated: 2025/02/06 14:06:37 by dvaisman         ###   ########.fr       */
+/*   Updated: 2025/02/07 12:59:05 by dvaisman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,9 @@
 #include <cstdlib>
 #include "Client.hpp"
 #include "Channel.hpp"
+#include "Command.hpp"
+
+class Command;
 
 class Server
 {
@@ -40,7 +43,6 @@ class Server
 		std::vector <struct pollfd> _pollfds;
 		std::map <int, Client> _clients;
 		Client _Client;
-		//Channel _Channel;
 		Server();
 		Server(const Server &src);
 		Server &operator=(const Server &src);
@@ -54,7 +56,10 @@ class Server
 	public:
 		Server(const std::string &port, const std::string &pass);
 		~Server();
-		
+		Client &getClient(int fd);
+		void addClientToChannel(int fd, const std::string &channel);
+		void broadcastToChannel(const std::string &channel, const std::string &msg);
+		std::string getClientNick(int fd) const;
 		std::string getPass() const;
 		
 		void run();
