@@ -6,7 +6,7 @@
 /*   By: dvaisman <dvaisman@student.42vienna.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/24 13:38:10 by dvaisman          #+#    #+#             */
-/*   Updated: 2025/02/07 13:03:05 by dvaisman         ###   ########.fr       */
+/*   Updated: 2025/02/09 19:18:25 by dvaisman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -133,7 +133,8 @@ void Server::addClient()
     client_pollfd.fd = client_fd;
     client_pollfd.events = POLLIN;
     _pollfds.push_back(client_pollfd);
-    _clients.insert(std::make_pair(client_fd, Client(client_fd, inet_ntoa(client_addr.sin_addr))));
+    Client newClient = Client(client_fd, inet_ntoa(client_addr.sin_addr));
+    _clients[client_fd] = &newClient;
 
     std::cout << "New client connected: " << client_fd << std::endl;
     std::cout << "Client IP: " << inet_ntoa(client_addr.sin_addr) << std::endl;
@@ -157,7 +158,7 @@ void Server::checkAuth(int fd, const char *buffer)
     if (received_pass == _pass)
     {
         std::cout << "Client " << fd << " authenticated successfully." << std::endl;
-        _clients[fd].SetStatus(REGISTERED);
+        _clients[fd]->setStatus(REGISTERED);
         sendTimeStamps(fd);
         send(fd, "Password accepted.\n", 19, 0);
     }
@@ -172,17 +173,14 @@ void Server::checkAuth(int fd, const char *buffer)
             pass_tries = 0;
             removeClient(fd);
         }
-        else
-        {
-            std::cout << "Client " << fd << " failed to authenticate." << std::endl;
-            sendTimeStamps(fd);
-            send(fd, "Error: Invalid password. Please try again.\n", 43, 0);
-        }
+        return;
     }
-    return;
+    if (_clients[fd].GetStatus() != REGISTERED)
+    {
+        send(fd, "Error: You must authenticate first using PASS <password>: ", 59, 0);
+        return;
+    }
 }
-
-#include "../inc/Command.hpp"
 
 void Server::handleClient(int fd)
 {
