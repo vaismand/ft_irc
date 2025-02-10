@@ -6,7 +6,7 @@
 /*   By: dvaisman <dvaisman@student.42vienna.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/24 13:38:10 by dvaisman          #+#    #+#             */
-/*   Updated: 2025/02/10 13:07:31 by dvaisman         ###   ########.fr       */
+/*   Updated: 2025/02/10 13:21:53 by dvaisman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -129,11 +129,6 @@ void Server::checkAuth(int fd, const char *buffer)
         }
         return;
     }
-    if (_clients[fd]->getStatus() != REGISTERED)
-    {
-        send(fd, "Error: You must authenticate first using PASS <password>: ", 59, 0);
-        return;
-    }
 }
 
 void Server::handleClient(int fd)
@@ -156,7 +151,29 @@ void Server::handleClient(int fd)
         len--;
     }
     std::cout << "Received from " << fd << ": " << buffer << std::endl;
-    checkAuth(fd, buffer);
+    if (_clients[fd]->getStatus() == UNREGISTERED)
+        checkAuth(fd, buffer);
+    if (strncmp(buffer, "QUIT", 4) == 0)
+    {
+        removeClient(fd);
+        return;
+    }
+    if (strncmp(buffer, "NICK ", 5) == 0)
+    {
+        std::string nickname = buffer + 5;
+        _clients[fd]->setNick(nickname);
+        send(fd, "Nickname set.\n", 14, 0);
+    }
+    if (strncmp(buffer, "USER ", 5) == 0)
+    {
+        std::string username = buffer + 5;
+        _clients[fd]->setUser(username);
+        send(fd, "Username set.\n", 14, 0);
+    }
+    if (strncmp(buffer, "JOIN ", 5) == 0)
+    {
+        joinChannel(fd, buffer);
+    }
 }
 
 void Server::removeClient(int fd)
