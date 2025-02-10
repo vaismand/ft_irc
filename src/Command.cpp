@@ -6,7 +6,7 @@
 /*   By: dvaisman <dvaisman@student.42vienna.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/07 12:50:25 by dvaisman          #+#    #+#             */
-/*   Updated: 2025/02/09 19:20:49 by dvaisman         ###   ########.fr       */
+/*   Updated: 2025/02/10 10:32:33 by dvaisman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,8 +18,30 @@ Command::Command(const Command &src) {
     (void)src;
 }
 
+void Command::commandCap(Server &server, int fd, const std::string &command)
+{
+    (void)server;
+
+    if (command.find("CAP LS") == 0)
+    {
+        send(fd, "CAP * LS :multi-prefix away-notify\r\n", 36, 0);
+        return;
+    }
+
+    if (command.find("CAP REQ") == 0)
+    {
+        send(fd, "CAP * ACK :multi-prefix away-notify\r\n", 38, 0);
+        send(fd, "CAP END\r\n", 10, 0);  // End capability negotiation
+        return;
+    }
+}
+
+
 void Command::executeCommand(Server &server, int fd, const std::string &command)
 {
+    if (command.find("CAP ") == 0) {
+        commandCap(server, fd, command);
+    }
     if (command.find("NICK ") == 0) {
         commandNick(server, fd, command);
     }

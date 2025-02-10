@@ -6,7 +6,7 @@
 /*   By: dvaisman <dvaisman@student.42vienna.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/07 12:45:51 by dvaisman          #+#    #+#             */
-/*   Updated: 2025/02/07 12:47:45 by dvaisman         ###   ########.fr       */
+/*   Updated: 2025/02/10 10:32:44 by dvaisman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,4 +28,5 @@ class Command
 		void commandUser(Server &server, int fd, const std::string &command);
 		void commandJoin(Server &server, int fd, const std::string &command);
 		void commandPing(Server &server, int fd, const std::string &command);
+		void commandCap(Server &server, int fd, const std::string &command);
 };
