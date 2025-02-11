@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rpinchas <rpinchas@student.42.fr>          +#+  +:+       +#+        */
+/*   By: dvaisman <dvaisman@student.42vienna.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/06 13:53:30 by rpinchas          #+#    #+#             */
-/*   Updated: 2025/02/07 22:15:03 by rpinchas         ###   ########.fr       */
+/*   Updated: 2025/02/11 19:40:02 by dvaisman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,34 +14,35 @@
 
 #include <iostream>
 #include <vector>
+#include <algorithm>
 #include "../inc/Client.hpp"
 
 class Channel {
 	public:
-		Channel(std::string& name, std::string& pass);
+		Channel(const std::string& name, const std::string& pass);
 		~Channel();
-	
+		// Getters
 		std::string getcName() const;
 		std::string getcTopic() const;
 		std::string getcPass() const;
 		bool getChannelType() const;
+		const std::vector<Client*>& getJoined() const;
+		// Setters
 		void setcName(const std::string& name);
 		void setcTopic(const std::string& topic);
 		void setcPass(const std::string& password);
 		void setChannelType();
 
-		void addClient(const Client *client);
-		void addOperator(const Client *client);
+		void addClient(Client *client);
+		void addOperator(Client *client);
 		void rmClient(int fd);
 		void rmOperator(int fd);
 
 	private:
-		int _fd;
 		std::string _cName;
 		std::string _cPass;
 		std::string _cTopic;
 		std::vector<Client*> _joined;
 		std::vector<Client*> _operators;
 		bool		_isInviteOnly;
-
 };

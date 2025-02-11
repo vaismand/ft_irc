@@ -6,7 +6,7 @@
 /*   By: dvaisman <dvaisman@student.42vienna.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/24 13:38:34 by dvaisman          #+#    #+#             */
-/*   Updated: 2025/02/09 19:16:31 by dvaisman         ###   ########.fr       */
+/*   Updated: 2025/02/11 19:23:33 by dvaisman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,18 +41,22 @@ void Client::ClientInit() {
 	_nickname = "";
 	_status = UNREGISTERED;
 	_isAdmin = false;
+	_passAccepted = false;
+
 }
 
 // ----- getter Functions -----
 std::string Client::getUser() const { return _username; }
 std::string Client::getNick() const { return _nickname; }
+std::string& Client::getBuffer() { return _buffer; }
 AuthState Client::getStatus() const { return _status; }
 bool Client::getRights() const { return _isAdmin; }
+bool Client::getPassAccepted() const { return _passAccepted; }
+int  Client::getFd() const { return _fd; }
 
 // ----- setter Functions -----
 void Client::setUser(const std::string& name) { _username = name; }
 void Client::setNick(const std::string& name) { _nickname = name; }
 void Client::setStatus(AuthState status) { _status = status; }
 void Client::setRights() { _isAdmin = !_isAdmin; }
-
-
+void Client::setPassAccepted(bool passAccepted) { _passAccepted = passAccepted; }

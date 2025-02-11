@@ -6,7 +6,7 @@
 /*   By: dvaisman <dvaisman@student.42vienna.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/24 13:38:10 by dvaisman          #+#    #+#             */
-/*   Updated: 2025/02/09 19:20:20 by dvaisman         ###   ########.fr       */
+/*   Updated: 2025/02/11 19:42:08 by dvaisman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,11 @@ Server::~Server()
 {
 	if (_socket != -1)
 		close(_socket);
+    for (std::map<int, Client*>::iterator it = _clients.begin(); it != _clients.end(); it++)
+    {
+        delete it->second;
+    }
+    _clients.clear();
 }
 
 Server::Server(const std::string &port, const std::string &pass) : _port(port), _pass(pass), _socket(-1) {
@@ -41,7 +46,8 @@ void Server::bindSocket()
         throw std::runtime_error("Error: Failed to create socket.");
 
     int opt = 1;
-    setsockopt(_socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+    if (setsockopt(_socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
+        throw std::runtime_error("Error: Setsockopt failed.");
 
     memset(&server_addr, 0, sizeof(server_addr));
     server_addr.sin_family = AF_INET;
@@ -74,6 +80,11 @@ void Server::run()
         }
         for (size_t i = 0; i < _pollfds.size(); i++)
 		{
+            if (_pollfds[i].revents & (POLLERR | POLLHUP | POLLNVAL))
+            {
+                removeClient(_pollfds[i].fd);
+                continue;
+            }
             if (_pollfds[i].revents & POLLIN)
 			{
                 if (_pollfds[i].fd == _socket) {
@@ -103,83 +114,94 @@ std::string Server::getClientNick(int fd) const
     return _clients.at(fd)->getNick();
 }
 
-void Server::addClientToChannel(int fd, const std::string &channel)
-{
-    (void)fd;
-    (void)channel;
-}
-
-void Server::broadcastToChannel(const std::string &channel, const std::string &msg)
-{
-    (void)channel;
-    (void)msg;
-}
-
-
 void Server::addClient()
 {
     struct sockaddr_in client_addr;
     socklen_t addr_len = sizeof(client_addr);
     int client_fd = accept(_socket, (struct sockaddr*)&client_addr, &addr_len);
+    
     if (client_fd < 0)
     {
         perror("accept");
         return;
     }
-
-    fcntl(client_fd, F_SETFL, O_NONBLOCK);
-
+    if (fcntl(client_fd, F_SETFL, O_NONBLOCK) < 0)
+    {
+        perror("fcntl");
+        close(client_fd);
+        return;
+    }
     struct pollfd client_pollfd;
     client_pollfd.fd = client_fd;
     client_pollfd.events = POLLIN;
     _pollfds.push_back(client_pollfd);
-    Client newClient = Client(client_fd, inet_ntoa(client_addr.sin_addr));
-    _clients[client_fd] = &newClient;
-
-    std::cout << "New client connected: " << client_fd << std::endl;
-    std::cout << "Client IP: " << inet_ntoa(client_addr.sin_addr) << std::endl;
-    std::cout << "Client fd: " << client_fd << std::endl;
-    std::cout << "Client count: " << _clients.size() << std::endl;
+    _clients[client_fd] = new Client(client_fd, inet_ntoa(client_addr.sin_addr));
 }
 
-void Server::sendTimeStamps(int fd)
+void Server::removeClient(int fd)
 {
-    time_t now = time(0);
-    struct tm *timeinfo = localtime(&now);
-    char buffer[80];
-    strftime(buffer, 80, "%H:%M: ", timeinfo);
-    send(fd, buffer, strlen(buffer), 0);
-}
+    std::cout << "Client disconnected: " << fd << std::endl;
+    close(fd);
 
-void Server::checkAuth(int fd, const char *buffer)
-{
-    static int pass_tries = 0;
-    std::string received_pass = buffer + 5;
-    if (received_pass == _pass)
+    for (std::vector<struct pollfd>::reverse_iterator it = _pollfds.rbegin(); it != _pollfds.rend(); it++)
     {
-        std::cout << "Client " << fd << " authenticated successfully." << std::endl;
-        _clients[fd]->setStatus(REGISTERED);
-        sendTimeStamps(fd);
-        send(fd, "Password accepted.\n", 19, 0);
-    }
-    else
-    {
-        pass_tries++;
-        if (pass_tries >= 3)
+        if (it->fd == fd)
         {
-            std::cout << "Client " << fd << " exceeded maximum password attempts." << std::endl;
-            sendTimeStamps(fd);
-            send(fd, "Error: Maximum password attempts exceeded. Closing connection.\n", 61, 0);
-            pass_tries = 0;
-            removeClient(fd);
+            _pollfds.erase(it.base() - 1);
+            break;
         }
-        return;
     }
-    if (_clients[fd]->getStatus() == UNREGISTERED)
+    _clients.erase(fd);
+}
+
+ssize_t Server::sendMessage(int fd, const std::string& message)
+{
+    size_t totalSent = 0;
+    size_t messageLen = message.size();
+    const char* msg = message.c_str();
+
+    while (totalSent < messageLen)
     {
-        send(fd, "Error: You must authenticate first using PASS <password>: ", 59, 0);
-        return;
+        ssize_t sent = send(fd, msg + totalSent, messageLen - totalSent, 0);
+        if (sent < 0)
+        {
+            if (errno == EINTR)
+                continue;
+            perror("send");
+            removeClient(fd);
+            return -1;
+        }
+        totalSent += sent;
     }
+    return totalSent;
+}
+
+Channel *Server::getChannel(const std::string &name)
+{
+    if (_channels.find(name) == _channels.end())
+        return NULL;
+    return _channels[name];
+}
+
+void Server::addChannel(const std::string &name, const std::string &pass)
+{
+    _channels[name] = new Channel(name, pass);
+}
+
+void Server::tryRegisterClient(int fd)
+{
+    Client &client = getClient(fd);
+    
+    if (client.getNick().empty() || client.getUser().empty())
+        return;
+    if (client.getStatus() == REGISTERED)
+        return;
+    if (!client.getPassAccepted())
+        return;
+    client.setStatus(REGISTERED);
+
+    std::string welcome = ":ircserv 001 " + client.getNick() + " :Welcome to the IRC server " + client.getNick() + "!\r\n";
+    sendMessage(fd, welcome);
 }
 
 void Server::handleClient(int fd)
@@ -195,7 +217,7 @@ void Server::handleClient(int fd)
     }
 
     buffer[bytes_received] = '\0';
-    std::string &clientBuffer = _clients[fd]->buffer;
+    std::string &clientBuffer = _clients[fd]->getBuffer();
     clientBuffer += buffer;
 
     size_t pos;
@@ -206,32 +228,22 @@ void Server::handleClient(int fd)
 
         if (command.empty()) 
             continue;
-
         std::cout << "Received from " << fd << ": " << command << std::endl;
-
-        try {
+        try
+        {
             Command cmd;
             cmd.executeCommand(*this, fd, command);
-        } catch (const std::exception &e) {
-            std::cerr << "Command execution error: " << e.what() << std::endl;
-            send(fd, "Error processing command.\r\n", 26, 0);
-        }
-    }
-}
-
-
-void Server::removeClient(int fd)
-{
-    std::cout << "Client disconnected: " << fd << std::endl;
-    close(fd);
-
-    for (size_t i = 0; i < _pollfds.size(); i++)
-    {
-        if (_pollfds[i].fd == fd)
+        } 
+        catch (const std::exception &e)
         {
-            _pollfds.erase(_pollfds.begin() + i);
-            break;
+            std::cerr << "Command execution error: " << e.what() << std::endl;
+            if (sendMessage(fd, "Error processing command.\r\n") < 0)
+            {
+                removeClient(fd);
+                return;
+            }
         }
+        tryRegisterClient(fd);
     }
-    _clients.erase(fd);
 }
+
