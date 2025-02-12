@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   Channel.hpp                                        :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: dvaisman <dvaisman@student.42vienna.com    +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/02/06 13:53:30 by rpinchas          #+#    #+#             */
-/*   Updated: 2025/02/11 19:40:02 by dvaisman         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #pragma once
 
 #include <iostream>
@@ -19,25 +7,28 @@
 
 class Channel {
 	public:
+		// Constructors
 		Channel(const std::string& name, const std::string& pass);
 		~Channel();
+
 		// Getters
 		std::string getcName() const;
 		std::string getcTopic() const;
 		std::string getcPass() const;
 		bool getChannelType() const;
 		const std::vector<Client*>& getJoined() const;
+
 		// Setters
 		void setcName(const std::string& name);
 		void setcTopic(const std::string& topic);
 		void setcPass(const std::string& password);
 		void setChannelType();
 
+		// Methods
 		void addClient(Client *client);
 		void addOperator(Client *client);
 		void rmClient(int fd);
 		void rmOperator(int fd);
-
 	private:
 		std::string _cName;
 		std::string _cPass;
