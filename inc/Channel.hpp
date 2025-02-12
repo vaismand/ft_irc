@@ -33,6 +33,7 @@ class Channel {
 		void broadcast(const std::string& msg);
 
 	private:
+		// Attributes
 		std::string _cName;
 		std::string _cPass;
 		std::string _cTopic;

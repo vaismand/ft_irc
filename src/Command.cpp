@@ -15,23 +15,23 @@ Command &Command::operator=(const Command &src)
 
 Command::~Command() {}
 
-void Command::commandCap(Server &server, int fd, const std::string &command)
+void Command::commandCap(int fd, const std::string &command)
 {
     if (command.find("CAP LS") == 0)
     {
-        server.sendMessage(fd, "CAP * LS :multi-prefix away-notify\r\n");
+        dvais::sendMessage(fd, "CAP * LS :multi-prefix away-notify\r\n");
         return;
     }
     if (command.find("CAP REQ") == 0)
     {
-        server.sendMessage(fd, "CAP * ACK :multi-prefix away-notify\r\n");
+        dvais::sendMessage(fd, "CAP * ACK :multi-prefix away-notify\r\n");
         return;
     }
     if (command.find("CAP END") == 0)
     {
         return;
     }
-    server.sendMessage(fd, "Error: Unknown CAP subcommand.\r\n");
+    dvais::sendMessage(fd, "Error: Unknown CAP subcommand.\r\n");
 }
 
 void Command::commandNick(Server &server, int fd, const std::string &command)
@@ -41,7 +41,7 @@ void Command::commandNick(Server &server, int fd, const std::string &command)
     // Optionally: trim the nickname to remove extra spaces.
     server.getClient(fd).setNick(nickname);
     std::string msg = "Nickname set to " + nickname + "\r\n";
-    server.sendMessage(fd, msg);
+    dvais::sendMessage(fd, msg);
 }
 
 void Command::commandUser(Server &server, int fd, const std::string &command)
@@ -51,7 +51,7 @@ void Command::commandUser(Server &server, int fd, const std::string &command)
     // Optionally: trim the username.
     server.getClient(fd).setUser(username);
     std::string msg = "Username set to " + username + "\r\n";
-    server.sendMessage(fd, msg);
+    dvais::sendMessage(fd, msg);
 }
 
 // static std::string trim(const std::string &s) {
@@ -107,7 +107,7 @@ void Command::commandJoin(Server &server, int fd, const std::string &command)
     // }
     server.getChannel(channelName)->addClient(server.getClient(fd).getFd());
     std::string msg = ":" + nick + " JOIN " + channelName + "\r\n";
-    server.sendMessage(fd, msg);
+    dvais::sendMessage(fd, msg);
 }
 
 void Command::commandPart(Server &server, int fd, const std::string &command)
@@ -120,13 +120,9 @@ void Command::commandPart(Server &server, int fd, const std::string &command)
         server.sendMessage(fd, reply);
         return;
     }
-    std::vector<int>::const_iterator it = tmp->getJoined().begin();
-    std::vector<int>::const_iterator it_end = tmp->getJoined().end();
-    for(; it != it_end; it++) {
-        if(!tmp->isMember(fd)) {
-            server.sendMessage(fd, ":ircserv 442 " + channelName + ": You're not on that channel\r\n");
-            return;
-        }
+    if(!tmp->isMember(fd)) {
+        dvais::sendMessage(fd, ":ircserv 442 " + channelName + ": You're not on that channel\r\n");
+        return;
     }
     std::string msg = ":" + nick + " PART " + channelName + "\r\n";
     tmp->broadcast(msg);
@@ -138,14 +134,14 @@ void Command::commandMode(Server &server, int fd, const std::string &command)
     (void)command;
     std::string nick = server.getClient(fd).getNick();
     std::string reply = ":ircserv 421 " + nick + " MODE :Not implemented\r\n";
-    server.sendMessage(fd, reply);
+    dvais::sendMessage(fd, reply);
 }
 
-void Command::commandPing(Server &server, int fd, const std::string &command)
+void Command::commandPing(int fd, const std::string &command)
 {
     std::string servername = command.substr(5);
     std::string msg = "PONG " + servername + "\r\n";
-    server.sendMessage(fd, msg);
+    dvais::sendMessage(fd, msg);
 }
 
 void Command::commandPass(Server &server, int fd, const std::string &command)
@@ -153,7 +149,7 @@ void Command::commandPass(Server &server, int fd, const std::string &command)
     std::string providedPass = command.substr(5);
     if (providedPass != server.getPass())
     {
-        server.sendMessage(fd, ":ircserv 464 * :Password incorrect\r\n");
+        dvais::sendMessage(fd, ":ircserv 464 * :Password incorrect\r\n");
         server.removeClient(fd);
     } 
     else
@@ -166,7 +162,7 @@ void Command::executeCommand(Server &server, int fd, const std::string &command)
 {
     if (command.find("CAP ") == 0)
     {
-        commandCap(server, fd, command);
+        commandCap(fd, command);
     }
     else if (command.find("NICK ") == 0)
     {
@@ -182,7 +178,7 @@ void Command::executeCommand(Server &server, int fd, const std::string &command)
     }
     else if (command.find("PING ") == 0)
     {
-        commandPing(server, fd, command);
+        commandPing(fd, command);
     }
     else if (command.find("MODE ") == 0)
     {
@@ -200,6 +196,6 @@ void Command::executeCommand(Server &server, int fd, const std::string &command)
     {
         std::string nick = server.getClient(fd).getNick();
         std::string reply = ":ircserv 421 " + nick + " " + command.substr(0, command.find(" ")) + " :Unknown command\r\n";
-        server.sendMessage(fd, reply);
+        dvais::sendMessage(fd, reply);
     }
 }

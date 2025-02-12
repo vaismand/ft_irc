@@ -18,6 +18,7 @@
 #include "Client.hpp"
 #include "Channel.hpp"
 #include "Command.hpp"
+#include "Tools.hpp"
 
 class Command;
 
@@ -37,20 +38,26 @@ class Server
 		std::map <int, Client*> _clients;
 		std::map <std::string, Channel*> _channels;
 
+		// Methods
 		void bindSocket();
 		void addClient();
 		void handleClient(int fd);
 		void tryRegisterClient(int fd);
 
 	public:
+		// Constructors
 		Server(const std::string &port, const std::string &pass);
 		~Server();
+
+		// Getters
 		Client &getClient(int fd);
+		Channel *getChannel(const std::string &name);
 		std::string getClientNick(int fd) const;
 		std::string getPass() const;
+
+		// Methods
 		ssize_t sendMessage(int fd, const std::string &message);
+		void addChannel(const std::string &name, const std::string &pass);
 		void removeClient(int fd);
 		void run();
-		Channel *getChannel(const std::string &name);
-		void addChannel(const std::string &name, const std::string &pass);
 };
