@@ -4,6 +4,7 @@
 #include <vector>
 #include <algorithm>
 #include "../inc/Client.hpp"
+#include "../inc/Tools.hpp"
 
 class Channel {
 	public:

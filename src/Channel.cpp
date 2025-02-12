@@ -30,8 +30,10 @@ void Channel::addClient(int fd)
 
 void Channel::addOperator(int fd) 
 {
-    if(!isMember(fd))
-
+    if(!isMember(fd)) {
+        dvais::sendMessage(fd, ":ircserv 442 :You're not on that channel\r\n");
+        return;
+    }
 	for(size_t i = 0; i < _operators.size(); i++)
 	{
 		if (_operators[i] == fd)

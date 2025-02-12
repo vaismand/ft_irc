@@ -117,7 +117,7 @@ void Command::commandPart(Server &server, int fd, const std::string &command)
     Channel* tmp = server.getChannel(channelName);
     if (!tmp) {
         std::string reply = ":ircserv 421 " + channelName + ": No such channel\r\n";
-        server.sendMessage(fd, reply);
+        dvais::sendMessage(fd, reply);
         return;
     }
     if(!tmp->isMember(fd)) {
