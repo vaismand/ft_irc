@@ -6,10 +6,9 @@
 /*   By: dvaisman <dvaisman@student.42vienna.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 19:11:46 by dvaisman          #+#    #+#             */
-/*   Updated: 2025/02/11 19:39:50 by dvaisman         ###   ########.fr       */
+/*   Updated: 2025/02/12 11:28:24 by dvaisman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
-
 
 #include "../inc/Channel.hpp"
 
@@ -41,20 +40,28 @@ void Channel::addClient(Client *client)
 }
 
 void Channel::rmClient(int fd) {
-    for (std::vector<Client*>::iterator it = _joined.begin(); it != _joined.end(); ) {
-        if ((*it)->getFd() == fd) {
+    for (std::vector<Client*>::iterator it = _joined.begin(); it != _joined.end(); )
+    {
+        if ((*it)->getFd() == fd)
+        {
             it = _joined.erase(it);
-        } else {
+        } 
+        else
+        {
             ++it;
         }
     }
 }
 
 void Channel::rmOperator(int fd) {
-    for (std::vector<Client*>::iterator it = _operators.begin(); it != _operators.end(); ) {
-        if ((*it)->getFd() == fd) {
+    for (std::vector<Client*>::iterator it = _operators.begin(); it != _operators.end(); )
+    {
+        if ((*it)->getFd() == fd)
+        {
             it = _operators.erase(it);
-        } else {
+        } 
+        else
+        {
             ++it;
         }
     }

@@ -6,7 +6,7 @@
 /*   By: dvaisman <dvaisman@student.42vienna.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/24 13:38:34 by dvaisman          #+#    #+#             */
-/*   Updated: 2025/02/11 19:23:33 by dvaisman         ###   ########.fr       */
+/*   Updated: 2025/02/12 11:25:08 by dvaisman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,13 +17,9 @@ Client::Client(int fd, const std::string& ip) : _fd(fd), _ip(ip)
 	ClientInit();
 }
 
-
 Client::Client(const Client& ref) : _fd(ref._fd), _ip(ref._ip) {}
 
-
-Client::~Client()
-{
-}
+Client::~Client() {}
 
 Client& Client::operator= (const Client& rhs) {
 	if (this != &rhs)

@@ -6,7 +6,7 @@
 /*   By: dvaisman <dvaisman@student.42vienna.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/07 12:50:25 by dvaisman          #+#    #+#             */
-/*   Updated: 2025/02/11 19:41:33 by dvaisman         ###   ########.fr       */
+/*   Updated: 2025/02/12 11:28:30 by dvaisman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,11 +14,13 @@
 
 Command::Command() {}
 
-Command::Command(const Command &src) {
+Command::Command(const Command &src)
+{
     (void)src;
 }
 
-Command &Command::operator=(const Command &src) {
+Command &Command::operator=(const Command &src)
+{
     (void)src;
     return *this;
 }

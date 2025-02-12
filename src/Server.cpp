@@ -6,13 +6,17 @@
 /*   By: dvaisman <dvaisman@student.42vienna.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/24 13:38:10 by dvaisman          #+#    #+#             */
-/*   Updated: 2025/02/11 19:42:08 by dvaisman         ###   ########.fr       */
+/*   Updated: 2025/02/12 11:28:40 by dvaisman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/Server.hpp"
 #include "../inc/Client.hpp"
 #include "../inc/Command.hpp"
+
+Server::Server(const std::string &port, const std::string &pass) : _port(port), _pass(pass), _socket(-1) {}
+
+Server::Server(const Server &src) : _port(src._port), _pass(src._pass) {}
 
 Server::~Server()
 {
@@ -23,13 +27,6 @@ Server::~Server()
         delete it->second;
     }
     _clients.clear();
-}
-
-Server::Server(const std::string &port, const std::string &pass) : _port(port), _pass(pass), _socket(-1) {
-}
-
-Server::Server(const Server &src) : _port(src._port), _pass(src._pass)
-{
 }
 
 std::string Server::getPass() const
@@ -100,7 +97,8 @@ void Server::run()
 
 Client &Server::getClient(int fd)
 {
-    if (_clients.find(fd) == _clients.end()) {
+    if (_clients.find(fd) == _clients.end())
+    {
         throw std::runtime_error("Error: Client not found.");
     }
     return *_clients.at(fd);
@@ -246,4 +244,3 @@ void Server::handleClient(int fd)
         tryRegisterClient(fd);
     }
 }
-

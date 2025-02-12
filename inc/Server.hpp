@@ -6,7 +6,7 @@
 /*   By: dvaisman <dvaisman@student.42vienna.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/24 13:36:57 by dvaisman          #+#    #+#             */
-/*   Updated: 2025/02/11 19:34:43 by dvaisman         ###   ########.fr       */
+/*   Updated: 2025/02/12 11:21:03 by dvaisman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,15 +36,15 @@ class Command;
 class Server
 {
 	private:
+		Server();
+		Server(const Server &src);
+		Server &operator=(const Server &src);
 		const std::string _port;
 		const std::string _pass;
 		int _socket;
 		std::vector <struct pollfd> _pollfds;
 		std::map <int, Client*> _clients;
 		std::map <std::string, Channel*> _channels;
-		Server();
-		Server(const Server &src);
-		Server &operator=(const Server &src);
 
 		void bindSocket();
 		void addClient();
