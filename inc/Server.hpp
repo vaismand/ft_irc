@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rpinchas <rpinchas@student.42.fr>          +#+  +:+       +#+        */
+/*   By: dvaisman <dvaisman@student.42vienna.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/24 13:36:57 by dvaisman          #+#    #+#             */
-/*   Updated: 2025/02/07 22:14:29 by rpinchas         ###   ########.fr       */
+/*   Updated: 2025/02/12 11:21:03 by dvaisman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,6 @@
 
 #include <iostream>
 #include <sys/socket.h>
-#include <sys/poll.h> 
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <poll.h>
@@ -30,30 +29,38 @@
 #include <cstdlib>
 #include "Client.hpp"
 #include "Channel.hpp"
+#include "Command.hpp"
+
+class Command;
 
 class Server
 {
 	private:
+		Server();
+		Server(const Server &src);
+		Server &operator=(const Server &src);
 		const std::string _port;
 		const std::string _pass;
 		int _socket;
 		std::vector <struct pollfd> _pollfds;
 		std::map <int, Client*> _clients;
-		std::map <int, Channel*> _channel;
-		Server();
-		Server(const Server &src);
-		Server &operator=(const Server &src);
+		std::map <std::string, Channel*> _channels;
 
 		void bindSocket();
 		void addClient();
-		void removeClient(int fd);
 		void handleClient(int fd);
-		void checkAuth(int fd, const char *buffer);
-	public:
+		void tryRegisterClient(int fd);
+		public:
 		Server(const std::string &port, const std::string &pass);
 		~Server();
-		
+		Client &getClient(int fd);
+		std::string getClientNick(int fd) const;
 		std::string getPass() const;
+		ssize_t sendMessage(int fd, const std::string &message);
 		
+		void removeClient(int fd);
 		void run();
+	public:
+		Channel *getChannel(const std::string &name);
+		void addChannel(const std::string &name, const std::string &pass);
 };

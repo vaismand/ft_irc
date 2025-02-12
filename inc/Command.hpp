@@ -3,25 +3,34 @@
 /*                                                        :::      ::::::::   */
 /*   Command.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dvaisman <dvaisman@student.42vienna.com    +#+  +:+       +#+        */
+/*   By: rpinchas <rpinchas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/02/10 13:11:39 by dvaisman          #+#    #+#             */
-/*   Updated: 2025/02/10 13:14:28 by dvaisman         ###   ########.fr       */
+/*   Created: 2025/02/07 12:45:51 by dvaisman          #+#    #+#             */
+/*   Updated: 2025/02/12 13:23:34 by rpinchas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
 #include <string>
+#include "Server.hpp"
+
+class Server;
 
 class Command
 {
 	public:
 		Command();
 		Command(const Command &src);
-		void executeCommand(int fd, const std::string &command);
+		Command &operator=(const Command &src);
+		~Command();
+		void executeCommand(Server &server, int fd, const std::string &command);
 	private:
-		void commandNick(int fd, const std::string &command);
-		void commandUser(int fd, const std::string &command);
-		void commandJoin(int fd, const std::string &command);
+		void commandNick(Server &server, int fd, const std::string &command);
+		void commandUser(Server &server, int fd, const std::string &command);
+		void commandJoin(Server &server, int fd, const std::string &command);
+		void commandCap(Server &server, int fd, const std::string &command);
+		void commandPing(Server &server, int fd, const std::string &command);
+		void commandMode(Server &server, int fd, const std::string &command);
+		void commandPass(Server &server, int fd, const std::string &command);
 };
