@@ -12,11 +12,11 @@ class Channel {
 		~Channel();
 
 		// Getters
-		std::string getcName() const;
-		std::string getcTopic() const;
-		std::string getcPass() const;
-		bool getChannelType() const;
-		const std::vector<Client*>& getJoined() const;
+		const std::string& getcName() const;
+		const std::string& getcTopic() const;
+		const std::string& getcPass() const;
+		const bool& getChannelType() const;
+		const std::vector<int>& getJoined() const;
 
 		// Setters
 		void setcName(const std::string& name);
@@ -25,8 +25,8 @@ class Channel {
 		void setChannelType();
 
 		// Methods
-		void addClient(Client *client);
-		void addOperator(Client *client);
+		void addClient(int fd);
+		void addOperator(int fd);
 		void rmClient(int fd);
 		void rmOperator(int fd);
 	private:
@@ -34,7 +34,7 @@ class Channel {
 		std::string _cName;
 		std::string _cPass;
 		std::string _cTopic;
-		std::vector<Client*> _joined;
-		std::vector<Client*> _operators;
+		std::vector<int> _joined;
+		std::vector<int> _operators;
 		bool		_isInviteOnly;
 };
