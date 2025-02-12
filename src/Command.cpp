@@ -66,48 +66,67 @@ void Command::commandJoin(Server &server, int fd, const std::string &command)
 {
     std::string nick = server.getClient(fd).getNick();
     std::string channelName = command.substr(5);
-    if (channelName.find(",") != std::string::npos)
-    {
-        dvais::sendMessage(fd, ":ircserv 475 " + nick + " " + channelName + " :Cannot join channel (invite only)\r\n");
-        return;
-    }
-    if (channelName.find(" ") != std::string::npos)
-    {
-        dvais::sendMessage(fd, ":ircserv 461 " + nick + " JOIN :Not enough parameters\r\n");
-        return;
-    }
-    if (channelName.find("#") != 0)
-    {
-        dvais::sendMessage(fd, ":ircserv 403 " + nick + " " + channelName + " :No such channel\r\n");
-        return;
-    }
-    if (server.getClient(fd).getStatus() != REGISTERED)
-    {
-        dvais::sendMessage(fd, ":ircserv 451 " + nick + " JOIN :You have not registered\r\n");
-        return;
-    }
-    if (server.getClient(fd).getNick().empty())
-    {
-        dvais::sendMessage(fd, ":ircserv 451 " + nick + " JOIN :You have not set a nickname\r\n");
-        return;
-    }
-    if (server.getClient(fd).getUser().empty())
-    {
-        dvais::sendMessage(fd, ":ircserv 451 " + nick + " JOIN :You have not set a username\r\n");
-        return;
-    }
-    if (server.getClient(fd).getPassAccepted() == false)
-    {
-        dvais::sendMessage(fd, ":ircserv 464 " + nick + " JOIN :Password incorrect\r\n");
-        return;
-    }
-    if (server.getChannel(channelName) == NULL)
-    {
-        server.addChannel(channelName, "");
-    }
-    server.getChannel(channelName)->addClient(&server.getClient(fd));
+    // if (channelName.find(",") != std::string::npos)
+    // {
+    //     server.sendMessage(fd, ":ircserv 475 " + nick + " " + channelName + " :Cannot join channel (invite only)\r\n");
+    //     return;
+    // }
+    // if (channelName.find(" ") != std::string::npos)
+    // {
+    //     server.sendMessage(fd, ":ircserv 461 " + nick + " JOIN :Not enough parameters\r\n");
+    //     return;
+    // }
+    // if (channelName.find("#") != 0)
+    // {
+    //     server.sendMessage(fd, ":ircserv 403 " + nick + " " + channelName + " :No such channel\r\n");
+    //     return;
+    // }
+    // if (server.getClient(fd).getStatus() != REGISTERED)
+    // {
+    //     server.sendMessage(fd, ":ircserv 451 " + nick + " JOIN :You have not registered\r\n");
+    //     return;
+    // }
+    // if (server.getClient(fd).getNick().empty())
+    // {
+    //     server.sendMessage(fd, ":ircserv 451 " + nick + " JOIN :You have not set a nickname\r\n");
+    //     return;
+    // }
+    // if (server.getClient(fd).getUser().empty())
+    // {
+    //     server.sendMessage(fd, ":ircserv 451 " + nick + " JOIN :You have not set a username\r\n");
+    //     return;
+    // }
+    // if (server.getClient(fd).getPassAccepted() == false)
+    // {
+    //     server.sendMessage(fd, ":ircserv 464 " + nick + " JOIN :Password incorrect\r\n");
+    //     return;
+    // }
+    // if (server.getChannel(channelName) == NULL)
+    // {
+    //     server.addChannel(channelName, "");
+    // }
+    server.getChannel(channelName)->addClient(server.getClient(fd).getFd());
     std::string msg = ":" + nick + " JOIN " + channelName + "\r\n";
     dvais::sendMessage(fd, msg);
+}
+
+void Command::commandPart(Server &server, int fd, const std::string &command)
+{
+    std::string nick = server.getClient(fd).getNick();
+    std::string channelName = command.substr(5);
+    Channel* tmp = server.getChannel(channelName);
+    if (!tmp) {
+        std::string reply = ":ircserv 421 " + channelName + ": No such channel\r\n";
+        server.sendMessage(fd, reply);
+        return;
+    }
+    if(!tmp->isMember(fd)) {
+        dvais::sendMessage(fd, ":ircserv 442 " + channelName + ": You're not on that channel\r\n");
+        return;
+    }
+    std::string msg = ":" + nick + " PART " + channelName + "\r\n";
+    tmp->broadcast(msg);
+    tmp->rmClient(fd);
 }
 
 void Command::commandMode(Server &server, int fd, const std::string &command)
@@ -168,6 +187,10 @@ void Command::executeCommand(Server &server, int fd, const std::string &command)
     else if (command.find("PASS ") == 0)
     {
         commandPass(server, fd, command);
+    }
+    else if (command.find("PART ") == 0)
+    {
+        commandPart(server, fd, command);
     }
     else
     {

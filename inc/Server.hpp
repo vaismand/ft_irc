@@ -43,6 +43,7 @@ class Server
 		void addClient();
 		void handleClient(int fd);
 		void tryRegisterClient(int fd);
+
 	public:
 		// Constructors
 		Server(const std::string &port, const std::string &pass);
