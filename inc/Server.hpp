@@ -18,6 +18,7 @@
 #include "Client.hpp"
 #include "Channel.hpp"
 #include "Command.hpp"
+#include "Tools.hpp"
 
 class Command;
 
@@ -30,9 +31,9 @@ class Server
 		Server &operator=(const Server &src);
 
 		// Attributes
-		int _socket;
 		const std::string _port;
 		const std::string _pass;
+		int _socket;
 		std::vector <struct pollfd> _pollfds;
 		std::map <int, Client*> _clients;
 		std::map <std::string, Channel*> _channels;
