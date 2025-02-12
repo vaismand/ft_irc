@@ -6,7 +6,7 @@
 /*   By: dvaisman <dvaisman@student.42vienna.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/24 13:38:10 by dvaisman          #+#    #+#             */
-/*   Updated: 2025/02/12 11:28:40 by dvaisman         ###   ########.fr       */
+/*   Updated: 2025/02/12 12:29:11 by dvaisman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -136,7 +136,7 @@ void Server::addClient()
     _clients[client_fd] = new Client(client_fd, inet_ntoa(client_addr.sin_addr));
 }
 
-void Server::removeClient(int fd)
+void Server::removeClient(int fd) 
 {
     std::cout << "Client disconnected: " << fd << std::endl;
     close(fd);
@@ -166,7 +166,7 @@ ssize_t Server::sendMessage(int fd, const std::string& message)
             if (errno == EINTR)
                 continue;
             perror("send");
-            removeClient(fd);
+            //removeClient(fd);
             return -1;
         }
         totalSent += sent;
