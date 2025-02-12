@@ -21,8 +21,8 @@ class Command
 		void commandNick(Server &server, int fd, const std::string &command);
 		void commandUser(Server &server, int fd, const std::string &command);
 		void commandJoin(Server &server, int fd, const std::string &command);
-		void commandCap(Server &server, int fd, const std::string &command);
-		void commandPing(Server &server, int fd, const std::string &command);
 		void commandMode(Server &server, int fd, const std::string &command);
 		void commandPass(Server &server, int fd, const std::string &command);
+		void commandPing(int fd, const std::string &command);
+		void commandCap(int fd, const std::string &command);
 };

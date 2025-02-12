@@ -15,9 +15,8 @@ Command &Command::operator=(const Command &src)
 
 Command::~Command() {}
 
-void Command::commandCap(Server &server, int fd, const std::string &command)
+void Command::commandCap(int fd, const std::string &command)
 {
-    (void)server;
     if (command.find("CAP LS") == 0)
     {
         dvais::sendMessage(fd, "CAP * LS :multi-prefix away-notify\r\n");
@@ -119,9 +118,8 @@ void Command::commandMode(Server &server, int fd, const std::string &command)
     dvais::sendMessage(fd, reply);
 }
 
-void Command::commandPing(Server &server, int fd, const std::string &command)
+void Command::commandPing(int fd, const std::string &command)
 {
-    (void)server;
     std::string servername = command.substr(5);
     std::string msg = "PONG " + servername + "\r\n";
     dvais::sendMessage(fd, msg);
@@ -145,7 +143,7 @@ void Command::executeCommand(Server &server, int fd, const std::string &command)
 {
     if (command.find("CAP ") == 0)
     {
-        commandCap(server, fd, command);
+        commandCap(fd, command);
     }
     else if (command.find("NICK ") == 0)
     {
@@ -161,7 +159,7 @@ void Command::executeCommand(Server &server, int fd, const std::string &command)
     }
     else if (command.find("PING ") == 0)
     {
-        commandPing(server, fd, command);
+        commandPing(fd, command);
     }
     else if (command.find("MODE ") == 0)
     {
