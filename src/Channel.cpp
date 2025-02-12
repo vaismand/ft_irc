@@ -27,7 +27,8 @@ void Channel::addClient(Client *client)
 	_joined.push_back(client);
 }
 
-void Channel::rmClient(int fd) {
+void Channel::rmClient(int fd)
+{
     for (std::vector<Client*>::iterator it = _joined.begin(); it != _joined.end(); )
     {
         if ((*it)->getFd() == fd)
@@ -41,7 +42,8 @@ void Channel::rmClient(int fd) {
     }
 }
 
-void Channel::rmOperator(int fd) {
+void Channel::rmOperator(int fd)
+{
     for (std::vector<Client*>::iterator it = _operators.begin(); it != _operators.end(); )
     {
         if ((*it)->getFd() == fd)

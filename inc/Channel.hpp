@@ -30,6 +30,7 @@ class Channel {
 		void rmClient(int fd);
 		void rmOperator(int fd);
 	private:
+		// Attributes
 		std::string _cName;
 		std::string _cPass;
 		std::string _cTopic;

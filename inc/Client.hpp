@@ -10,15 +10,19 @@ enum AuthState {
 class Client
 {
 	public:
+		// Constructors
 		Client(int fd, const std::string& ip);
 		~Client();
 		
+		// Getters
 		std::string getUser() const;
 		std::string getNick() const;
 		std::string& getBuffer();
 		AuthState getStatus() const;
 		int  getFd() const;
 		bool getRights() const;
+
+		// Setters
 		void setUser(const std::string& name);
 		void setNick(const std::string& name);
 		void setStatus(AuthState status);
@@ -27,8 +31,11 @@ class Client
 		bool getPassAccepted() const;
 
 	private:
+		// Constructors
 		Client (const Client& ref);
 		Client& operator= (const Client& rhs);
+
+		// Attributes
 		int _fd;
 		std::string _ip;
 		std::string _username;
@@ -38,5 +45,6 @@ class Client
 		bool		_isAdmin;
 		bool 		_passAccepted;
 
+		// Methods
 		void ClientInit();
 };
