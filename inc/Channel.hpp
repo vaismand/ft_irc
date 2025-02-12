@@ -29,6 +29,9 @@ class Channel {
 		void addOperator(int fd);
 		void rmClient(int fd);
 		void rmOperator(int fd);
+		bool isMember(int fd) const;
+		void broadcast(const std::string& msg);
+
 	private:
 		std::string _cName;
 		std::string _cPass;

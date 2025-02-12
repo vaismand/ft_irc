@@ -17,6 +17,7 @@ void Channel::setcTopic(const std::string& topic) { _cTopic = topic; }
 void Channel::setcPass(const std::string& password) { _cPass = password; }
 void Channel::setChannelType() { _isInviteOnly = !_isInviteOnly; }
 
+// ----- methods -----
 void Channel::addClient(int fd) 
 { 
 	for(size_t i = 0; i < _joined.size(); i++)
@@ -25,6 +26,18 @@ void Channel::addClient(int fd)
 			return;
 	}
 	_joined.push_back(fd);
+}
+
+void Channel::addOperator(int fd) 
+{
+    if(!isMember(fd))
+
+	for(size_t i = 0; i < _operators.size(); i++)
+	{
+		if (_operators[i] == fd)
+			return;
+	}
+	_operators.push_back(fd);
 }
 
 void Channel::rmClient(int fd)
@@ -45,5 +58,24 @@ void Channel::rmOperator(int fd) {
             it = _operators.erase(it);
         else
             ++it;
+    }
+}
+
+bool Channel::isMember(int fd) const {
+    std::vector<int>::const_iterator it = _joined.begin();
+    std::vector<int>::const_iterator it_end = _joined.end();
+    for (; it != it_end; ++it) {
+        if (*it == fd)
+            return true;
+    }
+    return false;
+}
+
+void Channel::broadcast(const std::string &message) {
+    std::vector<int>::const_iterator it = _joined.begin();
+    std::vector<int>::const_iterator it_end = _joined.end();
+
+    for (; it != it_end; ++it) {
+        dvais::sendMessage(*it, message);
     }
 }

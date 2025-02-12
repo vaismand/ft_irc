@@ -21,4 +21,5 @@ class Command
 		void commandPing(Server &server, int fd, const std::string &command);
 		void commandMode(Server &server, int fd, const std::string &command);
 		void commandPass(Server &server, int fd, const std::string &command);
+		void commandPart(Server &server, int fd, const std::string &command);
 };
