@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Command.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dvaisman <dvaisman@student.42vienna.com    +#+  +:+       +#+        */
+/*   By: dkohn <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/07 12:50:25 by dvaisman          #+#    #+#             */
-/*   Updated: 2025/02/12 11:28:30 by dvaisman         ###   ########.fr       */
+/*   Updated: 2025/02/14 20:35:35 by dkohn            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,14 @@ Command &Command::operator=(const Command &src)
 }
 
 Command::~Command() {}
+
+static std::string trim(const std::string &s) {
+    size_t start = s.find_first_not_of(" \t\r\n");
+    size_t end = s.find_last_not_of(" \t\r\n");
+    if (start == std::string::npos)
+        return "";
+    return s.substr(start, end - start + 1);
+}
 
 void Command::commandCap(Server &server, int fd, const std::string &command)
 {
@@ -50,7 +58,17 @@ void Command::commandNick(Server &server, int fd, const std::string &command)
 {
     // Extract the nickname after "NICK " (assumes proper formatting).
     std::string nickname = command.substr(5);
-    // Optionally: trim the nickname to remove extra spaces.
+    
+    // Trim the nickname to remove extra spaces.
+    nickname = trim(nickname);
+
+    // Validate the nickname according to IRC standards.
+    if (nickname.empty() || nickname.length() > 9 || !isValidNick(nickname))
+    {
+        server.sendMessage(fd, ":ircserv 432 * " + nickname + " :Erroneous nickname\r\n");
+        return;
+    }
+
     server.getClient(fd).setNick(nickname);
     std::string msg = "Nickname set to " + nickname + "\r\n";
     server.sendMessage(fd, msg);
@@ -60,24 +78,34 @@ void Command::commandUser(Server &server, int fd, const std::string &command)
 {
     // Extract the username after "USER " (assumes proper formatting).
     std::string username = command.substr(5);
+    
     // Optionally: trim the username.
+    username = trim(username);
+
     server.getClient(fd).setUser(username);
     std::string msg = "Username set to " + username + "\r\n";
     server.sendMessage(fd, msg);
 }
 
-// static std::string trim(const std::string &s) {
-//     size_t start = s.find_first_not_of(" \t\r\n");
-//     size_t end = s.find_last_not_of(" \t\r\n");
-//     if (start == std::string::npos)
-//         return "";
-//     return s.substr(start, end - start + 1);
-// }
+
+bool Command::isValidNick(const std::string &nickname)
+{
+    if (nickname.empty() || !isalpha(nickname[0]))
+        return false;
+    for (size_t i = 0; i < nickname.length(); ++i)
+    {
+        char c = nickname[i];
+        if (!isalnum(c) && c != '-' && c != '_')
+            return false;
+    }
+    return true;
+}
 
 void Command::commandJoin(Server &server, int fd, const std::string &command)
 {
     std::string nick = server.getClient(fd).getNick();
     std::string channelName = command.substr(5);
+
     if (channelName.find(",") != std::string::npos)
     {
         server.sendMessage(fd, ":ircserv 475 " + nick + " " + channelName + " :Cannot join channel (invite only)\r\n");

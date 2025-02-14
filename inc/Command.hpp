@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Command.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dvaisman <dvaisman@student.42vienna.com    +#+  +:+       +#+        */
+/*   By: dkohn <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/07 12:45:51 by dvaisman          #+#    #+#             */
-/*   Updated: 2025/02/11 19:02:10 by dvaisman         ###   ########.fr       */
+/*   Updated: 2025/02/14 20:26:50 by dkohn            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,4 +33,6 @@ class Command
 		void commandPing(Server &server, int fd, const std::string &command);
 		void commandMode(Server &server, int fd, const std::string &command);
 		void commandPass(Server &server, int fd, const std::string &command);
+		bool isValidNick(const std::string &nickname);
+
 };
