@@ -19,7 +19,11 @@ void Channel::setChannelType() { _isInviteOnly = !_isInviteOnly; }
 
 // ----- methods -----
 void Channel::addClient(int fd) 
-{ 
+{   
+    if (_joined.empty()) {
+	    _joined.push_back(fd);
+        return;
+    }
 	for(size_t i = 0; i < _joined.size(); i++)
 	{
 		if (_joined[i] == fd)

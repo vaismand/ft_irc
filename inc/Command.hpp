@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <sstream>
 #include "Server.hpp"
 
 class Server;
@@ -26,4 +27,5 @@ class Command
 		void commandPart(Server &server, int fd, const std::string &command);
 		void commandPing(int fd, const std::string &command);
 		void commandCap(int fd, const std::string &command);
+		void commandPrivmsg(Server &server, int fd, const std::string &command);
 };
