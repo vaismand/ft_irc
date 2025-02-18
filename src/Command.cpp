@@ -92,6 +92,9 @@ bool Command::isValidNick(const std::string &nickname)
     return true;
 }
 
+
+
+
 void Command::commandJoin(Server &server, int fd, const std::string &command)
 {
     std::string nick = server.getClient(fd).getNick();
@@ -139,7 +142,7 @@ void Command::commandJoin(Server &server, int fd, const std::string &command)
     }
     ChannelToJoin->addClient(server.getClient(fd).getFd());
     std::string msg = ":" + nick + " JOIN " + channelName + "\r\n";
-    ChannelToJoin->broadcast(msg);
+    ChannelToJoin->broadcast(-1, msg);
 }
 
 void Command::commandPart(Server &server, int fd, const std::string &command)
@@ -157,7 +160,7 @@ void Command::commandPart(Server &server, int fd, const std::string &command)
         return;
     }
     std::string msg = ":" + nick + " PART " + channelName + "\r\n";
-    tmp->broadcast(msg);
+    tmp->broadcast(fd, msg);
     tmp->rmClient(fd);
 }
 
@@ -240,7 +243,7 @@ void Command::commandPrivmsg(Server &server, int fd, const std::string &command)
         return;
     }
     std::string msg = ":" + server.getClient(fd).getNick() + " " + cmd[0] + " " + ChannelToChat->getcName() + " " + cmd[2] + " \r\n";
-    ChannelToChat->broadcast(msg);
+    ChannelToChat->broadcast(fd, msg);
 }
 
 void Command::executeCommand(Server &server, int fd, const std::string &command)

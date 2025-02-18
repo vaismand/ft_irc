@@ -31,7 +31,7 @@ class Channel {
 		void rmClient(int fd);
 		void rmOperator(int fd);
 		bool isMember(int fd) const;
-		void broadcast(const std::string& msg);
+		void broadcast(int fd, const std::string& msg);
 
 	private:
 		// Attributes
