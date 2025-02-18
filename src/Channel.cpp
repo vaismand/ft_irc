@@ -77,11 +77,12 @@ bool Channel::isMember(int fd) const {
     return false;
 }
 
-void Channel::broadcast(const std::string &message) {
+void Channel::broadcast(int fd, const std::string &message) {
     std::vector<int>::const_iterator it = _joined.begin();
     std::vector<int>::const_iterator it_end = _joined.end();
 
     for (; it != it_end; ++it) {
-        dvais::sendMessage(*it, message);
+        if (fd != *it)
+            dvais::sendMessage(*it, message);
     }
 }
