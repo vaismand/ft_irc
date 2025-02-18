@@ -6,7 +6,7 @@
 /*   By: dvaisman <dvaisman@student.42vienna.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/07 12:50:25 by dvaisman          #+#    #+#             */
-/*   Updated: 2025/02/18 11:56:42 by dvaisman         ###   ########.fr       */
+/*   Updated: 2025/02/18 12:00:25 by dvaisman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,16 +56,11 @@ void Command::commandCap(int fd, const std::string &command)
 
 void Command::commandNick(Server &server, int fd, const std::string &command)
 {
-    // Extract the nickname after "NICK " (assumes proper formatting).
     std::string nickname = command.substr(5);
-    
-    // Trim the nickname to remove extra spaces.
     nickname = trim(nickname);
-
-    // Validate the nickname according to IRC standards.
     if (nickname.empty() || nickname.length() > 9 || !isValidNick(nickname))
     {
-        server.sendMessage(fd, ":ircserv 432 * " + nickname + " :Erroneous nickname\r\n");
+        dvais::sendMessage(fd, ":ircserv 432 * " + nickname + " :Erroneous nickname\r\n");
         return;
     }
 
@@ -76,12 +71,8 @@ void Command::commandNick(Server &server, int fd, const std::string &command)
 
 void Command::commandUser(Server &server, int fd, const std::string &command)
 {
-    // Extract the username after "USER " (assumes proper formatting).
     std::string username = command.substr(5);
-    
-    // Optionally: trim the username.
     username = trim(username);
-
     server.getClient(fd).setUser(username);
     std::string msg = "Username set to " + username + "\r\n";
     dvais::sendMessage(fd, msg);

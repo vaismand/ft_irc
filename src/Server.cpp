@@ -195,7 +195,7 @@ void Server::handleClient(int fd)
     clientBuffer += buffer;
 
     size_t pos;
-    // std::cout << buffer; // only for testing.
+    std::cout << buffer; // only for testing.
     while ((pos = clientBuffer.find("\r\n")) != std::string::npos) 
     {
         std::string command = clientBuffer.substr(0, pos);

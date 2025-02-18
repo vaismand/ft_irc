@@ -24,6 +24,9 @@ class Command
 		void commandJoin(Server &server, int fd, const std::string &command);
 		void commandMode(Server &server, int fd, const std::string &command);
 		void commandPass(Server &server, int fd, const std::string &command);
+		void commandPart(Server &server, int fd, const std::string &command);
+		void commandPrivmsg(Server &server, int fd, const std::string &command);
+		void commandPing(int fd, const std::string &command);
+		void commandCap(int fd, const std::string &command);
 		bool isValidNick(const std::string &nickname);
-
 };
