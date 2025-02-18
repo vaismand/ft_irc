@@ -104,6 +104,23 @@
     "stdexcept": "cpp",
     "streambuf": "cpp",
     "typeinfo": "cpp",
-    "sstream": "cpp"
+    "sstream": "cpp",
+    "bitset": "cpp",
+    "chrono": "cpp",
+    "ctime": "cpp",
+    "ratio": "cpp",
+    "mutex": "cpp",
+    "__bit_reference": "cpp",
+    "__bits": "cpp",
+    "__config": "cpp",
+    "__debug": "cpp",
+    "__errc": "cpp",
+    "__locale": "cpp",
+    "__split_buffer": "cpp",
+    "__threading_support": "cpp",
+    "__tuple": "cpp",
+    "__verbose_abort": "cpp",
+    "ios": "cpp",
+    "locale": "cpp"
   }
 }
