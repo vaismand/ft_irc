@@ -15,7 +15,7 @@ irssi
 Server - David:
 1. Server is running with port >1024 and any password
 2. Server finally connecting to irssi server
-3. Replace Command class with namespace
+3. NC connection
 
 Channel - Ruben
 1. Extra functions for channel for inviting/kicking/etc

@@ -1,21 +1,7 @@
-<<<<<<< HEAD
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   Command.hpp                                        :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: dkohn <marvin@42.fr>                       +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/02/07 12:45:51 by dvaisman          #+#    #+#             */
-/*   Updated: 2025/02/14 20:26:50 by dkohn            ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
-=======
->>>>>>> origin/master
 #pragma once
 
 #include <string>
+#include <sstream>
 #include "Server.hpp"
 
 class Server;
@@ -38,6 +24,9 @@ class Command
 		void commandJoin(Server &server, int fd, const std::string &command);
 		void commandMode(Server &server, int fd, const std::string &command);
 		void commandPass(Server &server, int fd, const std::string &command);
+		void commandPart(Server &server, int fd, const std::string &command);
+		void commandPrivmsg(Server &server, int fd, const std::string &command);
 		void commandPing(int fd, const std::string &command);
 		void commandCap(int fd, const std::string &command);
+		bool isValidNick(const std::string &nickname);
 };

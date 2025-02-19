@@ -60,7 +60,7 @@ void Server::bindSocket()
 void Server::run()
 {
     bindSocket();
-    std::cout << "Revents: " << _pollfds[0].fd << std::endl;
+    // std::cout << "Revents: " << _pollfds[0].fd << std::endl;
     while (true)
 	{
         int poll_count = poll(_pollfds.data(), _pollfds.size(), -1);
@@ -123,13 +123,14 @@ void Server::addClient()
         close(client_fd);
         return;
     }
-    dvais::setPollfd(client_fd, POLLIN, _pollfds);
+    // dvais::setPollfd(client_fd, POLLIN, _pollfds);
     struct pollfd client_pollfd;
     client_pollfd.fd = client_fd;
     client_pollfd.events = POLLIN;
     client_pollfd.revents = 0;
     _pollfds.push_back(client_pollfd);
     _clients[client_fd] = new Client(client_fd, inet_ntoa(client_addr.sin_addr));
+    std::cout << "Client Connected: " << client_fd << std::endl;
 }
 
 void Server::removeClient(int fd) 
@@ -178,6 +179,7 @@ void Server::tryRegisterClient(int fd)
 
 void Server::handleClient(int fd)
 {
+    std::cout << "Handling request... " << std::endl;
     char buffer[1024];
     memset(buffer, 0, sizeof(buffer));
 
@@ -193,6 +195,7 @@ void Server::handleClient(int fd)
     clientBuffer += buffer;
 
     size_t pos;
+    std::cout << buffer; // only for testing.
     while ((pos = clientBuffer.find("\r\n")) != std::string::npos) 
     {
         std::string command = clientBuffer.substr(0, pos);

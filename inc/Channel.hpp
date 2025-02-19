@@ -4,6 +4,7 @@
 #include <vector>
 #include <algorithm>
 #include "../inc/Client.hpp"
+#include "../inc/Tools.hpp"
 
 class Channel {
 	public:
@@ -29,6 +30,9 @@ class Channel {
 		void addOperator(int fd);
 		void rmClient(int fd);
 		void rmOperator(int fd);
+		bool isMember(int fd) const;
+		void broadcast(int fd, const std::string& msg);
+
 	private:
 		// Attributes
 		std::string _cName;
