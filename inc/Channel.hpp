@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   Channel.hpp                                        :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: dvaisman <dvaisman@student.42vienna.com    +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/02/06 13:53:30 by rpinchas          #+#    #+#             */
-/*   Updated: 2025/02/11 19:40:02 by dvaisman         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #pragma once
 
 #include <iostream>
@@ -19,30 +7,34 @@
 
 class Channel {
 	public:
+		// Constructors
 		Channel(const std::string& name, const std::string& pass);
 		~Channel();
+
 		// Getters
-		std::string getcName() const;
-		std::string getcTopic() const;
-		std::string getcPass() const;
-		bool getChannelType() const;
-		const std::vector<Client*>& getJoined() const;
+		const std::string& getcName() const;
+		const std::string& getcTopic() const;
+		const std::string& getcPass() const;
+		const bool& getChannelType() const;
+		const std::vector<int>& getJoined() const;
+
 		// Setters
 		void setcName(const std::string& name);
 		void setcTopic(const std::string& topic);
 		void setcPass(const std::string& password);
 		void setChannelType();
 
-		void addClient(Client *client);
-		void addOperator(Client *client);
+		// Methods
+		void addClient(int fd);
+		void addOperator(int fd);
 		void rmClient(int fd);
 		void rmOperator(int fd);
-
 	private:
+		// Attributes
 		std::string _cName;
 		std::string _cPass;
 		std::string _cTopic;
-		std::vector<Client*> _joined;
-		std::vector<Client*> _operators;
+		std::vector<int> _joined;
+		std::vector<int> _operators;
 		bool		_isInviteOnly;
 };

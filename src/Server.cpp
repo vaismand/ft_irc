@@ -1,20 +1,8 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   Server.cpp                                         :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: dvaisman <dvaisman@student.42vienna.com    +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/01/24 13:38:10 by dvaisman          #+#    #+#             */
-/*   Updated: 2025/02/12 12:29:11 by dvaisman         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "../inc/Server.hpp"
-#include "../inc/Client.hpp"
-#include "../inc/Command.hpp"
 
-Server::Server(const std::string &port, const std::string &pass) : _port(port), _pass(pass), _socket(-1) {}
+Server::Server(const std::string &port, const std::string &pass) : _port(port), _pass(pass), _socket(-1) 
+{
+}
 
 Server::Server(const Server &src) : _port(src._port), _pass(src._pass) {}
 
@@ -23,6 +11,10 @@ Server::~Server()
 	if (_socket != -1)
 		close(_socket);
     for (std::map<int, Client*>::iterator it = _clients.begin(); it != _clients.end(); it++)
+    {
+        delete it->second;
+    }
+    for (std::map<std::string, Channel*>::iterator it = _channels.begin(); it != _channels.end(); it++)
     {
         delete it->second;
     }
@@ -59,6 +51,7 @@ void Server::bindSocket()
     struct pollfd server_pollfd;
     server_pollfd.fd = _socket;
     server_pollfd.events = POLLIN; 
+    server_pollfd.revents = 0;
     _pollfds.push_back(server_pollfd);
 
     std::cout << "Server started, listening on port " << _port << std::endl;
@@ -67,6 +60,7 @@ void Server::bindSocket()
 void Server::run()
 {
     bindSocket();
+    std::cout << "Revents: " << _pollfds[0].fd << std::endl;
     while (true)
 	{
         int poll_count = poll(_pollfds.data(), _pollfds.size(), -1);
@@ -129,9 +123,11 @@ void Server::addClient()
         close(client_fd);
         return;
     }
+    dvais::setPollfd(client_fd, POLLIN, _pollfds);
     struct pollfd client_pollfd;
     client_pollfd.fd = client_fd;
     client_pollfd.events = POLLIN;
+    client_pollfd.revents = 0;
     _pollfds.push_back(client_pollfd);
     _clients[client_fd] = new Client(client_fd, inet_ntoa(client_addr.sin_addr));
 }
@@ -150,28 +146,6 @@ void Server::removeClient(int fd)
         }
     }
     _clients.erase(fd);
-}
-
-ssize_t Server::sendMessage(int fd, const std::string& message)
-{
-    size_t totalSent = 0;
-    size_t messageLen = message.size();
-    const char* msg = message.c_str();
-
-    while (totalSent < messageLen)
-    {
-        ssize_t sent = send(fd, msg + totalSent, messageLen - totalSent, 0);
-        if (sent < 0)
-        {
-            if (errno == EINTR)
-                continue;
-            perror("send");
-            //removeClient(fd);
-            return -1;
-        }
-        totalSent += sent;
-    }
-    return totalSent;
 }
 
 Channel *Server::getChannel(const std::string &name)
@@ -199,7 +173,7 @@ void Server::tryRegisterClient(int fd)
     client.setStatus(REGISTERED);
 
     std::string welcome = ":ircserv 001 " + client.getNick() + " :Welcome to the IRC server " + client.getNick() + "!\r\n";
-    sendMessage(fd, welcome);
+    dvais::sendMessage(fd, welcome);
 }
 
 void Server::handleClient(int fd)
@@ -235,7 +209,7 @@ void Server::handleClient(int fd)
         catch (const std::exception &e)
         {
             std::cerr << "Command execution error: " << e.what() << std::endl;
-            if (sendMessage(fd, "Error processing command.\r\n") < 0)
+            if (dvais::sendMessage(fd, "Error processing command.\r\n") < 0)
             {
                 removeClient(fd);
                 return;
