@@ -216,29 +216,39 @@ static std::vector<std::string> cmdtokenizer(const std::string& command) {
 
 void Command::commandPrivmsg(Server &server, int fd, const std::string &command) {
     std::vector<std::string> cmd = cmdtokenizer(command);
-    if (cmd.empty()) {
-        std::cout << "place error msg here" << std::endl; // error handling needs to be solved.
+    if (cmd.empty())
+    {
+        std::string nick = server.getClient(fd).getNick();
+        std::string reply = getErrorMessage(461, nick, "PRIVMSG");
+        dvais::sendMessage(fd, reply);
         return;
     }
-    // Check if Channel has a #, if Channel exists and if Client is in Channel and if it has the needed rights.
     std::size_t chanPos = cmd[1].find("#");
-    if (chanPos != 0) {
-        std::cout << "place error msg here" << std::endl; // error handling needs to be solved.
+    if (chanPos != 0)
+    {
+        std::string nick = server.getClient(fd).getNick();
+        std::string reply = getErrorMessage(403, nick, cmd[1]);
+        dvais::sendMessage(fd, reply);
         return;
     }
     Channel* ChannelToChat = server.getChannel(cmd[1]);
-    if (ChannelToChat == NULL) {
-        std::cout << "place error msg here" << std::endl; // error handling needs to be solved.
+    if (ChannelToChat == NULL)
+    {
+        std::string nick = server.getClient(fd).getNick();
+        std::string reply = getErrorMessage(403, nick, cmd[1]);
+        dvais::sendMessage(fd, reply);
         return;
     }
     if (!ChannelToChat->isMember(fd)) {
         dvais::sendMessage(fd, ":ircserv 442 " + ChannelToChat->getcName() + ": You're not on that channel\r\n");
         return;
     }
-    // Create the message to be broadcasted to all members of the channel.
     std::size_t msgPos = cmd[2].find_first_of(":");
-    if (msgPos != 0) {
-        std::cout << "place error msg here" << std::endl; // error handling needs to be solved.
+    if (msgPos != 0)
+    {
+        std::string nick = server.getClient(fd).getNick();
+        std::string reply = ":ircserv 412 " + nick + " :No text to send\r\n";
+        dvais::sendMessage(fd, reply);
         return;
     }
     std::string msg = ":" + server.getClient(fd).getNick() + " " + cmd[0] + " " + ChannelToChat->getcName() + " " + cmd[2] + " \r\n";

@@ -23,7 +23,6 @@ ssize_t dvais::sendMessage(int fd, const std::string& message)
             if (errno == EINTR)
                 continue;
             perror("send");
-            //removeClient(fd);
             return -1;
         }
         totalSent += sent;

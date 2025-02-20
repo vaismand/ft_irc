@@ -178,7 +178,6 @@ void Server::tryRegisterClient(int fd)
 
 void Server::handleClient(int fd)
 {
-    std::cout << "Handling request... " << std::endl;
     char buffer[1024];
     memset(buffer, 0, sizeof(buffer));
 
