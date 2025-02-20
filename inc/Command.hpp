@@ -25,6 +25,8 @@ public:
     void commandPass(Server &server, int fd, const std::string &command);
     void commandPrivmsg(Server &server, int fd, const std::string &command);
     void executeCommand(Server &server, int fd, const std::string &command);
+    void sendError(int fd, int errorCode, const std::string &nick, const std::string &command);
+
 
 private:
     std::map<int, std::string> errorMap;
