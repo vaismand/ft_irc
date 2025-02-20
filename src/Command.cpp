@@ -50,8 +50,28 @@ std::string Command::trim(const std::string &s)
     size_t start = s.find_first_not_of(" \t\r\n");
     size_t end = s.find_last_not_of(" \t\r\n");
     if (start == std::string::npos)
-        return "";
+    return "";
     return s.substr(start, end - start + 1);
+}
+
+static std::vector<std::string> cmdtokenizer(const std::string& command) {
+    std::istringstream iss(command);
+    std::vector<std::string> tokens;
+    std::string token;
+
+    if (command.empty())
+        return tokens;
+    while (iss >> token) {
+        if (token[0] == ':') {
+            std::string rest;
+            std::getline(iss, rest);
+            token += rest;
+            tokens.push_back(token);
+            break;
+        }
+        tokens.push_back(token);
+    }
+    return tokens;
 }
 
 void Command::commandCap(int fd, const std::string &command)
@@ -171,10 +191,19 @@ void Command::commandPart(Server &server, int fd, const std::string &command) {
     tmp->rmClient(fd);
 }
 
-void Command::commandMode(Server &server, int fd, const std::string &command) {
-    (void)command;
-    std::string nick = server.getClient(fd).getNick();
-    std::string reply = getErrorMessage(421, nick, "MODE");
+void Command::commandMode(Server &server, int fd, const std::string &command)
+{
+    std::vector<std::string> tokens = cmdtokenizer(command);
+    std::string clientNick = server.getClient(fd).getNick();
+    std::string target = (tokens.size() >= 2) ? tokens[1] : clientNick;
+    
+    if (target == clientNick)
+    {
+        std::string reply = ":ircserv 221 " + clientNick + " :\r\n";
+        dvais::sendMessage(fd, reply);
+        return;
+    }
+    std::string reply = getErrorMessage(421, clientNick, "MODE");
     dvais::sendMessage(fd, reply);
 }
 
@@ -195,25 +224,6 @@ void Command::commandPass(Server &server, int fd, const std::string &command) {
     }
 }
 
-static std::vector<std::string> cmdtokenizer(const std::string& command) {
-    std::istringstream iss(command);
-    std::vector<std::string> tokens;
-    std::string token;
-
-    if (command.empty())
-        return tokens;
-    while (iss >> token) {
-        if (token[0] == ':') {
-            std::string rest;
-            std::getline(iss, rest);
-            token += rest;
-            tokens.push_back(token);
-            break;
-        }
-        tokens.push_back(token);
-    }
-    return tokens;
-}
 
 void Command::commandPrivmsg(Server &server, int fd, const std::string &command) {
     std::vector<std::string> cmd = cmdtokenizer(command);
