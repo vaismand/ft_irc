@@ -30,3 +30,15 @@ ssize_t dvais::sendMessage(int fd, const std::string& message)
     }
     return totalSent;
 }
+
+std::string dvais::extractCommand(std::string &buffer)
+{
+    size_t pos = buffer.find('\n');
+    if (pos == std::string::npos)
+        return "";
+    std::string command = buffer.substr(0, pos);
+    if (!command.empty() && command[command.size()-1] == '\r')
+        command.erase(command.size()-1);
+    buffer.erase(0, pos + 1);
+    return command;
+}

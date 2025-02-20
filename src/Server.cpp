@@ -123,7 +123,6 @@ void Server::addClient()
         close(client_fd);
         return;
     }
-    // dvais::setPollfd(client_fd, POLLIN, _pollfds);
     struct pollfd client_pollfd;
     client_pollfd.fd = client_fd;
     client_pollfd.events = POLLIN;
@@ -194,14 +193,10 @@ void Server::handleClient(int fd)
     std::string &clientBuffer = _clients[fd]->getBuffer();
     clientBuffer += buffer;
 
-    size_t pos;
-    std::cout << buffer; // only for testing.
-    while ((pos = clientBuffer.find("\r\n")) != std::string::npos) 
+    while (clientBuffer.find('\n') != std::string::npos)
     {
-        std::string command = clientBuffer.substr(0, pos);
-        clientBuffer.erase(0, pos + 2);
-
-        if (command.empty()) 
+        std::string command = dvais::extractCommand(clientBuffer);
+        if (command.empty())
             continue;
         std::cout << "Received from " << fd << ": " << command << std::endl;
         try
@@ -218,6 +213,8 @@ void Server::handleClient(int fd)
                 return;
             }
         }
+        if (_clients.find(fd) == _clients.end())
+            return;
         tryRegisterClient(fd);
     }
 }

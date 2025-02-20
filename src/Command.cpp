@@ -2,10 +2,28 @@
 #include <map>
 #include <sstream>
 #include <vector>
-#include <cstdlib> // for std::itoa
+#include <cstdlib>
 
-Command::Command() {
-    // Initialize the error map
+Command::Command()
+{
+    initErrorMap();
+}
+
+Command::Command(const Command &src)
+{
+    (void)src;
+}
+
+Command &Command::operator=(const Command &src)
+{
+    (void)src;
+    return *this;
+}
+
+Command::~Command() {}
+
+void Command::initErrorMap()
+{
     errorMap[421] = "Unknown command";
     errorMap[432] = "Erroneous nickname";
     errorMap[451] = "You have not registered";
@@ -13,21 +31,10 @@ Command::Command() {
     errorMap[464] = "Password incorrect";
     errorMap[475] = "Cannot join channel (invite only)";
     errorMap[403] = "No such channel";
-    errorMap[421] = "Not implemented";
 }
 
-Command::Command(const Command &src) {
-    (void)src;
-}
-
-Command &Command::operator=(const Command &src) {
-    (void)src;
-    return *this;
-}
-
-Command::~Command() {}
-
-std::string Command::getErrorMessage(int errorCode, const std::string &nick, const std::string &command) {
+std::string Command::getErrorMessage(int errorCode, const std::string &nick, const std::string &command)
+{
     std::ostringstream oss;
     oss << ":ircserv " << errorCode << " " << nick << " ";
     if (!command.empty()) {
@@ -37,7 +44,8 @@ std::string Command::getErrorMessage(int errorCode, const std::string &nick, con
     return oss.str();
 }
 
-std::string Command::trim(const std::string &s) {
+std::string Command::trim(const std::string &s)
+{
     size_t start = s.find_first_not_of(" \t\r\n");
     size_t end = s.find_last_not_of(" \t\r\n");
     if (start == std::string::npos)
@@ -45,7 +53,8 @@ std::string Command::trim(const std::string &s) {
     return s.substr(start, end - start + 1);
 }
 
-void Command::commandCap(int fd, const std::string &command) {
+void Command::commandCap(int fd, const std::string &command)
+{
     if (command.find("CAP LS") == 0) {
         dvais::sendMessage(fd, "CAP * LS :multi-prefix away-notify\r\n");
         return;
