@@ -31,6 +31,7 @@ void Command::initErrorMap()
     errorMap[464] = "Password incorrect";
     errorMap[475] = "Cannot join channel (invite only)";
     errorMap[403] = "No such channel";
+    errorMap[412] = "No text to send";
 }
 
 std::string Command::getErrorMessage(int errorCode, const std::string &nick, const std::string &command)
@@ -239,7 +240,8 @@ void Command::commandPrivmsg(Server &server, int fd, const std::string &command)
         dvais::sendMessage(fd, reply);
         return;
     }
-    if (!ChannelToChat->isMember(fd)) {
+    if (!ChannelToChat->isMember(fd))
+    {
         dvais::sendMessage(fd, ":ircserv 442 " + ChannelToChat->getcName() + ": You're not on that channel\r\n");
         return;
     }
@@ -247,7 +249,7 @@ void Command::commandPrivmsg(Server &server, int fd, const std::string &command)
     if (msgPos != 0)
     {
         std::string nick = server.getClient(fd).getNick();
-        std::string reply = ":ircserv 412 " + nick + " :No text to send\r\n";
+        std::string reply = getErrorMessage(412, nick, "PRIVMSG");
         dvais::sendMessage(fd, reply);
         return;
     }
