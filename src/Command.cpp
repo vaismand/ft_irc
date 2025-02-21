@@ -34,7 +34,7 @@ void Command::initErrorMap()
     errorMap[412] = "No text to send";
 }
 
-std::string Command::getErrorMessage(int errorCode, const std::string &nick, const std::string &command)
+void Command::sendError(int fd, int errorCode, const std::string &nick, const std::string &command)
 {
     std::ostringstream oss;
     oss << ":ircserv " << errorCode << " " << nick << " ";
@@ -42,13 +42,7 @@ std::string Command::getErrorMessage(int errorCode, const std::string &nick, con
         oss << command << " ";
     }
     oss << ":" << errorMap[errorCode] << "\r\n";
-    return oss.str();
-}
-
-void Command::sendError(int fd, int errorCode, const std::string &nick, const std::string &command)
-{
-    std::string reply = getErrorMessage(errorCode, nick, command);
-    dvais::sendMessage(fd, reply);
+    dvais::sendMessage(fd, oss.str());
 }
 
 std::string Command::trim(const std::string &s)
@@ -60,7 +54,8 @@ std::string Command::trim(const std::string &s)
     return s.substr(start, end - start + 1);
 }
 
-static std::vector<std::string> cmdtokenizer(const std::string& command) {
+static std::vector<std::string> cmdtokenizer(const std::string& command)
+{
     std::istringstream iss(command);
     std::vector<std::string> tokens;
     std::string token;

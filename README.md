@@ -5,7 +5,7 @@ https://github.com/barimehdi77/ft_irc
 
 
 IRC Documentation:
-https://modern.ircdocs.horse/
+https://modern.ircdocs.horse/ I TOLD YA!
 
 IRSSI client:
 sudo apt install irssi

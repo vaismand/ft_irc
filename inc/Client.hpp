@@ -44,6 +44,7 @@ class Client
 		AuthState	_status;
 		bool		_isAdmin;
 		bool 		_passAccepted;
+		
 
 		// Methods
 		void ClientInit();
