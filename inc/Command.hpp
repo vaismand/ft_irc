@@ -1,5 +1,4 @@
-#ifndef COMMAND_HPP
-#define COMMAND_HPP
+#pragma once
 
 #include <string>
 #include <map>
@@ -10,11 +9,13 @@ class Server;
 
 class Command {
 public:
+    // Constructors
     Command();
     Command(const Command &src);
     Command &operator=(const Command &src);
     ~Command();
 
+    // Methods
     void commandCap(int fd, const std::string &command);
     void commandNick(Server &server, int fd, const std::string &command);
     void commandUser(Server &server, int fd, const std::string &command);
@@ -27,11 +28,10 @@ public:
     void executeCommand(Server &server, int fd, const std::string &command);
 
 private:
+    // Attributes
     std::map<int, std::string> errorMap;
     std::string getErrorMessage(int errorCode, const std::string &nick, const std::string &command = "");
     std::string trim(const std::string &s);
     bool isValidNick(const std::string &nickname);
     void initErrorMap();
 };
-
-#endif // COMMAND_HPP
