@@ -17,6 +17,7 @@ class Client
 		// Getters
 		std::string getUser() const;
 		std::string getNick() const;
+		std::string getIp() const;
 		std::string& getBuffer();
 		AuthState getStatus() const;
 		int  getFd() const;

@@ -32,6 +32,7 @@ void Client::ClientInit() {
 // ----- getter Functions -----
 std::string Client::getUser() const { return _username; }
 std::string Client::getNick() const { return _nickname; }
+std::string Client::getIp() const { return _ip; }
 std::string& Client::getBuffer() { return _buffer; }
 AuthState Client::getStatus() const { return _status; }
 bool Client::getRights() const { return _isAdmin; }

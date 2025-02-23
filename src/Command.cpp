@@ -46,15 +46,6 @@ void Command::sendError(int fd, int errorCode, const std::string &nick, const st
     dvais::sendMessage(fd, oss.str());
 }
 
-std::string Command::trim(const std::string &s)
-{
-    size_t start = s.find_first_not_of(" \t\r\n");
-    size_t end = s.find_last_not_of(" \t\r\n");
-    if (start == std::string::npos)
-        return "";
-    return s.substr(start, end - start + 1);
-}
-
 static std::vector<std::string> cmdtokenizer(const std::string& command)
 {
     std::istringstream iss(command);
@@ -93,18 +84,24 @@ void Command::commandCap(int fd, const std::string &command)
 }
 
 void Command::commandNick(Server &server, int fd, const std::string &command) {
-    std::string nickname = command.substr(5);
-    nickname = trim(nickname);
+    std::istringstream iss(command);
+    std::string cmd;
+    std::string nickname;
+    iss >> cmd >> nickname;
+    nickname = dvais::trim(nickname);
 
-    // Check if the nickname is valid
-    if (nickname.empty() || nickname.length() > 9 || !isValidNick(nickname)) {
-        sendError(fd, 432, "", nickname);
-        return;
-    }
+    std::string currentNick = server.getClient(fd).getNick();
+    if (currentNick.empty())
+        currentNick = "*";
 
     if (server.isNickInUse(nickname, fd))
     {
-        sendError(fd, 433, nickname, ""); // 433 is the error code for "Nickname is already in use"
+        sendError(fd, 433, currentNick, nickname);
+        return;
+    }
+    if (nickname.empty() || !isValidNick(nickname))
+    {
+        sendError(fd, 432, "", nickname);
         return;
     }
 
@@ -114,7 +111,7 @@ void Command::commandNick(Server &server, int fd, const std::string &command) {
 
 void Command::commandUser(Server &server, int fd, const std::string &command) {
     std::string username = command.substr(5);
-    username = trim(username);
+    username = dvais::trim(username);
     server.getClient(fd).setUser(username);
     dvais::sendMessage(fd, "Username set to " + username + "\r\n");
 }
@@ -185,6 +182,39 @@ void Command::commandPart(Server &server, int fd, const std::string &command) {
     }
     tmp->broadcast(fd, ":" + nick + " PART " + channelName + "\r\n");
     tmp->rmClient(fd);
+}
+
+void Command::commandWhois(Server &server, int fd, const std::string &command) {
+    std::istringstream iss(command);
+    std::string cmd, targetNick;
+    iss >> cmd >> targetNick;
+    targetNick = dvais::trim(targetNick);
+
+    if (targetNick.empty())
+    {
+        sendError(fd, 461, server.getClient(fd).getNick(), "WHOIS");
+        return;
+    }
+    Client* target = server.getClientByNick(targetNick);
+    if (!target)
+    {
+        sendError(fd, 401, server.getClient(fd).getNick(), targetNick);
+        return;
+    }
+    std::string requesterNick = server.getClient(fd).getNick();
+    std::ostringstream oss;
+    oss << ":ircserv 311 " << requesterNick << " " << target->getNick()
+        << " :[~" << target->getNick() << "@" << target->getIp() << "]\r\n";
+    dvais::sendMessage(fd, oss.str());
+
+    oss.str("");
+    oss << ":ircserv 312 " << requesterNick << " " << target->getNick()
+        << " ircserv :Welcome to ircserv\r\n";
+    dvais::sendMessage(fd, oss.str());
+
+    oss.str("");
+    oss << ":ircserv 318 " << requesterNick << " " << target->getNick() << " :End of WHOIS list\r\n";
+    dvais::sendMessage(fd, oss.str());
 }
 
 void Command::commandMode(Server &server, int fd, const std::string &command)
@@ -269,6 +299,10 @@ void Command::executeCommand(Server &server, int fd, const std::string &command)
         commandPart(server, fd, command);
     } else if (command.find("PRIVMSG ") == 0) {
         commandPrivmsg(server, fd, command);
+    } else if (command.find("WHOIS") == 0) {
+        commandWhois(server, fd, command);
+    } else if (command.find("QUIT") == 0) {
+        server.removeClient(fd);
     } else {
         sendError(fd, 421, server.getClient(fd).getNick(), command.substr(0, command.find(" ")));
     }

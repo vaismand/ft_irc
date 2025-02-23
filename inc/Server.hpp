@@ -63,5 +63,6 @@ class Server
 		void removeClient(int fd);
 		void run();
 		bool isNickInUse(const std::string &nickname, int excludeFd = -1) const;
+		Client *getClientByNick(const std::string &nickname);
 
 };

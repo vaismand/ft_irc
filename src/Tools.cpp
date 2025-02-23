@@ -30,14 +30,23 @@ ssize_t dvais::sendMessage(int fd, const std::string& message)
     return totalSent;
 }
 
+std::string dvais::trim(const std::string &s)
+{
+    size_t start = s.find_first_not_of(" \t\r\n");
+    size_t end = s.find_last_not_of(" \t\r\n");
+    if (start == std::string::npos)
+        return "";
+    return s.substr(start, end - start + 1);
+}
+
 std::string dvais::extractCommand(std::string &buffer)
 {
     size_t pos = buffer.find('\n');
     if (pos == std::string::npos)
         return "";
     std::string command = buffer.substr(0, pos);
-    if (!command.empty() && command[command.size()-1] == '\r')
-        command.erase(command.size()-1);
+    // Fully trim the command: remove leading and trailing whitespace.
+    command = trim(command);
     buffer.erase(0, pos + 1);
     return command;
 }
