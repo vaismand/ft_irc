@@ -155,9 +155,9 @@ Channel *Server::getChannel(const std::string &name)
     return _channels[name];
 }
 
-void Server::addChannel(const std::string &name, const std::string &pass)
+void Server::addChannel(const int &fd, const std::string &name, const std::string &pass)
 {
-    _channels[name] = new Channel(name, pass);
+    _channels[name] = new Channel(fd, name, pass);
 }
 
 void Server::tryRegisterClient(int fd)

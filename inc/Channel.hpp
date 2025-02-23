@@ -9,7 +9,7 @@
 class Channel {
 	public:
 		// Constructors
-		Channel(const std::string& name, const std::string& pass);
+		Channel(const int& fd, const std::string& name, const std::string& pass);
 		~Channel();
 
 		// Getters
