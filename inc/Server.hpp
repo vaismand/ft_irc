@@ -59,7 +59,7 @@ class Server
 
 		// Methods
 		ssize_t sendMessage(int fd, const std::string &message);
-		void addChannel(const std::string &name, const std::string &pass);
+		void addChannel(const int &fd, const std::string &name, const std::string &pass);
 		void removeClient(int fd);
 		void run();
 		bool isNickInUse(const std::string &nickname, int excludeFd = -1) const;

@@ -164,7 +164,7 @@ void Command::commandJoin(Server &server, int fd, const std::string &command) {
     }
     Channel* ChannelToJoin = server.getChannel(channelName);
     if (ChannelToJoin == NULL) {
-        server.addChannel(channelName, "");
+        server.addChannel(fd, channelName, "");
         ChannelToJoin = server.getChannel(channelName);
     }
     ChannelToJoin->addClient(server.getClient(fd).getFd());
