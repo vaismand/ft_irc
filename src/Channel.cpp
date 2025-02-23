@@ -1,6 +1,7 @@
 #include "../inc/Channel.hpp"
 
-Channel::Channel(const int &fd, const std::string& name, const std::string& pass) : _cName(name), _cPass(pass), _cTopic(""), _isInviteOnly(false) {
+Channel::Channel(const int &fd, const std::string& name, const std::string& pass) : _cName(name), _cPass(pass), _cTopic(""), _isInviteOnly(false)
+{
     addClient(fd);
     addOperator(fd);
 }
