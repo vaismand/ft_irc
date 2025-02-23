@@ -35,13 +35,12 @@ class Channel {
 
 	private:
 		// Attributes
-		//int 				_userLimit;
+		int 				_userLimit;
 		std::string 		_cName;
 		std::string 		_cPass;
 		std::string 		_cTopic;
 		std::vector<int> 	_joined;
 		std::vector<int> 	_operators;
-		//bool				_topicRestricted;
+		bool				_topicRestricted;
 		bool				_isInviteOnly;
-		
 };
