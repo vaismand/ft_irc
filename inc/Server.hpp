@@ -54,10 +54,14 @@ class Server
 		Channel *getChannel(const std::string &name);
 		std::string getClientNick(int fd) const;
 		std::string getPass() const;
+		const std::map<int, Client*>& getClients() const;
+
 
 		// Methods
 		ssize_t sendMessage(int fd, const std::string &message);
 		void addChannel(const std::string &name, const std::string &pass);
 		void removeClient(int fd);
 		void run();
+		bool isNickInUse(const std::string &nickname, int excludeFd = -1) const;
+
 };

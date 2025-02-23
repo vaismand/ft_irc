@@ -26,6 +26,7 @@ void Command::initErrorMap()
 {
     errorMap[421] = "Unknown command";
     errorMap[432] = "Erroneous nickname";
+    errorMap[433] = "Nickname is already in use";
     errorMap[451] = "You have not registered";
     errorMap[461] = "Not enough parameters";
     errorMap[464] = "Password incorrect";
@@ -94,8 +95,16 @@ void Command::commandCap(int fd, const std::string &command)
 void Command::commandNick(Server &server, int fd, const std::string &command) {
     std::string nickname = command.substr(5);
     nickname = trim(nickname);
+
+    // Check if the nickname is valid
     if (nickname.empty() || nickname.length() > 9 || !isValidNick(nickname)) {
         sendError(fd, 432, "", nickname);
+        return;
+    }
+
+    if (server.isNickInUse(nickname, fd))
+    {
+        sendError(fd, 433, nickname, ""); // 433 is the error code for "Nickname is already in use"
         return;
     }
 

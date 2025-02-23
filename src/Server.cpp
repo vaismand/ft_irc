@@ -217,3 +217,17 @@ void Server::handleClient(int fd)
         tryRegisterClient(fd);
     }
 }
+
+bool Server::isNickInUse(const std::string &nickname, int excludeFd) const {
+    for (std::map<int, Client*>::const_iterator it = _clients.begin(); it != _clients.end(); ++it) {
+        if (it->first != excludeFd && it->second->getNick() == nickname) {
+            return true;
+        }
+    }
+    return false;
+}
+
+
+const std::map<int, Client*>& Server::getClients() const {
+    return _clients;
+}
