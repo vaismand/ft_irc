@@ -8,9 +8,9 @@ IRC Documentation:
 https://modern.ircdocs.horse/ I TOLD YA!
 
 IRSSI client:
-sudo apt install irssi
-irssi
-/connect localhost <port> <pass>
+`sudo apt install irssi`
+`irssi`
+`/connect localhost <port> <pass>`
 
 Server - David:
 1. Server is running with port >1024 and any password
