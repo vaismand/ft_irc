@@ -33,6 +33,9 @@ void Command::initErrorMap()
     errorMap[475] = "Cannot join channel (invite only)";
     errorMap[403] = "No such channel";
     errorMap[412] = "No text to send";
+    errorMap[442] = "Not on channel";
+    errorMap[482] = "You're not channel operator";
+    errorMap[331] = "No topic is set";
 }
 
 void Command::sendError(int fd, int errorCode, const std::string &nick, const std::string &command)
@@ -280,6 +283,68 @@ void Command::commandPrivmsg(Server &server, int fd, const std::string &command)
     ChannelToChat->broadcast(fd, msg);
 }
 
+void Command::commandTopic(Server &server, int fd, const std::string &command) {
+    std::istringstream iss(command);
+    std::string cmd, channelName, topic;
+    iss >> cmd >> channelName;
+    std::getline(iss, topic);
+
+    // Remove the leading space and colon if present
+    if (!topic.empty() && topic[0] == ' ') {
+        topic.erase(0, 1);
+    }
+    if (!topic.empty() && topic[0] == ':') {
+        topic.erase(0, 1);
+    }
+    topic = dvais::trim(topic);
+
+    std::string nick = server.getClient(fd).getNick();
+
+    if (channelName.empty() || channelName[0] != '#') {
+        sendError(fd, 403, nick, channelName); // No such channel
+        return;
+    }
+
+    Channel* channel = server.getChannel(channelName);
+    if (!channel) {
+        sendError(fd, 403, nick, channelName); // No such channel
+        return;
+    }
+
+    if (!channel->isMember(fd)) {
+        sendError(fd, 442, nick, channelName); // Not on channel
+        return;
+    }
+
+    if (topic.empty()) {
+        // Get the topic
+        std::string currentTopic = channel->getTopic();
+        if (currentTopic.empty()) {
+            sendError(fd, 331, nick, channelName); // No topic is set
+        } else {
+            dvais::sendMessage(fd, ":ircserv 332 " + nick + " " + channelName + " :" + currentTopic + "\r\n");
+
+            std::ostringstream oss;
+            oss << channel->getTopicSetTime();
+            dvais::sendMessage(fd, ":ircserv 333 " + nick + " " + channelName + " " + channel->getTopicSetter() + " " + oss.str() + "\r\n");
+        }
+    } else {
+        // Check if the client is an operator
+        if (!channel->isOperator(fd)) {
+            sendError(fd, 482, nick, channelName); // You're not channel operator
+            return;
+        }
+        // Set or clear the topic
+        if (topic.empty()) {
+            channel->clearTopic();
+            channel->broadcast(-1, ":" + nick + " TOPIC " + channelName + " :\r\n");
+        } else {
+            channel->setTopic(topic, nick);
+            channel->broadcast(-1, ":" + nick + " TOPIC " + channelName + " :" + topic + "\r\n");
+        }
+    }
+}
+
 void Command::executeCommand(Server &server, int fd, const std::string &command) {
     if (command.find("CAP ") == 0) {
         commandCap(fd, command);
@@ -301,6 +366,8 @@ void Command::executeCommand(Server &server, int fd, const std::string &command)
         commandPrivmsg(server, fd, command);
     } else if (command.find("WHOIS") == 0) {
         commandWhois(server, fd, command);
+    } else if (command.find("TOPIC") == 0) {
+        commandTopic(server, fd, command);
     } else if (command.find("QUIT") == 0) {
         server.removeClient(fd);
     } else {
