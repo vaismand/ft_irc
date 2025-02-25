@@ -106,6 +106,15 @@ std::string Server::getClientNick(int fd) const
     return _clients.at(fd)->getNick();
 }
 
+Client* Server::getClientByNick(const std::string &nick)
+{
+    for (std::map<int, Client*>::iterator it = _clients.begin(); it != _clients.end(); ++it) {
+        if (it->second->getNick() == nick)
+            return it->second;
+    }
+    return NULL;
+}
+
 void Server::addClient()
 {
     struct sockaddr_in client_addr;
@@ -216,4 +225,18 @@ void Server::handleClient(int fd)
             return;
         tryRegisterClient(fd);
     }
+}
+
+bool Server::isNickInUse(const std::string &nickname, int excludeFd) const {
+    for (std::map<int, Client*>::const_iterator it = _clients.begin(); it != _clients.end(); ++it) {
+        if (it->first != excludeFd && it->second->getNick() == nickname) {
+            return true;
+        }
+    }
+    return false;
+}
+
+
+const std::map<int, Client*>& Server::getClients() const {
+    return _clients;
 }

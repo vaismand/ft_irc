@@ -1,8 +1,4 @@
 #include "../inc/Command.hpp"
-#include <map>
-#include <sstream>
-#include <vector>
-#include <cstdlib>
 
 Command::Command()
 {
@@ -26,12 +22,16 @@ void Command::initErrorMap()
 {
     errorMap[421] = "Unknown command";
     errorMap[432] = "Erroneous nickname";
+    errorMap[433] = "Nickname is already in use";
     errorMap[451] = "You have not registered";
     errorMap[461] = "Not enough parameters";
     errorMap[464] = "Password incorrect";
     errorMap[475] = "Cannot join channel (invite only)";
     errorMap[403] = "No such channel";
     errorMap[412] = "No text to send";
+    errorMap[442] = "Not on channel";
+    errorMap[482] = "You're not channel operator";
+    errorMap[331] = "No topic is set";
 }
 
 void Command::sendError(int fd, int errorCode, const std::string &nick, const std::string &command)
@@ -43,36 +43,6 @@ void Command::sendError(int fd, int errorCode, const std::string &nick, const st
     }
     oss << ":" << errorMap[errorCode] << "\r\n";
     dvais::sendMessage(fd, oss.str());
-}
-
-std::string Command::trim(const std::string &s)
-{
-    size_t start = s.find_first_not_of(" \t\r\n");
-    size_t end = s.find_last_not_of(" \t\r\n");
-    if (start == std::string::npos)
-        return "";
-    return s.substr(start, end - start + 1);
-}
-
-static std::vector<std::string> cmdtokenizer(const std::string& command)
-{
-    std::istringstream iss(command);
-    std::vector<std::string> tokens;
-    std::string token;
-
-    if (command.empty())
-        return tokens;
-    while (iss >> token) {
-        if (token[0] == ':') {
-            std::string rest;
-            std::getline(iss, rest);
-            token += rest;
-            tokens.push_back(token);
-            break;
-        }
-        tokens.push_back(token);
-    }
-    return tokens;
 }
 
 void Command::commandCap(int fd, const std::string &command)
@@ -92,20 +62,32 @@ void Command::commandCap(int fd, const std::string &command)
 }
 
 void Command::commandNick(Server &server, int fd, const std::string &command) {
-    std::string nickname = command.substr(5);
-    nickname = trim(nickname);
-    if (nickname.empty() || nickname.length() > 9 || !isValidNick(nickname)) {
+    std::istringstream iss(command);
+    std::string cmd;
+    std::string nickname;
+    iss >> cmd >> nickname;
+    nickname = dvais::trim(nickname);
+
+    std::string currentNick = server.getClient(fd).getNick();
+    if (currentNick.empty())
+        currentNick = "*";
+    if (server.isNickInUse(nickname, fd))
+    {
+        sendError(fd, 433, currentNick, nickname);
+        return;
+    }
+    if (nickname.empty() || !isValidNick(nickname))
+    {
         sendError(fd, 432, "", nickname);
         return;
     }
-
     server.getClient(fd).setNick(nickname);
     dvais::sendMessage(fd, "Nickname set to " + nickname + "\r\n");
 }
 
 void Command::commandUser(Server &server, int fd, const std::string &command) {
     std::string username = command.substr(5);
-    username = trim(username);
+    username = dvais::trim(username);
     server.getClient(fd).setUser(username);
     dvais::sendMessage(fd, "Username set to " + username + "\r\n");
 }
@@ -188,9 +170,42 @@ void Command::commandPart(Server &server, int fd, const std::string &command) {
     tmp->rmClient(fd);
 }
 
+void Command::commandWhois(Server &server, int fd, const std::string &command) {
+    std::istringstream iss(command);
+    std::string cmd, targetNick;
+    iss >> cmd >> targetNick;
+    targetNick = dvais::trim(targetNick);
+
+    if (targetNick.empty())
+    {
+        sendError(fd, 461, server.getClient(fd).getNick(), "WHOIS");
+        return;
+    }
+    Client* target = server.getClientByNick(targetNick);
+    if (!target)
+    {
+        sendError(fd, 401, server.getClient(fd).getNick(), targetNick);
+        return;
+    }
+    std::string requesterNick = server.getClient(fd).getNick();
+    std::ostringstream oss;
+    oss << ":ircserv 311 " << requesterNick << " " << target->getNick()
+        << " :[~" << target->getNick() << "@" << target->getIp() << "]\r\n";
+    dvais::sendMessage(fd, oss.str());
+
+    oss.str("");
+    oss << ":ircserv 312 " << requesterNick << " " << target->getNick()
+        << " ircserv :Welcome to ircserv\r\n";
+    dvais::sendMessage(fd, oss.str());
+
+    oss.str("");
+    oss << ":ircserv 318 " << requesterNick << " " << target->getNick() << " :End of WHOIS list\r\n";
+    dvais::sendMessage(fd, oss.str());
+}
+
 void Command::commandMode(Server &server, int fd, const std::string &command)
 {
-    std::vector<std::string> tokens = cmdtokenizer(command);
+    std::vector<std::string> tokens = dvais::cmdtokenizer(command);
     std::string clientNick = server.getClient(fd).getNick();
     std::string target = (tokens.size() >= 2) ? tokens[1] : clientNick;
     
@@ -218,7 +233,7 @@ void Command::commandPass(Server &server, int fd, const std::string &command) {
 }
 
 void Command::commandPrivmsg(Server &server, int fd, const std::string &command) {
-    std::vector<std::string> cmd = cmdtokenizer(command);
+    std::vector<std::string> cmd = dvais::cmdtokenizer(command);
     if (cmd.empty())
     {
         sendError(fd, 461, server.getClient(fd).getNick(), "PRIVMSG");
@@ -251,6 +266,56 @@ void Command::commandPrivmsg(Server &server, int fd, const std::string &command)
     ChannelToChat->broadcast(fd, msg);
 }
 
+void Command::commandTopic(Server &server, int fd, const std::string &command)
+{
+    std::istringstream iss(command);
+    std::string cmd, channelName;
+    iss >> cmd >> channelName;
+    std::string topic = dvais::extractTopic(iss);
+    std::string nick = server.getClient(fd).getNick();
+
+    if (channelName.empty() || channelName[0] != '#') {
+        sendError(fd, 403, nick, channelName); // No such channel
+        return;
+    }
+    Channel* channel = server.getChannel(channelName);
+    if (!channel) {
+        sendError(fd, 403, nick, channelName); // No such channel
+        return;
+    }
+    if (!channel->isMember(fd)) {
+        sendError(fd, 442, nick, channelName); // Not on channel
+        return;
+    }
+    if (topic.empty())
+    {
+        std::string currentTopic = channel->getTopic();
+        if (currentTopic.empty()) {
+            sendError(fd, 331, nick, channelName); // No topic is set
+        } else {
+            dvais::sendMessage(fd, ":ircserv 332 " + nick + " " + channelName + " :" + currentTopic + "\r\n");
+
+            std::ostringstream oss;
+            oss << channel->getTopicSetTime();
+            dvais::sendMessage(fd, ":ircserv 333 " + nick + " " + channelName + " " + channel->getTopicSetter() + " " + oss.str() + "\r\n");
+        }
+    } 
+    else 
+    {
+        if (!channel->isOperator(fd)) {
+            sendError(fd, 482, nick, channelName); 
+            return;
+        }
+        if (topic.empty()) {
+            channel->clearTopic();
+            channel->broadcast(-1, ":" + nick + " TOPIC " + channelName + " :\r\n");
+        } else {
+            channel->setTopic(topic, nick);
+            channel->broadcast(-1, ":" + nick + " TOPIC " + channelName + " :" + topic + "\r\n");
+        }
+    }
+}
+
 void Command::executeCommand(Server &server, int fd, const std::string &command) {
     if (command.find("CAP ") == 0) {
         commandCap(fd, command);
@@ -270,6 +335,12 @@ void Command::executeCommand(Server &server, int fd, const std::string &command)
         commandPart(server, fd, command);
     } else if (command.find("PRIVMSG ") == 0) {
         commandPrivmsg(server, fd, command);
+    } else if (command.find("WHOIS") == 0) {
+        commandWhois(server, fd, command);
+    } else if (command.find("TOPIC") == 0) {
+        commandTopic(server, fd, command);
+    } else if (command.find("QUIT") == 0) {
+        server.removeClient(fd);
     } else {
         sendError(fd, 421, server.getClient(fd).getNick(), command.substr(0, command.find(" ")));
     }
