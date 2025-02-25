@@ -81,6 +81,10 @@ bool Channel::isMember(int fd) const {
     return false;
 }
 
+bool Channel::isOperator(int fd) const {
+    return std::find(_operators.begin(), _operators.end(), fd) != _operators.end();
+}
+
 void Channel::broadcast(int fd, const std::string &message) {
     std::vector<int>::const_iterator it = _joined.begin();
     std::vector<int>::const_iterator it_end = _joined.end();
@@ -89,4 +93,28 @@ void Channel::broadcast(int fd, const std::string &message) {
         if (fd != *it)
             dvais::sendMessage(*it, message);
     }
+}
+
+std::string Channel::getTopic() const {
+    return _cTopic;
+}
+
+std::string Channel::getTopicSetter() const {
+    return _topicSetter;
+}
+
+std::time_t Channel::getTopicSetTime() const {
+    return _topicSetTime;
+}
+
+void Channel::setTopic(const std::string &topic, const std::string &setter) {
+    _cTopic = topic;
+    _topicSetter = setter;
+    _topicSetTime = std::time(NULL);
+}
+
+void Channel::clearTopic() {
+    _cTopic.clear();
+    _topicSetter.clear();
+    _topicSetTime = 0;
 }
