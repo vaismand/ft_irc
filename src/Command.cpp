@@ -163,8 +163,14 @@ void Command::commandJoin(Server &server, int fd, const std::string &command) {
 }
 
 void Command::commandPart(Server &server, int fd, const std::string &command) {
+    std::vector<std::string> tokens = cmdtokenizer(command);
     std::string nick = server.getClient(fd).getNick();
-    std::string channelName = command.substr(5);
+    if (tokens.size() < 2) {
+        // Handle error: insufficient parameters.
+        sendError(fd, 461, nick, "PART");
+        return;
+    }
+    std::string channelName = tokens[1];
     Channel* tmp = server.getChannel(channelName);
     if (!tmp) {
         sendError(fd, 421, nick, channelName);
@@ -174,7 +180,11 @@ void Command::commandPart(Server &server, int fd, const std::string &command) {
         sendError(fd, 442, nick, channelName);
         return;
     }
-    tmp->broadcast(fd, ":" + nick + " PART " + channelName + "\r\n");
+    std::string msg = ":" + nick + " PART " + channelName + "\r\n";
+    // Broadcast to other channel members
+    tmp->broadcast(fd, msg);
+    // Also notify the leaving client
+    dvais::sendMessage(fd, msg);
     tmp->rmClient(fd);
 }
 

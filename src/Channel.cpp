@@ -2,7 +2,7 @@
 
 Channel::Channel(const int &fd, const std::string& name, const std::string& pass) : _cName(name), _cPass(pass), _cTopic(""), _isInviteOnly(false) {
     addClient(fd);
-    addOperator(fd);
+    _operators.push_back(fd);
 }
 
 Channel::~Channel() {}
@@ -35,10 +35,36 @@ void Channel::addClient(int fd)
 	_joined.push_back(fd);
 }
 
+bool Channel::isMember(int fd) const {
+    std::vector<int>::const_iterator it = _joined.begin();
+    std::vector<int>::const_iterator it_end = _joined.end();
+    for (; it != it_end; ++it) {
+        if (*it == fd)
+            return true;
+    }
+    return false;
+}
+
+void Channel::rmClient(int fd)
+{
+    for (std::vector<int>::iterator it = _joined.begin(); it != _joined.end(); )
+    {
+        if (*it == fd) {
+            it = _joined.erase(it);
+        } else {
+            ++it;
+        }
+    }
+}
+
 void Channel::addOperator(int fd) 
 {
     if(!isMember(fd)) {
-        dvais::sendMessage(fd, ":ircserv 442 :You're not on that channel\r\n");
+        dvais::sendMessage(fd, ":ircserv 442 :You're not on that channel\r\n"); // handle error message correctly
+        return;
+    }
+    if(!isOperator(fd)) {
+        dvais::sendMessage(fd, ":ircserv 442 :You have not the rights\r\n"); // handle error message correctly
         return;
     }
 	for(size_t i = 0; i < _operators.size(); i++)
@@ -49,15 +75,14 @@ void Channel::addOperator(int fd)
 	_operators.push_back(fd);
 }
 
-void Channel::rmClient(int fd)
+bool Channel::isOperator(const int &fd) const
 {
-    for (std::vector<int>::iterator it = _joined.begin(); it != _joined.end(); )
-    {
-        if (*it == fd)
-            it = _joined.erase(it);
-        else
-            ++it;
-    }
+    std::vector<int>::const_iterator it = _operators.begin();
+	for(; it != _operators.end(); ++it) {
+		if (*it == fd)
+            return true;
+	}
+	return false;
 }
 
 void Channel::rmOperator(int fd) {
@@ -70,15 +95,6 @@ void Channel::rmOperator(int fd) {
     }
 }
 
-bool Channel::isMember(int fd) const {
-    std::vector<int>::const_iterator it = _joined.begin();
-    std::vector<int>::const_iterator it_end = _joined.end();
-    for (; it != it_end; ++it) {
-        if (*it == fd)
-            return true;
-    }
-    return false;
-}
 
 void Channel::broadcast(int fd, const std::string &message) {
     std::vector<int>::const_iterator it = _joined.begin();

@@ -27,21 +27,22 @@ class Channel {
 
 		// Methods
 		void addClient(int fd);
-		void addOperator(int fd);
-		void rmClient(int fd);
-		void rmOperator(int fd);
 		bool isMember(int fd) const;
+		void rmClient(int fd);
+		void addOperator(int fd);
+		bool isOperator(const int& fd) const;
+		void rmOperator(int fd);
 		void broadcast(int fd, const std::string& msg);
 
 	private:
 		// Attributes
-		//int 				_userLimit;
+		int 				_userLimit;
 		std::string 		_cName;
 		std::string 		_cPass;
 		std::string 		_cTopic;
 		std::vector<int> 	_joined;
 		std::vector<int> 	_operators;
-		//bool				_topicRestricted;
+		bool				_topicRestricted;
 		bool				_isInviteOnly;
 		
 };
