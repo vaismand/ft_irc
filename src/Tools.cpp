@@ -50,3 +50,35 @@ std::string dvais::extractCommand(std::string &buffer)
     buffer.erase(0, pos + 1);
     return command;
 }
+
+std::vector<std::string> dvais::cmdtokenizer(const std::string& command)
+{
+    std::istringstream iss(command);
+    std::vector<std::string> tokens;
+    std::string token;
+
+    if (command.empty())
+        return tokens;
+    while (iss >> token) {
+        if (token[0] == ':') {
+            std::string rest;
+            std::getline(iss, rest);
+            token += rest;
+            tokens.push_back(token);
+            break;
+        }
+        tokens.push_back(token);
+    }
+    return tokens;
+}
+
+std::string dvais::extractTopic(std::istream &iss)
+{
+    std::string topic;
+    std::getline(iss, topic);
+    if (!topic.empty() && topic[0] == ' ')
+        topic.erase(0, 1);
+    if (!topic.empty() && topic[0] == ':')
+        topic.erase(0, 1);
+    return dvais::trim(topic);
+}

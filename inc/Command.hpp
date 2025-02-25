@@ -3,7 +3,10 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <sstream>
+#include <cstdlib>
 #include "Server.hpp"
+#include "Tools.hpp"
 
 class Server;
 

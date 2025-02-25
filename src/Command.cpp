@@ -1,8 +1,4 @@
 #include "../inc/Command.hpp"
-#include <map>
-#include <sstream>
-#include <vector>
-#include <cstdlib>
 
 Command::Command()
 {
@@ -48,39 +44,6 @@ void Command::sendError(int fd, int errorCode, const std::string &nick, const st
     oss << ":" << errorMap[errorCode] << "\r\n";
     dvais::sendMessage(fd, oss.str());
 }
-
-static std::vector<std::string> cmdtokenizer(const std::string& command)
-{
-    std::istringstream iss(command);
-    std::vector<std::string> tokens;
-    std::string token;
-
-    if (command.empty())
-        return tokens;
-    while (iss >> token) {
-        if (token[0] == ':') {
-            std::string rest;
-            std::getline(iss, rest);
-            token += rest;
-            tokens.push_back(token);
-            break;
-        }
-        tokens.push_back(token);
-    }
-    return tokens;
-}
-
-std::string extractTopic(std::istream &iss)
-{
-    std::string topic;
-    std::getline(iss, topic);
-    if (!topic.empty() && topic[0] == ' ')
-        topic.erase(0, 1);
-    if (!topic.empty() && topic[0] == ':')
-        topic.erase(0, 1);
-    return dvais::trim(topic);
-}
-
 
 void Command::commandCap(int fd, const std::string &command)
 {
@@ -232,7 +195,7 @@ void Command::commandWhois(Server &server, int fd, const std::string &command) {
 
 void Command::commandMode(Server &server, int fd, const std::string &command)
 {
-    std::vector<std::string> tokens = cmdtokenizer(command);
+    std::vector<std::string> tokens = dvais::cmdtokenizer(command);
     std::string clientNick = server.getClient(fd).getNick();
     std::string target = (tokens.size() >= 2) ? tokens[1] : clientNick;
     
@@ -260,7 +223,7 @@ void Command::commandPass(Server &server, int fd, const std::string &command) {
 }
 
 void Command::commandPrivmsg(Server &server, int fd, const std::string &command) {
-    std::vector<std::string> cmd = cmdtokenizer(command);
+    std::vector<std::string> cmd = dvais::cmdtokenizer(command);
     if (cmd.empty())
     {
         sendError(fd, 461, server.getClient(fd).getNick(), "PRIVMSG");
@@ -298,14 +261,13 @@ void Command::commandTopic(Server &server, int fd, const std::string &command)
     std::istringstream iss(command);
     std::string cmd, channelName;
     iss >> cmd >> channelName;
-    std::string topic = extractTopic(iss);
+    std::string topic = dvais::extractTopic(iss);
     std::string nick = server.getClient(fd).getNick();
 
     if (channelName.empty() || channelName[0] != '#') {
         sendError(fd, 403, nick, channelName); // No such channel
         return;
     }
-
     Channel* channel = server.getChannel(channelName);
     if (!channel) {
         sendError(fd, 403, nick, channelName); // No such channel
