@@ -60,7 +60,6 @@ void Server::bindSocket()
 void Server::run()
 {
     bindSocket();
-    // std::cout << "Revents: " << _pollfds[0].fd << std::endl;
     while (true)
 	{
         int poll_count = poll(_pollfds.data(), _pollfds.size(), -1);
@@ -89,7 +88,7 @@ void Server::run()
     }
 }
 
-Client &Server::getClient(int fd)
+Client &Server::getClient(int fd) const
 {
     if (_clients.find(fd) == _clients.end())
     {
@@ -239,4 +238,29 @@ bool Server::isNickInUse(const std::string &nickname, int excludeFd) const {
 
 const std::map<int, Client*>& Server::getClients() const {
     return _clients;
+}
+
+std::string Server::printChannel(const Channel& ref) const {
+    std::ostringstream oss;
+    const std::vector<int>& members = ref.getJoined();
+    int mb_count = 0;
+    int ops_count = 0;
+
+    for (std::vector<int>::const_iterator it = members.begin(); it != members.end(); ++it) {
+        if (ref.isOperator(*it)) {
+            std::string nick = getClient(*it).getNick();
+            oss << "[@" + nick + "] ";
+            ops_count++;
+        }
+    }
+    for (std::vector<int>::const_iterator it = members.begin(); it != members.end(); ++it) {
+        if (!ref.isOperator(*it)) {
+            std::string nick = getClient(*it).getNick();
+            oss << "[" + nick + "] ";
+            mb_count++;
+        }
+    }
+    oss << "\r\nTotal: " << (ops_count + mb_count)
+        << " nicks [" << ops_count << " ops, " << mb_count << " normal]";
+    return oss.str();
 }

@@ -62,32 +62,40 @@ void Command::commandCap(int fd, const std::string &command)
 }
 
 void Command::commandNick(Server &server, int fd, const std::string &command) {
-    std::istringstream iss(command);
-    std::string cmd;
-    std::string nickname;
-    iss >> cmd >> nickname;
-    nickname = dvais::trim(nickname);
-
+    std::vector<std::string> tokens = dvais::cmdtokenizer(command);
+    if (tokens.size() < 2) {
+        // Not enough parameters; send an error message for missing NICK parameter.
+        sendError(fd, 461, server.getClient(fd).getNick(), "NICK");
+        return;
+    }
+    std::string nickname = tokens[1]; //!! solve : problem by only allowing alphanumeric characters for nick
     std::string currentNick = server.getClient(fd).getNick();
     if (currentNick.empty())
         currentNick = "*";
-    if (server.isNickInUse(nickname, fd))
-    {
+    if (server.isNickInUse(nickname, fd)) {
         sendError(fd, 433, currentNick, nickname);
         return;
     }
-    if (nickname.empty() || !isValidNick(nickname))
-    {
+    if (nickname.empty() || !isValidNick(nickname)) {
         sendError(fd, 432, "", nickname);
         return;
     }
+    // Retrieve client infos.
+    std::string user = server.getClient(fd).getUser();
+    std::string host = server.getClient(fd).getIp();
+    std::string msg = ":" + currentNick + "!" + user + "@" + host + " NICK :" + nickname + "\r\n";
     server.getClient(fd).setNick(nickname);
-    dvais::sendMessage(fd, "Nickname set to " + nickname + "\r\n");
+    dvais::sendMessage(fd, msg);
 }
 
 void Command::commandUser(Server &server, int fd, const std::string &command) {
-    std::string username = command.substr(5);
-    username = dvais::trim(username);
+    std::vector<std::string> tokens = dvais::cmdtokenizer(command);
+    if (tokens.size() < 2 || tokens[1].empty()) {
+        // Not enough parameters; send an error message.
+        sendError(fd, 461, server.getClient(fd).getNick(), "USER");
+        return;
+    }
+    std::string username = tokens[1];
     server.getClient(fd).setUser(username);
     dvais::sendMessage(fd, "Username set to " + username + "\r\n");
 }
@@ -142,10 +150,11 @@ void Command::commandJoin(Server &server, int fd, const std::string &command) {
     }
     ChannelToJoin->addClient(server.getClient(fd).getFd());
     ChannelToJoin->broadcast(-1, ":" + nick + " JOIN " + channelName + "\r\n");
+    dvais::sendMessage(fd, server.printChannel(*ChannelToJoin));
 }
 
 void Command::commandPart(Server &server, int fd, const std::string &command) {
-    std::vector<std::string> tokens = cmdtokenizer(command);
+    std::vector<std::string> tokens = dvais::cmdtokenizer(command);
     std::string nick = server.getClient(fd).getNick();
     if (tokens.size() < 2) {
         // Handle error: insufficient parameters.
