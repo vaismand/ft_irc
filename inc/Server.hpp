@@ -64,5 +64,5 @@ class Server
 		void run();
 		bool isNickInUse(const std::string &nickname, int excludeFd = -1) const;
 		Client *getClientByNick(const std::string &nickname);
-		std::string printChannel(const Channel& ref) const;
+		void printChannelWelcome(int client_fd, const std::string& client_nick, const Channel& ref) const;
 };

@@ -38,6 +38,7 @@ void Channel::addClient(int fd)
 
 bool Channel::isMember(const int &fd) const {
     return std::find(_joined.begin(), _joined.end(), fd) != _joined.end();
+
 }
 
 void Channel::rmClient(int fd)
@@ -117,4 +118,30 @@ void Channel::clearTopic() {
     _topicSetter.clear();
     _topicSetTime = 0;
 }
+
+// void Channel::printChannelWelcome(int client_fd, const std::string& client_nick, const Server& server) const {
+//     std::ostringstream oss;
+//     oss << ":" + client_nick;
+//     int mb_count = 0;
+//     int ops_count = 0;
+
+//     for (std::vector<int>::const_iterator it = _joined.begin(); it != _joined.end(); ++it) {
+//         if (isOperator(*it)) {
+//             std::string nick = server.getClientNick(*it);
+//             oss << " [@" + nick + "]";
+//             ops_count++;
+//         }
+//     }
+//     for (std::vector<int>::const_iterator it = _joined.begin(); it != _joined.end(); ++it) {
+//         if (!isOperator(*it)) {
+//             std::string nick = server.getClientNick(*it);
+//             oss << " [" + nick + "]";
+//             mb_count++;
+//         }
+//     }
+//     oss << "\r\n:" + client_nick + "Total: " << (ops_count + mb_count)
+//         << " nicks [" << ops_count << " ops, " << mb_count << " normal]\r\n";
+//     dvais::sendMessage(client_fd, oss.str());
+// }
+
 

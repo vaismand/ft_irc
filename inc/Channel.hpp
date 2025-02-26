@@ -56,5 +56,3 @@ class Channel {
 		bool				_topicRestricted;
 		bool				_isInviteOnly;
 };
-
-std::ostream& operator<<(std::ostream& oss, const Channel& ref);

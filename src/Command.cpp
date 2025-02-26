@@ -113,7 +113,8 @@ bool Command::isValidNick(const std::string &nickname) {
 
 void Command::commandJoin(Server &server, int fd, const std::string &command) {
     std::string nick = server.getClient(fd).getNick();
-    std::string channelName = command.substr(5);
+    std::vector<std::string> tokens = dvais::cmdtokenizer(command);
+    std::string channelName = tokens[1];
 
     if (channelName.find(",") != std::string::npos) {
         sendError(fd, 475, nick, channelName);
@@ -150,14 +151,13 @@ void Command::commandJoin(Server &server, int fd, const std::string &command) {
     }
     ChannelToJoin->addClient(server.getClient(fd).getFd());
     ChannelToJoin->broadcast(-1, ":" + nick + " JOIN " + channelName + "\r\n");
-    dvais::sendMessage(fd, server.printChannel(*ChannelToJoin));
+    server.printChannelWelcome(fd, nick, *ChannelToJoin);
 }
 
 void Command::commandPart(Server &server, int fd, const std::string &command) {
     std::vector<std::string> tokens = dvais::cmdtokenizer(command);
     std::string nick = server.getClient(fd).getNick();
     if (tokens.size() < 2) {
-        // Handle error: insufficient parameters.
         sendError(fd, 461, nick, "PART");
         return;
     }
@@ -243,14 +243,12 @@ void Command::commandPass(Server &server, int fd, const std::string &command) {
 
 void Command::commandPrivmsg(Server &server, int fd, const std::string &command) {
     std::vector<std::string> cmd = dvais::cmdtokenizer(command);
-    if (cmd.empty())
-    {
+    if (cmd.empty()) {
         sendError(fd, 461, server.getClient(fd).getNick(), "PRIVMSG");
         return;
     }
     std::size_t chanPos = cmd[1].find("#");
-    if (chanPos != 0)
-    {
+    if (chanPos != 0) {
         sendError(fd, 403, server.getClient(fd).getNick(), cmd[1]);
         return;
     }
@@ -325,6 +323,12 @@ void Command::commandTopic(Server &server, int fd, const std::string &command)
     }
 }
 
+void Command::commandNames(Server &server, int fd, const std::string &command) {
+    (void)fd;
+    (void)server;
+    (void)command;
+}
+
 void Command::executeCommand(Server &server, int fd, const std::string &command) {
     if (command.find("CAP ") == 0) {
         commandCap(fd, command);
@@ -344,6 +348,8 @@ void Command::executeCommand(Server &server, int fd, const std::string &command)
         commandPart(server, fd, command);
     } else if (command.find("PRIVMSG ") == 0) {
         commandPrivmsg(server, fd, command);
+    } else if (command.find("NAMES") == 0) {
+        commandNames(server, fd, command);
     } else if (command.find("WHOIS") == 0) {
         commandWhois(server, fd, command);
     } else if (command.find("TOPIC") == 0) {

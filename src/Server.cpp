@@ -240,8 +240,9 @@ const std::map<int, Client*>& Server::getClients() const {
     return _clients;
 }
 
-std::string Server::printChannel(const Channel& ref) const {
+void Server::printChannelWelcome(int client_fd, const std::string& client_nick, const Channel& ref) const {
     std::ostringstream oss;
+    oss << ":" + client_nick;
     const std::vector<int>& members = ref.getJoined();
     int mb_count = 0;
     int ops_count = 0;
@@ -249,18 +250,18 @@ std::string Server::printChannel(const Channel& ref) const {
     for (std::vector<int>::const_iterator it = members.begin(); it != members.end(); ++it) {
         if (ref.isOperator(*it)) {
             std::string nick = getClient(*it).getNick();
-            oss << "[@" + nick + "] ";
+            oss << " [@" + nick + "]";
             ops_count++;
         }
     }
     for (std::vector<int>::const_iterator it = members.begin(); it != members.end(); ++it) {
         if (!ref.isOperator(*it)) {
             std::string nick = getClient(*it).getNick();
-            oss << "[" + nick + "] ";
+            oss << " [" + nick + "]";
             mb_count++;
         }
     }
-    oss << "\r\nTotal: " << (ops_count + mb_count)
-        << " nicks [" << ops_count << " ops, " << mb_count << " normal]";
-    return oss.str();
+    oss << "\r\n:" + client_nick + " Total: " << (ops_count + mb_count)
+        << " nicks [" << ops_count << " ops, " << mb_count << " normal]\r\n";
+    dvais::sendMessage(client_fd, oss.str());
 }
