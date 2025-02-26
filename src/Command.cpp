@@ -20,6 +20,9 @@ Command::~Command() {}
 
 void Command::initErrorMap()
 {
+    errorMap[401] = "No such nick/channel";
+    errorMap[404] = "Cannot send to channel";
+    errorMap[411] = "No recipient given";
     errorMap[421] = "Unknown command";
     errorMap[432] = "Erroneous nickname";
     errorMap[433] = "Nickname is already in use";
@@ -243,34 +246,37 @@ void Command::commandPass(Server &server, int fd, const std::string &command) {
 
 void Command::commandPrivmsg(Server &server, int fd, const std::string &command) {
     std::vector<std::string> cmd = dvais::cmdtokenizer(command);
-    if (cmd.empty()) {
-        sendError(fd, 461, server.getClient(fd).getNick(), "PRIVMSG");
+    if (cmd.size() < 3) {
+        sendError(fd, 411, server.getClient(fd).getNick(), "PRIVMSG");
         return;
     }
-    std::size_t chanPos = cmd[1].find("#");
-    if (chanPos != 0) {
-        sendError(fd, 403, server.getClient(fd).getNick(), cmd[1]);
-        return;
-    }
-    Channel* ChannelToChat = server.getChannel(cmd[1]);
-    if (ChannelToChat == NULL)
-    {
-        sendError(fd, 403, server.getClient(fd).getNick(), cmd[1]);
-        return;
-    }
-    if (!ChannelToChat->isMember(fd))
-    {
-        sendError(fd, 442, server.getClient(fd).getNick(), ChannelToChat->getcName());
-        return;
-    }
-    std::size_t msgPos = cmd[2].find_first_of(":");
-    if (msgPos != 0)
-    {
+    if (cmd[2].empty() || cmd[2][0] != ':') {
         sendError(fd, 412, server.getClient(fd).getNick(), "PRIVMSG");
         return;
     }
-    std::string msg = ":" + server.getClient(fd).getNick() + " " + cmd[0] + " " + ChannelToChat->getcName() + " " + cmd[2] + " \r\n";
-    ChannelToChat->broadcast(fd, msg);
+    //if recipient is a channel, broadcast to channel
+    if (cmd[1][0] == '#') {
+        Channel* ChannelToChat = server.getChannel(cmd[1]);
+        if (ChannelToChat == NULL) {
+            sendError(fd, 401, server.getClient(fd).getNick(), cmd[1]);
+            return;
+        }
+        if (!ChannelToChat->isMember(fd)) {
+            sendError(fd, 404, server.getClient(fd).getNick(), ChannelToChat->getcName());
+            return;
+        }
+        std::string msg = ":" + server.getClient(fd).getNick() + " " + cmd[0] + " " + ChannelToChat->getcName() + " " + cmd[2] + " \r\n";
+        ChannelToChat->broadcast(fd, msg);
+    // If the target is a user (valid nick)
+    } else if (isValidNick(cmd[1])) {
+        Client* ClientToChat = server.getClientByNick(cmd[1]);
+        if (ClientToChat == NULL) {
+            sendError(fd, 401, server.getClient(fd).getNick(), cmd[1]);
+            return;
+        }
+        std::string msg = ":" + server.getClient(fd).getNick() + " " + cmd[0] + " " + ClientToChat->getNick() + " " + cmd[2] + " \r\n";
+        dvais::sendMessage(ClientToChat->getFd(), msg);
+    }
 }
 
 void Command::commandTopic(Server &server, int fd, const std::string &command)
