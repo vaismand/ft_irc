@@ -60,7 +60,6 @@ void Server::bindSocket()
 void Server::run()
 {
     bindSocket();
-    // std::cout << "Revents: " << _pollfds[0].fd << std::endl;
     while (true)
 	{
         int poll_count = poll(_pollfds.data(), _pollfds.size(), -1);
@@ -89,7 +88,7 @@ void Server::run()
     }
 }
 
-Client &Server::getClient(int fd)
+Client &Server::getClient(int fd) const
 {
     if (_clients.find(fd) == _clients.end())
     {
@@ -240,3 +239,4 @@ bool Server::isNickInUse(const std::string &nickname, int excludeFd) const {
 const std::map<int, Client*>& Server::getClients() const {
     return _clients;
 }
+

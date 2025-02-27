@@ -34,7 +34,7 @@ class Channel {
 
 		// Methods
 		void addClient(int fd);
-		bool isMember(int fd) const;
+		bool isMember(const int& fd) const;
 		void rmClient(int fd);
 		void addOperator(int fd);
 		bool isOperator(const int& fd) const;

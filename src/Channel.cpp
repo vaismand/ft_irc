@@ -36,14 +36,9 @@ void Channel::addClient(int fd)
 	_joined.push_back(fd);
 }
 
-bool Channel::isMember(int fd) const {
-    std::vector<int>::const_iterator it = _joined.begin();
-    std::vector<int>::const_iterator it_end = _joined.end();
-    for (; it != it_end; ++it) {
-        if (*it == fd)
-            return true;
-    }
-    return false;
+bool Channel::isMember(const int &fd) const {
+    return std::find(_joined.begin(), _joined.end(), fd) != _joined.end();
+
 }
 
 void Channel::rmClient(int fd)
@@ -76,14 +71,8 @@ void Channel::addOperator(int fd)
 	_operators.push_back(fd);
 }
 
-bool Channel::isOperator(const int &fd) const
-{
-    std::vector<int>::const_iterator it = _operators.begin();
-	for(; it != _operators.end(); ++it) {
-		if (*it == fd)
-            return true;
-	}
-	return false;
+bool Channel::isOperator(const int &fd) const {
+    return std::find(_operators.begin(), _operators.end(), fd) != _operators.end();
 }
 
 void Channel::rmOperator(int fd) {
@@ -94,11 +83,6 @@ void Channel::rmOperator(int fd) {
         else
             ++it;
     }
-}
-
-
-bool Channel::isOperator(int fd) const {
-    return std::find(_operators.begin(), _operators.end(), fd) != _operators.end();
 }
 
 void Channel::broadcast(int fd, const std::string &message) {
@@ -134,3 +118,4 @@ void Channel::clearTopic() {
     _topicSetter.clear();
     _topicSetTime = 0;
 }
+

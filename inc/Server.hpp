@@ -50,7 +50,7 @@ class Server
 		~Server();
 
 		// Getters
-		Client &getClient(int fd);
+		Client &getClient(int fd) const;
 		Channel *getChannel(const std::string &name);
 		std::string getClientNick(int fd) const;
 		std::string getPass() const;
@@ -64,5 +64,4 @@ class Server
 		void run();
 		bool isNickInUse(const std::string &nickname, int excludeFd = -1) const;
 		Client *getClientByNick(const std::string &nickname);
-
 };

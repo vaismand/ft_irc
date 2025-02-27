@@ -9,7 +9,7 @@ Client::Client(const Client& ref) : _fd(ref._fd), _ip(ref._ip) {}
 
 Client::~Client() {}
 
-Client& Client::operator= (const Client& rhs) {
+Client& Client::operator=(const Client& rhs) {
 	if (this != &rhs)
 	{
 		_fd = rhs._fd;
