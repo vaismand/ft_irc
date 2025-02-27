@@ -1,3 +1,5 @@
+#include "../inc/Server.hpp"
+#include "../inc/Channel.hpp"
 #include "../inc/Tools.hpp"
 
 void dvais::setPollfd(int fd, short int events, std::vector<struct pollfd> &pollfds)
@@ -45,7 +47,6 @@ std::string dvais::extractCommand(std::string &buffer)
     if (pos == std::string::npos)
         return "";
     std::string command = buffer.substr(0, pos);
-    // Fully trim the command: remove leading and trailing whitespace.
     command = trim(command);
     buffer.erase(0, pos + 1);
     return command;
@@ -81,4 +82,21 @@ std::string dvais::extractTopic(std::istream &iss)
     if (!topic.empty() && topic[0] == ':')
         topic.erase(0, 1);
     return dvais::trim(topic);
+}
+
+std::string dvais::buildNamesList(Server &server, Channel* channel)
+{
+    std::ostringstream oss;
+    const std::vector<int>& members = channel->getJoined();
+    for (std::vector<int>::const_iterator it = members.begin(); it != members.end(); ++it) {
+        if (channel->isOperator(*it)) {
+            oss << "@" << server.getClient(*it).getNick() << " ";
+        }
+    }
+    for (std::vector<int>::const_iterator it = members.begin(); it != members.end(); ++it) {
+        if (!channel->isOperator(*it)) {
+            oss << server.getClient(*it).getNick() << " ";
+        }
+    }
+    return oss.str();
 }

@@ -38,7 +38,6 @@ private:
     // Attributes
     std::map<int, std::string> errorMap;
     std::string getErrorMessage(int errorCode, const std::string &nick, const std::string &command = "");
-    std::string trim(const std::string &s);
     bool isValidNick(const std::string &nickname);
     void initErrorMap();
 };
