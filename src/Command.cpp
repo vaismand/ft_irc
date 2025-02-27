@@ -153,7 +153,9 @@ void Command::commandJoin(Server &server, int fd, const std::string &command) {
         ChannelToJoin = server.getChannel(channelName);
     }
     ChannelToJoin->addClient(server.getClient(fd).getFd());
-    ChannelToJoin->broadcast(-1, ":" + nick + " JOIN " + channelName + "\r\n");
+    std::string user = server.getClient(fd).getUser();
+    std::string host = server.getClient(fd).getIp();
+    ChannelToJoin->broadcast(-1, ":" + nick + "!" + user + "@" + host + " JOIN " + channelName + "\r\n");
     // server.printChannelWelcome(fd, nick, *ChannelToJoin);
     commandNames(server, fd, "NAMES " + ChannelToJoin->getcName());
 }
