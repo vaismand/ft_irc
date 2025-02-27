@@ -154,7 +154,8 @@ void Command::commandJoin(Server &server, int fd, const std::string &command) {
     }
     ChannelToJoin->addClient(server.getClient(fd).getFd());
     ChannelToJoin->broadcast(-1, ":" + nick + " JOIN " + channelName + "\r\n");
-    server.printChannelWelcome(fd, nick, *ChannelToJoin);
+    // server.printChannelWelcome(fd, nick, *ChannelToJoin);
+    commandNames(server, fd, "NAMES " + ChannelToJoin->getcName());
 }
 
 void Command::commandPart(Server &server, int fd, const std::string &command) {
@@ -330,9 +331,45 @@ void Command::commandTopic(Server &server, int fd, const std::string &command)
 }
 
 void Command::commandNames(Server &server, int fd, const std::string &command) {
-    (void)fd;
-    (void)server;
-    (void)command;
+    std::vector<std::string> tokens = dvais::cmdtokenizer(command);
+    std::string client_nick = server.getClient(fd).getNick();
+    if (tokens.size() < 2) {
+        return;
+    }
+    Channel* channel = server.getChannel(tokens[1]);
+    if (!channel) {
+        sendError(fd, 403, client_nick, tokens[1]);
+        return;
+    }
+    // Build and send RPL_NAMREPLY (353) reply
+    std::ostringstream oss;
+    oss << ":ircserv 353 " << client_nick << " = " << channel->getcName() << " :";
+    const std::vector<int>& members = channel->getJoined();
+    int mb_count = 0;
+    int ops_count = 0;
+
+    for (std::vector<int>::const_iterator it = members.begin(); it != members.end(); ++it) {
+        if ((*channel).isOperator(*it)) {
+            std::string nick = server.getClient(*it).getNick();
+            oss << "@" << nick << " ";
+            ops_count++;
+        }
+    }
+    for (std::vector<int>::const_iterator it = members.begin(); it != members.end(); ++it) {
+        if (!(*channel).isOperator(*it)) {
+            std::string nick = server.getClient(*it).getNick();
+            oss << nick << " ";
+            mb_count++;
+        }
+    }
+    oss << "\r\n";
+    std::cout << oss.str();
+    dvais::sendMessage(fd, oss.str());
+    // Build and send RPL_ENDOFNAMES (366) reply
+    std::ostringstream oss2;
+    oss2 << ":ircserv 366 " << client_nick << " " << channel->getcName() << " :End of /NAMES list\r\n";
+    std::cout << oss2.str();
+    dvais::sendMessage(fd, oss2.str());
 }
 
 void Command::executeCommand(Server &server, int fd, const std::string &command) {
@@ -354,7 +391,7 @@ void Command::executeCommand(Server &server, int fd, const std::string &command)
         commandPart(server, fd, command);
     } else if (command.find("PRIVMSG ") == 0) {
         commandPrivmsg(server, fd, command);
-    } else if (command.find("NAMES") == 0) {
+    } else if (command.find("NAMES ") == 0) {
         commandNames(server, fd, command);
     } else if (command.find("WHOIS") == 0) {
         commandWhois(server, fd, command);
