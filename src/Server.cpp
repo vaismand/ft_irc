@@ -174,6 +174,16 @@ void Server::rmChannel(const std::string &name)
     _channels.erase(name);
 }
 
+void Server::broadcastAll(int fd, const std::string &msg)
+{
+    //broadcast to all clients in channels where fd is a member
+    for (std::map<std::string, Channel*>::iterator it = _channels.begin(); it != _channels.end(); it++)
+    {
+        if (it->second->isMember(fd))
+            it->second->broadcast(fd, msg);
+    }
+}
+
 void Server::tryRegisterClient(int fd)
 {
     Client &client = getClient(fd);

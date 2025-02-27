@@ -63,6 +63,7 @@ class Server
 		void rmChannel(const std::string &name);
 		void removeClient(int fd);
 		void run();
+		void broadcastAll(int fd, const std::string &msg);
 		bool isNickInUse(const std::string &nickname, int excludeFd = -1) const;
 		Client *getClientByNick(const std::string &nickname);
 };

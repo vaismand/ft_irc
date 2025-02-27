@@ -31,6 +31,7 @@ public:
     void commandNames(Server &server, int fd, const std::string &command);
     void commandWhois(Server &server, int fd, const std::string &command);
     void commandTopic(Server &server, int fd, const std::string &command);
+    void commandQuit(Server &server, int fd, const std::string &command);
     void executeCommand(Server &server, int fd, const std::string &command);
     void sendError(int fd, int errorCode, const std::string &nick, const std::string &command);
 

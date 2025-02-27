@@ -83,12 +83,12 @@ void Command::commandNick(Server &server, int fd, const std::string &command) {
         sendError(fd, 432, "", nickname);
         return;
     }
-    // Retrieve client infos.
     std::string user = server.getClient(fd).getUser();
     std::string host = server.getClient(fd).getIp();
     std::string msg = ":" + currentNick + "!" + user + "@" + host + " NICK :" + nickname + "\r\n";
     server.getClient(fd).setNick(nickname);
     dvais::sendMessage(fd, msg);
+    server.broadcastAll(fd, msg);
 }
 
 void Command::commandUser(Server &server, int fd, const std::string &command) {
@@ -263,7 +263,6 @@ void Command::commandPrivmsg(Server &server, int fd, const std::string &command)
         sendError(fd, 412, server.getClient(fd).getNick(), "PRIVMSG");
         return;
     }
-    //if recipient is a channel, broadcast to channel
     if (cmd[1][0] == '#') {
         Channel* ChannelToChat = server.getChannel(cmd[1]);
         if (ChannelToChat == NULL) {
@@ -276,7 +275,6 @@ void Command::commandPrivmsg(Server &server, int fd, const std::string &command)
         }
         std::string msg = ":" + server.getClient(fd).getNick() + " " + cmd[0] + " " + ChannelToChat->getcName() + " " + cmd[2] + " \r\n";
         ChannelToChat->broadcast(fd, msg);
-    // If the target is a user (valid nick)
     } else if (isValidNick(cmd[1])) {
         Client* ClientToChat = server.getClientByNick(cmd[1]);
         if (ClientToChat == NULL) {
@@ -353,6 +351,26 @@ void Command::commandNames(Server &server, int fd, const std::string &command)
     std::string namesList = dvais::buildNamesList(server, channel);
     dvais::sendMessage(fd, ":ircserv 353 " + client_nick + " = " + channel->getcName() + " :" + namesList + "\r\n");
     dvais::sendMessage(fd, ":ircserv 366 " + client_nick + " " + channel->getcName() + " :End of /NAMES list\r\n");
+}
+
+void Command::commandQuit(Server &server, int fd, const std::string &command) {
+    std::istringstream iss(command);
+    std::string cmd;
+    iss >> cmd;
+    
+    std::string quitMessage = dvais::extractTopic(iss);
+    if (quitMessage.empty())
+        quitMessage = "Client Quit";
+    
+    std::string nick = server.getClient(fd).getNick();
+    std::string user = server.getClient(fd).getUser();
+    std::string host = server.getClient(fd).getIp();
+    std::string prefix = ":" + nick + "!" + user + "@" + host;
+    std::string msg = prefix + " QUIT :" + quitMessage + "\r\n";
+    
+    server.broadcastAll(fd, msg);
+    sleep(1);
+    server.removeClient(fd);
 }
 
 void Command::executeCommand(Server &server, int fd, const std::string &command) {
