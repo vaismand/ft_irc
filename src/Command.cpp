@@ -185,6 +185,10 @@ void Command::commandPart(Server &server, int fd, const std::string &command)
     tmp->broadcast(fd, msg);
     dvais::sendMessage(fd, msg);
     tmp->rmClient(fd);
+    if (tmp->getJoined().empty())
+    {
+        server.rmChannel(channelName);
+    }
 }
 
 void Command::commandWhois(Server &server, int fd, const std::string &command) {

@@ -168,6 +168,12 @@ void Server::addChannel(const int &fd, const std::string &name, const std::strin
     _channels[name] = new Channel(fd, name, pass);
 }
 
+void Server::rmChannel(const std::string &name)
+{
+    delete _channels[name];
+    _channels.erase(name);
+}
+
 void Server::tryRegisterClient(int fd)
 {
     Client &client = getClient(fd);
@@ -235,8 +241,7 @@ bool Server::isNickInUse(const std::string &nickname, int excludeFd) const {
     return false;
 }
 
-
-const std::map<int, Client*>& Server::getClients() const {
+const std::map<int, Client*>& Server::getClients() const
+{
     return _clients;
 }
-
