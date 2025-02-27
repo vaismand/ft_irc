@@ -84,7 +84,7 @@ std::string dvais::extractTopic(std::istream &iss)
     return dvais::trim(topic);
 }
 
-std::string dvais::buildNamesList(Server &server, Channel* channel)
+std::string dvais::buildNamesList(Server &server, const Channel* channel)
 {
     std::ostringstream oss;
     const std::vector<int>& members = channel->getJoined();

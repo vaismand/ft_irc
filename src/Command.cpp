@@ -178,10 +178,11 @@ void Command::commandPart(Server &server, int fd, const std::string &command)
         sendError(fd, 442, nick, channelName);
         return;
     }
-    std::string msg = ":" + nick + " PART " + channelName + "\r\n";
-    // Broadcast to other channel members
+    std::string user = server.getClient(fd).getUser();
+    std::string host = server.getClient(fd).getIp();
+    std::string prefix = ":" + nick + "!" + user + "@" + host;
+    std::string msg = prefix + " PART " + channelName + "\r\n";
     tmp->broadcast(fd, msg);
-    // Also notify the leaving client
     dvais::sendMessage(fd, msg);
     tmp->rmClient(fd);
 }
