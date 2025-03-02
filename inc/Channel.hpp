@@ -16,9 +16,10 @@ class Channel {
 		// Getters
 		const std::string& getcName() const;
 		const std::string& getcTopic() const;
-		const std::string& getcPass() const;
+		const std::string& getcKey() const;
 		const bool& getChannelType() const;
 		const std::vector<int>& getJoined() const;
+		const int& getUserLimit() const;
 		std::string getTopic() const;
         std::string getTopicSetter() const;
         std::time_t getTopicSetTime() const;
@@ -27,9 +28,11 @@ class Channel {
 		// Setters
 		void setcName(const std::string& name);
 		void setcTopic(const std::string& topic);
-		void setcPass(const std::string& password);
+		void setcKey(const std::string& key);
 		void setChannelType();
         void setTopic(const std::string &topic, const std::string &setter);
+		void setTopicRestricted(bool restricted);
+		void setUserLimit(int limit);
 
 
 		// Methods
@@ -47,7 +50,7 @@ class Channel {
 		// Attributes
 		int 				_userLimit;
 		std::string 		_cName;
-		std::string 		_cPass;
+		std::string 		_cKey;
 		std::string 		_cTopic;
 		std::string         _topicSetter;
         std::time_t         _topicSetTime;

@@ -1,6 +1,6 @@
 #include "../inc/Channel.hpp"
 
-Channel::Channel(const int &fd, const std::string& name, const std::string& pass) : _cName(name), _cPass(pass), _cTopic(""), _isInviteOnly(false)
+Channel::Channel(const int &fd, const std::string& name, const std::string& key) : _cName(name), _cKey(key), _cTopic(""), _isInviteOnly(false)
 {
     addClient(fd);
     _operators.push_back(fd);
@@ -11,15 +11,18 @@ Channel::~Channel() {}
 // ----- getter Functions -----
 const std::string& Channel::getcName() const { return _cName; }
 const std::string& Channel::getcTopic() const { return _cTopic; }
-const std::string& Channel::getcPass() const { return _cPass; }
+const std::string& Channel::getcKey() const { return _cKey; }
 const bool& Channel::getChannelType() const { return _isInviteOnly; }
 const std::vector<int>& Channel::getJoined() const { return _joined; }
+const int& Channel::getUserLimit() const { return _userLimit; }
 
 // ----- setter Functions -----
 void Channel::setcName(const std::string& name) { _cName = name; }
 void Channel::setcTopic(const std::string& topic) { _cTopic = topic; }
-void Channel::setcPass(const std::string& password) { _cPass = password; }
+void Channel::setcKey(const std::string& key) { _cKey = key; }
 void Channel::setChannelType() { _isInviteOnly = !_isInviteOnly; }
+void Channel::setTopicRestricted(bool restricted) { _topicRestricted = restricted; }
+void Channel::setUserLimit(int limit) { _userLimit = limit; }
 
 // ----- methods -----
 void Channel::addClient(int fd) 

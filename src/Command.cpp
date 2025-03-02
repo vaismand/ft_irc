@@ -228,13 +228,135 @@ void Command::commandMode(Server &server, int fd, const std::string &command)
 {
     std::vector<std::string> tokens = dvais::cmdtokenizer(command);
     std::string clientNick = server.getClient(fd).getNick();
-    std::string target = (tokens.size() >= 2) ? tokens[1] : clientNick;
-    
-    if (target == clientNick)
-    {
+
+    // Make sure we have at least a target.
+    if (tokens.size() < 2) {
+        sendError(fd, 461, clientNick, "MODE");
+        return;
+    }
+    std::string target = tokens[1];
+
+    // If the target is the user's own nick, handle user mode query.
+    if (target == clientNick) {
         dvais::sendMessage(fd, ":ircserv 221 " + clientNick + " :\r\n");
         return;
     }
+    // If the target is a channel (starts with '#' or '&'), process as channel mode.
+    if (target[0] == '#' || target[0] == '&') {
+        Channel* channel = server.getChannel(target);
+        if (!channel) {
+            sendError(fd, 403, clientNick, target);
+            return;
+        }
+        // Check that the sender is a member of the channel.
+        if (!channel->isMember(fd)) {
+            sendError(fd, 442, clientNick, target);
+            return;
+        }
+        // For mode changes (when a mode string is provided), the sender must be an operator.
+        if (tokens.size() >= 3 && !channel->isOperator(fd)) {
+            sendError(fd, 482, clientNick, target);
+            return;
+        }
+        // If no mode string is provided, reply with the current channel modes.
+        if (tokens.size() < 3) {
+            // For simplicity, we reply with a default mode string.
+            dvais::sendMessage(fd, ":ircserv 324 " + clientNick + " " + target + " :+it\r\n");
+            return;
+        }
+        // Process the mode string and its parameters.
+        std::string modeStr = tokens[2];
+        int paramIndex = 3;  // Parameters for modes, if any.
+        bool adding = true;  // Track whether we're adding (+) or removing (-) modes.
+        for (size_t i = 0; i < modeStr.length(); i++) {
+            char modeChar = modeStr[i];
+            if (modeChar == '+') {
+                adding = true;
+                continue;
+            } else if (modeChar == '-') {
+                adding = false;
+                continue;
+            }
+            switch (modeChar) {
+                case 'i':
+                    // Set or remove invite-only mode.
+                    channel->setChannelType();
+                    break;
+                case 't':
+                    // Set or remove topic restriction (only operators can change topic).
+                    channel->setTopicRestricted(adding);
+                    break;
+                case 'k': {
+                    // Channel key requires a parameter when adding.
+                    if (adding) {
+                        if (paramIndex >= (int)tokens.size()) {
+                            sendError(fd, 461, clientNick, "MODE");
+                            return;
+                        }
+                        std::string key = tokens[paramIndex++];
+                        channel->setcKey(key);
+                    } else {
+                        // Removing key.
+                        channel->setcKey("");
+                    }
+                    break;
+                }
+                case 'l': {
+                    // User limit requires a parameter when adding.
+                    if (adding) {
+                        if (paramIndex >= (int)tokens.size()) {
+                            sendError(fd, 461, clientNick, "MODE");
+                            return;
+                        }
+                        int limit = atoi(tokens[paramIndex++].c_str());
+                        channel->setUserLimit(limit);
+                    } else {
+                        // Removing limit.
+                        channel->setUserLimit(0);
+                    }
+                    break;
+                }
+                case 'o': {
+                    // Operator mode requires a parameter: the target nick.
+                    if (paramIndex >= (int)tokens.size()) {
+                        sendError(fd, 461, clientNick, "MODE");
+                        return;
+                    }
+                    std::string targetNick = tokens[paramIndex++];
+                    // Find the client by nickname.
+                    Client* targetClient = server.getClientByNick(targetNick);
+                    if (!targetClient || !channel->isMember(targetClient->getFd())) {
+                        // 441: ERR_USERNOTINCHANNEL
+                        sendError(fd, 441, clientNick, targetNick);
+                        continue;
+                    }
+                    if (adding) {
+                        channel->addOperator(targetClient->getFd());
+                    } else {
+                        channel->rmOperator(targetClient->getFd());
+                    }
+                    break;
+                }
+                default:
+                    // Unknown mode: send ERR_UNKNOWNMODE (472)
+                    sendError(fd, 472, clientNick, std::string(1, modeChar));
+                    break;
+            }
+        }
+        // Build a MODE message to broadcast the change.
+        std::ostringstream modeMsg;
+        modeMsg << ":" << clientNick << "!" << server.getClient(fd).getUser() 
+                << "@" << server.getClient(fd).getIp()
+                << " MODE " << target << " " << modeStr;
+        // Append any mode parameters that were provided.
+        for (int j = 3; j < (int)tokens.size(); j++) {
+            modeMsg << " " << tokens[j];
+        }
+        modeMsg << "\r\n";
+        channel->broadcast(fd, modeMsg.str());
+        return;
+    }
+    // Otherwise, for non-channel targets we currently return an error.
     sendError(fd, 421, clientNick, "MODE");
 }
 
@@ -369,7 +491,7 @@ void Command::commandQuit(Server &server, int fd, const std::string &command) {
     std::string msg = prefix + " QUIT :" + quitMessage + "\r\n";
     
     server.broadcastAll(fd, msg);
-    sleep(1);
+    sleep(10);
     server.removeClient(fd);
 }
 
