@@ -13,6 +13,7 @@ const std::string& Channel::getcName() const { return _cName; }
 const std::string& Channel::getcTopic() const { return _cTopic; }
 const std::string& Channel::getcKey() const { return _cKey; }
 const bool& Channel::getChannelType() const { return _isInviteOnly; }
+const bool& Channel::getTopicRestricted() const { return _topicRestricted; }
 const std::vector<int>& Channel::getJoined() const { return _joined; }
 const int& Channel::getUserLimit() const { return _userLimit; }
 

@@ -18,6 +18,7 @@ class Channel {
 		const std::string& getcTopic() const;
 		const std::string& getcKey() const;
 		const bool& getChannelType() const;
+		const bool& getTopicRestricted() const;
 		const std::vector<int>& getJoined() const;
 		const int& getUserLimit() const;
 		std::string getTopic() const;
