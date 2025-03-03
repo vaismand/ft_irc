@@ -297,7 +297,6 @@ void Command::commandMode(Server &server, int fd, const std::string &command)
                         int limit = atoi(tokens[paramIndex++].c_str());
                         channel->setUserLimit(limit);
                     } else {
-                        // Removing limit.
                         channel->setUserLimit(0);
                     }
                     break;
