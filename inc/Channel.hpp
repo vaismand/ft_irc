@@ -39,10 +39,12 @@ class Channel {
 		// Methods
 		void addClient(int fd);
 		bool isMember(const int& fd) const;
+		bool isInvited(const int& fd) const;
 		void rmClient(int fd);
 		void addOperator(int fd);
 		bool isOperator(const int& fd) const;
 		void rmOperator(int fd);
+		void addInvited(int fd);
 		void broadcast(int fd, const std::string& msg);
 		void clearTopic();
 
@@ -56,6 +58,7 @@ class Channel {
 		std::string         _topicSetter;
         std::time_t         _topicSetTime;
 		std::vector<int> 	_joined;
+		std::vector<int> 	_invited;
 		std::vector<int> 	_operators;
 		bool				_topicRestricted;
 		bool				_isInviteOnly;

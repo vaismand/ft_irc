@@ -481,6 +481,41 @@ void Command::commandQuit(Server &server, int fd, const std::string &command) {
     server.removeClient(fd);
 }
 
+void Command::commandInvite(Server &server, int fd, const std::string &command) {
+    std::vector<std::string> tokens = dvais::cmdtokenizer(command);
+    std::string client_nick = server.getClient(fd).getNick();
+
+    Channel* channel = server.getChannel(tokens[2]);
+    if (!channel) {
+        sendError(fd, 403, "", tokens[2]);
+        return;
+    }
+    if (channel->isMember(fd) == false) {
+        sendError(fd, 442, "", channel->getcName());
+        return;
+    }
+    if (channel->getChannelType() == true && channel->isOperator(fd) == false) {
+        sendError(fd, 482, "", channel->getcName());
+        return;
+    }
+    Client* target_client = server.getClientByNick(tokens[1]);
+    if (target_client && channel->isMember(target_client->getFd()) == true) {
+        sendError(fd, 443, tokens[1], channel->getcName());
+        return;
+    } else if (target_client && channel->isMember(target_client->getFd()) == false) {
+        if (channel->isInvited(fd))
+            return;
+        std::string RPL_INVITING = ":ircserv " + tokens[1] + " " + channel->getcName() + "\r\n";
+        std::string user = server.getClient(fd).getUser();
+        std::string host = server.getClient(fd).getIp();
+        std::string prefix = ":" + client_nick + "!" + user + "@" + host;
+        std::string msg = prefix + " INVITE " + tokens[1] + " " + tokens[2] + "\r\n";
+        dvais::sendMessage(fd, RPL_INVITING);
+        dvais::sendMessage(target_client->getFd(), msg);
+    }
+}
+
+
 void Command::executeCommand(Server &server, int fd, const std::string &command) {
     if (command.find("CAP ") == 0) {
         commandCap(fd, command);
@@ -492,6 +527,8 @@ void Command::executeCommand(Server &server, int fd, const std::string &command)
         commandJoin(server, fd, command);
     } else if (command.find("PING ") == 0) {
         commandPing(fd, command);
+    } else if (command.find("INVITE ") == 0) {
+        commandInvite(server, fd, command);
     } else if (command.find("MODE ") == 0) {
         commandMode(server, fd, command);
     } else if (command.find("PASS ") == 0) {

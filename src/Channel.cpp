@@ -16,6 +16,9 @@ const bool& Channel::getChannelType() const { return _isInviteOnly; }
 const bool& Channel::getTopicRestricted() const { return _topicRestricted; }
 const std::vector<int>& Channel::getJoined() const { return _joined; }
 const int& Channel::getUserLimit() const { return _userLimit; }
+std::string Channel::getTopic() const { return _cTopic; }
+std::string Channel::getTopicSetter() const { return _topicSetter; }
+std::time_t Channel::getTopicSetTime() const { return _topicSetTime; }
 
 // ----- setter Functions -----
 void Channel::setcName(const std::string& name) { _cName = name; }
@@ -89,6 +92,16 @@ void Channel::rmOperator(int fd) {
     }
 }
 
+void Channel::addInvited(int fd) 
+{
+    if (!isMember(fd) && !isInvited(fd))
+        _invited.push_back(fd);
+}
+
+bool Channel::isInvited(const int &fd) const {
+    return std::find(_invited.begin(), _invited.end(), fd) != _invited.end();
+}
+
 void Channel::broadcast(int fd, const std::string &message) {
     std::vector<int>::const_iterator it = _joined.begin();
     std::vector<int>::const_iterator it_end = _joined.end();
@@ -97,18 +110,6 @@ void Channel::broadcast(int fd, const std::string &message) {
         if (fd != *it)
             dvais::sendMessage(*it, message);
     }
-}
-
-std::string Channel::getTopic() const {
-    return _cTopic;
-}
-
-std::string Channel::getTopicSetter() const {
-    return _topicSetter;
-}
-
-std::time_t Channel::getTopicSetTime() const {
-    return _topicSetTime;
 }
 
 void Channel::setTopic(const std::string &topic, const std::string &setter) {
