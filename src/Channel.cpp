@@ -1,9 +1,10 @@
 #include "../inc/Channel.hpp"
 
-Channel::Channel(const int &fd, const std::string& name, const std::string& key) : _cName(name), _cKey(key), _cTopic(""), _isInviteOnly(false)
+Channel::Channel(const int &fd, const std::string& name, const std::string& key) : _cName(name), _cKey(key), _cTopic("") 
 {
     addClient(fd);
     _operators.push_back(fd);
+    _userLimit = 10;
 }
 
 Channel::~Channel() {}

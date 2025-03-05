@@ -35,6 +35,9 @@ void Command::initErrorMap()
     errorMap[442] = "Not on channel";
     errorMap[482] = "You're not channel operator";
     errorMap[331] = "No topic is set";
+    errorMap[405] = "You're already on that channel";
+    errorMap[471] = "Channel is full";
+    errorMap[473] = "Cannot join channel (invite only)";
 }
 
 void Command::sendError(int fd, int errorCode, const std::string &nick, const std::string &command)
@@ -151,6 +154,22 @@ void Command::commandJoin(Server &server, int fd, const std::string &command) {
     if (ChannelToJoin == NULL) {
         server.addChannel(fd, channelName, "");
         ChannelToJoin = server.getChannel(channelName);
+    }
+    else
+    {
+        if (ChannelToJoin->isMember(fd)) {
+            sendError(fd, 405, nick, channelName);
+            return;
+        }
+        if (ChannelToJoin->getUserLimit() > 0 &&
+        ChannelToJoin->getJoined().size() >= static_cast<std::vector<int>::size_type>(ChannelToJoin->getUserLimit())) {
+            sendError(fd, 471, nick, channelName);
+            return;
+        }
+        if (ChannelToJoin->getChannelType() && !ChannelToJoin->isInvited(fd)) {
+            sendError(fd, 473, nick, channelName);
+            return;
+        }
     }
     ChannelToJoin->addClient(server.getClient(fd).getFd());
     std::string user = server.getClient(fd).getUser();
