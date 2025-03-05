@@ -45,6 +45,7 @@ class Channel {
 		bool isOperator(const int& fd) const;
 		void rmOperator(int fd);
 		void addInvited(int fd);
+		void rmInvited(int fd);
 		void broadcast(int fd, const std::string& msg);
 		void clearTopic();
 

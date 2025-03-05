@@ -176,6 +176,8 @@ void Command::commandJoin(Server &server, int fd, const std::string &command) {
     std::string host = server.getClient(fd).getIp();
     ChannelToJoin->broadcast(-1, ":" + nick + "!" + user + "@" + host + " JOIN " + channelName + "\r\n");
     // server.printChannelWelcome(fd, nick, *ChannelToJoin);
+    if (ChannelToJoin->isInvited(fd))
+        ChannelToJoin->rmInvited(fd);
     commandNames(server, fd, "NAMES " + ChannelToJoin->getcName());
 }
 
@@ -243,6 +245,33 @@ void Command::commandWhois(Server &server, int fd, const std::string &command) {
     dvais::sendMessage(fd, oss.str());
 }
 
+void Command::commandWho(Server &server, int fd, const std::string &command) {
+    std::istringstream iss(command);
+    std::string cmd, targetNick;
+    iss >> cmd >> targetNick;
+    targetNick = dvais::trim(targetNick);
+
+    if (targetNick.empty())
+    {
+        sendError(fd, 461, server.getClient(fd).getNick(), "WHO");
+        return;
+    }
+    Channel* channel = server.getChannel(targetNick);
+    if (!channel)
+    {
+        sendError(fd, 403, server.getClient(fd).getNick(), targetNick);
+        return;
+    }
+    std::string requesterNick = server.getClient(fd).getNick();
+    std::ostringstream oss;
+    oss << ":ircserv 352 " << requesterNick << " " << targetNick << " ircserv ircserv " << channel->getcName() << " H :0 ircserv\r\n";
+    dvais::sendMessage(fd, oss.str());
+
+    oss.str("");
+    oss << ":ircserv 315 " << requesterNick << " " << targetNick << " :End of WHO list\r\n";
+    dvais::sendMessage(fd, oss.str());
+}
+
 void Command::commandMode(Server &server, int fd, const std::string &command)
 {
     std::vector<std::string> tokens = dvais::cmdtokenizer(command);
@@ -278,7 +307,8 @@ void Command::commandMode(Server &server, int fd, const std::string &command)
         std::string modeStr = tokens[2];
         int paramIndex = 3;
         bool adding = true;
-        for (size_t i = 0; i < modeStr.length(); i++) {
+        for (size_t i = 0; i < modeStr.length(); i++)
+        {
             char modeChar = modeStr[i];
             if (modeChar == '+') {
                 adding = true;
@@ -338,12 +368,10 @@ void Command::commandMode(Server &server, int fd, const std::string &command)
                     }
                     break;
                 }
-                case 'b': {
-                    if (paramIndex >= (int)tokens.size()) {
-                        sendError(fd, 461, clientNick, "MODE");
-                        return;
-                    }
-                    std::string banmask = tokens[paramIndex++];
+                case 'b':
+                {
+                    dvais::sendMessage(fd, ":ircserv 367 " + clientNick + " " + target + " :\r\n");
+                    dvais::sendMessage(fd, ":ircserv 368 " + clientNick + " " + target + " :End of Channel Ban List\r\n");
                     break;
                 }
                 default:
@@ -521,8 +549,10 @@ void Command::commandInvite(Server &server, int fd, const std::string &command) 
     if (target_client && channel->isMember(target_client->getFd()) == true) {
         sendError(fd, 443, tokens[1], channel->getcName());
         return;
-    } else if (target_client && channel->isMember(target_client->getFd()) == false) {
-        if (channel->isInvited(fd))
+    } 
+    else if (target_client && channel->isMember(target_client->getFd()) == false)
+    {
+        if (channel->isInvited(target_client->getFd()))
             return;
         std::string RPL_INVITING = ":ircserv " + tokens[1] + " " + channel->getcName() + "\r\n";
         std::string user = server.getClient(fd).getUser();
@@ -531,9 +561,9 @@ void Command::commandInvite(Server &server, int fd, const std::string &command) 
         std::string msg = prefix + " INVITE " + tokens[1] + " " + tokens[2] + "\r\n";
         dvais::sendMessage(fd, RPL_INVITING);
         dvais::sendMessage(target_client->getFd(), msg);
+        channel->addInvited(target_client->getFd());
     }
 }
-
 
 void Command::executeCommand(Server &server, int fd, const std::string &command) {
     if (command.find("CAP ") == 0) {
@@ -560,6 +590,8 @@ void Command::executeCommand(Server &server, int fd, const std::string &command)
         commandNames(server, fd, command);
     } else if (command.find("WHOIS") == 0) {
         commandWhois(server, fd, command);
+    } else if (command.find("WHO") == 0) {
+        commandWho(server, fd, command);
     } else if (command.find("TOPIC") == 0) {
         commandTopic(server, fd, command);
     } else if (command.find("QUIT") == 0) {

@@ -30,6 +30,7 @@ public:
     void commandPrivmsg(Server &server, int fd, const std::string &command);
     void commandNames(Server &server, int fd, const std::string &command);
     void commandWhois(Server &server, int fd, const std::string &command);
+    void commandWho(Server &server, int fd, const std::string &command);
     void commandTopic(Server &server, int fd, const std::string &command);
     void commandQuit(Server &server, int fd, const std::string &command);
     void commandInvite(Server &server, int fd, const std::string &command);

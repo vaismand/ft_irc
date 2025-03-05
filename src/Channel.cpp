@@ -99,6 +99,16 @@ void Channel::addInvited(int fd)
         _invited.push_back(fd);
 }
 
+void Channel::rmInvited(int fd) {
+    for (std::vector<int>::iterator it = _invited.begin(); it != _invited.end(); )
+    {
+        if (*it == fd)
+            it = _invited.erase(it);
+        else
+            ++it;
+    }
+}
+
 bool Channel::isInvited(const int &fd) const {
     return std::find(_invited.begin(), _invited.end(), fd) != _invited.end();
 }
