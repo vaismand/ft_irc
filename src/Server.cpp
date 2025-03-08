@@ -176,7 +176,6 @@ void Server::rmChannel(const std::string &name)
 
 void Server::broadcastAll(int fd, const std::string &msg)
 {
-    //broadcast to all clients in channels where fd is a member
     for (std::map<std::string, Channel*>::iterator it = _channels.begin(); it != _channels.end(); it++)
     {
         if (it->second->isMember(fd))

@@ -121,7 +121,6 @@ void Command::commandJoin(Server &server, int fd, const std::string &command) {
     std::string nick = server.getClient(fd).getNick();
     std::vector<std::string> tokens = dvais::cmdtokenizer(command);
     std::string channelName = tokens[1];
-
     if (channelName.find(",") != std::string::npos) {
         sendError(fd, 475, nick, channelName);
         return;
@@ -178,6 +177,7 @@ void Command::commandJoin(Server &server, int fd, const std::string &command) {
     // server.printChannelWelcome(fd, nick, *ChannelToJoin);
     if (ChannelToJoin->isInvited(fd))
         ChannelToJoin->rmInvited(fd);
+    ChannelToJoin->getcTopic();
     commandNames(server, fd, "NAMES " + ChannelToJoin->getcName());
 }
 
@@ -408,24 +408,28 @@ void Command::commandPass(Server &server, int fd, const std::string &command) {
     }
 }
 
-void Command::commandPrivmsg(Server &server, int fd, const std::string &command) {
+void Command::commandMsg(Server &server, int fd, const std::string &command, bool sendErs) {
     std::vector<std::string> cmd = dvais::cmdtokenizer(command);
     if (cmd.size() < 3) {
-        sendError(fd, 411, server.getClient(fd).getNick(), "PRIVMSG");
+        if (sendErs)
+            sendError(fd, 411, server.getClient(fd).getNick(), cmd[0]);
         return;
     }
     if (cmd[2].empty() || cmd[2][0] != ':') {
-        sendError(fd, 412, server.getClient(fd).getNick(), "PRIVMSG");
+        if (sendErs)
+            sendError(fd, 412, server.getClient(fd).getNick(), "PRIVMSG");
         return;
     }
     if (cmd[1][0] == '#') {
         Channel* ChannelToChat = server.getChannel(cmd[1]);
         if (ChannelToChat == NULL) {
-            sendError(fd, 401, server.getClient(fd).getNick(), cmd[1]);
+            if (sendErs)
+                sendError(fd, 401, server.getClient(fd).getNick(), cmd[1]);
             return;
         }
         if (!ChannelToChat->isMember(fd)) {
-            sendError(fd, 404, server.getClient(fd).getNick(), ChannelToChat->getcName());
+            if (sendErs)
+                sendError(fd, 404, server.getClient(fd).getNick(), ChannelToChat->getcName());
             return;
         }
         std::string msg = ":" + server.getClient(fd).getNick() + " " + cmd[0] + " " + ChannelToChat->getcName() + " " + cmd[2] + " \r\n";
@@ -433,7 +437,8 @@ void Command::commandPrivmsg(Server &server, int fd, const std::string &command)
     } else if (isValidNick(cmd[1])) {
         Client* ClientToChat = server.getClientByNick(cmd[1]);
         if (ClientToChat == NULL) {
-            sendError(fd, 401, server.getClient(fd).getNick(), cmd[1]);
+            if (sendErs)
+                sendError(fd, 401, server.getClient(fd).getNick(), cmd[1]);
             return;
         }
         std::string msg = ":" + server.getClient(fd).getNick() + " " + cmd[0] + " " + ClientToChat->getNick() + " " + cmd[2] + " \r\n";
@@ -585,7 +590,9 @@ void Command::executeCommand(Server &server, int fd, const std::string &command)
     } else if (command.find("PART ") == 0) {
         commandPart(server, fd, command);
     } else if (command.find("PRIVMSG ") == 0) {
-        commandPrivmsg(server, fd, command);
+        commandMsg(server, fd, command, true);
+    } else if (command.find("NOTICE ") == 0) {
+        commandMsg(server, fd, command, false);
     } else if (command.find("NAMES ") == 0) {
         commandNames(server, fd, command);
     } else if (command.find("WHOIS") == 0) {
