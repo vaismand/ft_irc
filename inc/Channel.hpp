@@ -19,6 +19,7 @@ class Channel {
 		const std::string& getcKey() const;
 		const bool& getChannelType() const;
 		const bool& getTopicRestricted() const;
+		const bool& getNoExternalMsgs() const;
 		const std::vector<int>& getJoined() const;
 		const int& getUserLimit() const;
 		std::string getTopic() const;
@@ -34,6 +35,7 @@ class Channel {
         void setTopic(const std::string &topic, const std::string &setter);
 		void setTopicRestricted(bool restricted);
 		void setUserLimit(int limit);
+		void setNoExternalMsgs(bool noExternalMsgs);
 
 
 		// Methods
@@ -63,4 +65,5 @@ class Channel {
 		std::vector<int> 	_operators;
 		bool				_topicRestricted;
 		bool				_isInviteOnly;
+		bool				_noExternalMsgs;
 };

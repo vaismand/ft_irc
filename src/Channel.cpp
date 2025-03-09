@@ -1,10 +1,14 @@
 #include "../inc/Channel.hpp"
 
-Channel::Channel(const int &fd, const std::string& name, const std::string& key) : _cName(name), _cKey(key), _cTopic("") 
+Channel::Channel(const int &fd, const std::string& name, const std::string& key) : _cName(name), 
+_cKey(key), _cTopic("")
 {
     addClient(fd);
     _operators.push_back(fd);
     _userLimit = 10;
+    _noExternalMsgs = false;
+    _isInviteOnly = false;
+    _topicRestricted = false;
 }
 
 Channel::~Channel() {}
@@ -15,6 +19,7 @@ const std::string& Channel::getcTopic() const { return _cTopic; }
 const std::string& Channel::getcKey() const { return _cKey; }
 const bool& Channel::getChannelType() const { return _isInviteOnly; }
 const bool& Channel::getTopicRestricted() const { return _topicRestricted; }
+const bool& Channel::getNoExternalMsgs() const { return _noExternalMsgs; }
 const std::vector<int>& Channel::getJoined() const { return _joined; }
 const int& Channel::getUserLimit() const { return _userLimit; }
 std::string Channel::getTopic() const { return _cTopic; }
@@ -28,6 +33,7 @@ void Channel::setcKey(const std::string& key) { _cKey = key; }
 void Channel::setChannelType() { _isInviteOnly = !_isInviteOnly; }
 void Channel::setTopicRestricted(bool restricted) { _topicRestricted = restricted; }
 void Channel::setUserLimit(int limit) { _userLimit = limit; }
+void Channel::setNoExternalMsgs(bool noExternalMsgs) { _noExternalMsgs = noExternalMsgs; }
 
 // ----- methods -----
 void Channel::addClient(int fd) 

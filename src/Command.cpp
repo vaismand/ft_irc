@@ -38,6 +38,7 @@ void Command::initErrorMap()
     errorMap[405] = "You're already on that channel";
     errorMap[471] = "Channel is full";
     errorMap[473] = "Cannot join channel (invite only)";
+    errorMap[472] = "is unknown mode char to me";
 }
 
 void Command::sendError(int fd, int errorCode, const std::string &nick, const std::string &command)
@@ -169,6 +170,12 @@ void Command::commandJoin(Server &server, int fd, const std::string &command) {
             sendError(fd, 473, nick, channelName);
             return;
         }
+        if (!ChannelToJoin->getcKey().empty()) {
+            if (tokens.size() < 3 || tokens[2] != ChannelToJoin->getcKey()) {
+                sendError(fd, 475, nick, channelName);
+                return;
+            }
+        }
     }
     ChannelToJoin->addClient(server.getClient(fd).getFd());
     std::string user = server.getClient(fd).getUser();
@@ -295,15 +302,26 @@ void Command::commandMode(Server &server, int fd, const std::string &command)
             sendError(fd, 442, clientNick, target);
             return;
         }
-        if (tokens.size() >= 3 && !channel->isOperator(fd)) {
-            sendError(fd, 482, clientNick, target);
-            return;
-        }
         if (tokens.size() < 3) {
             dvais::sendMessage(fd, ":ircserv 324 " + clientNick + " " + target + " :+it\r\n");
+            dvais::sendMessage(fd, ":ircserv 329 " + clientNick + " " + target + " 1678901234\r\n");
             return;
         }
         std::string modeStr = tokens[2];
+        bool requiresOp = false;
+        for (size_t i = 0; i < modeStr.size(); ++i) {
+            char c = modeStr[i];
+            if (c == '+' || c == '-')
+                continue;
+            if (c != 'b') {
+                requiresOp = true;
+                break;
+            }
+        }
+        if (requiresOp && !channel->isOperator(fd)) {
+            sendError(fd, 482, clientNick, target);
+            return;
+        }
         int paramIndex = 3;
         bool adding = true;
         for (size_t i = 0; i < modeStr.length(); i++)
@@ -317,6 +335,21 @@ void Command::commandMode(Server &server, int fd, const std::string &command)
                 continue;
             }
             switch (modeChar) {
+                case 'b':
+                {
+                    if (adding) {
+                        if (paramIndex >= (int)tokens.size()) {
+                            dvais::sendMessage(fd, ":ircserv 367 " + clientNick + " " + target + " :\r\n");
+                            dvais::sendMessage(fd, ":ircserv 368 " + clientNick + " " + target + " :End of Channel Ban List\r\n"); // RPL_ENDOFBANLIST
+                        } else {
+                            sendError(fd, 472, clientNick, "b"); 
+                        }
+                    } else {
+                        sendError(fd, 472, clientNick, "b");
+                    }
+                    break;
+                }
+
                 case 'i':
                     channel->setChannelType();
                     break;
@@ -367,10 +400,8 @@ void Command::commandMode(Server &server, int fd, const std::string &command)
                     }
                     break;
                 }
-                case 'b':
-                {
-                    dvais::sendMessage(fd, ":ircserv 367 " + clientNick + " " + target + " :\r\n");
-                    dvais::sendMessage(fd, ":ircserv 368 " + clientNick + " " + target + " :End of Channel Ban List\r\n");
+                case 'n': {
+                    channel->setNoExternalMsgs(adding);
                     break;
                 }
                 default:
@@ -426,7 +457,7 @@ void Command::commandMsg(Server &server, int fd, const std::string &command, boo
                 sendError(fd, 401, server.getClient(fd).getNick(), cmd[1]);
             return;
         }
-        if (!ChannelToChat->isMember(fd)) {
+        if (!ChannelToChat->isMember(fd) && !ChannelToChat->getNoExternalMsgs()) {
             if (sendErs)
                 sendError(fd, 404, server.getClient(fd).getNick(), ChannelToChat->getcName());
             return;
@@ -572,7 +603,7 @@ void Command::commandInvite(Server &server, int fd, const std::string &command) 
 void Command::commandKick(Server &server, int fd, const std::string &command) {
     std::vector<std::string> tokens = dvais::cmdtokenizer(command);
     std::string client_nick = server.getClient(fd).getNick();
-    std::string comment = ""; //by default in irssi the target_nick;
+    std::string comment = "";
     if (tokens.size() < 3) {
         sendError(fd, 461, client_nick, tokens[0]);
         return;
