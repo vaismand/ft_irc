@@ -155,6 +155,11 @@ void Server::addClient()
 void Server::removeClient(int fd) 
 {
     std::cout << "Client disconnected: " << fd << std::endl;
+    for (std::map<std::string, Channel*>::iterator it = _channels.begin(); it != _channels.end(); ++it)
+    {
+        if (it->second->isMember(fd))
+            it->second->rmClient(fd);
+    }
     close(fd);
 
     for (std::vector<struct pollfd>::reverse_iterator it = _pollfds.rbegin(); it != _pollfds.rend(); it++)

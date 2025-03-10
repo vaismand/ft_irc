@@ -203,10 +203,20 @@ void Command::commandPart(Server &server, int fd, const std::string &command)
 {
     std::vector<std::string> tokens = dvais::cmdtokenizer(command);
     std::string nick = server.getClient(fd).getNick();
+    std::string reason;
     if (tokens.size() < 2) {
         sendError(fd, 461, nick, "PART");
         return;
     }
+    if (tokens.size() >= 3)
+    {
+        if (!tokens[2].empty() && tokens[2][0] == ':')
+            reason = tokens[2].substr(1);
+        else
+            reason = tokens[2];
+    }
+    if (reason.empty())
+        reason = "Leaving";
     std::string channelName = tokens[1];
     Channel* tmp = server.getChannel(channelName);
     if (!tmp) {
@@ -220,9 +230,9 @@ void Command::commandPart(Server &server, int fd, const std::string &command)
     std::string user = server.getClient(fd).getUser();
     std::string host = server.getClient(fd).getIp();
     std::string prefix = ":" + nick + "!" + user + "@" + host;
-    std::string msg = prefix + " PART " + channelName + "\r\n";
-    tmp->broadcast(fd, msg);
+    std::string msg = prefix + " PART " + channelName + ": " + reason + "\r\n"; 
     dvais::sendMessage(fd, msg);
+    tmp->broadcast(fd, msg);
     tmp->rmClient(fd);
     if (tmp->getJoined().empty())
     {
@@ -569,9 +579,7 @@ void Command::commandQuit(Server &server, int fd, const std::string &command) {
     std::string host = server.getClient(fd).getIp();
     std::string prefix = ":" + nick + "!" + user + "@" + host;
     std::string msg = prefix + " QUIT :" + quitMessage + "\r\n";
-    
     server.broadcastAll(fd, msg);
-    sleep(10);
     server.removeClient(fd);
 }
 
@@ -685,8 +693,8 @@ void Command::executeCommand(Server &server, int fd, const std::string &command)
         commandWho(server, fd, command);
     } else if (command.find("TOPIC") == 0) {
         commandTopic(server, fd, command);
-    } else if (command.find("QUIT") == 0) {
-        server.removeClient(fd);
+    } else if (command.find("QUIT ") == 0) {
+        commandQuit(server, fd, command);
     } else {
         sendError(fd, 421, server.getClient(fd).getNick(), command.substr(0, command.find(" ")));
     }
