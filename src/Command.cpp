@@ -571,36 +571,35 @@ void Command::commandInvite(Server &server, int fd, const std::string &command) 
 
 void Command::commandKick(Server &server, int fd, const std::string &command) {
     std::vector<std::string> tokens = dvais::cmdtokenizer(command);
-    std::string client_nick = server.getClient(fd).getNick();
-    std::string comment = ""; //by default in irssi the target_nick;
+    Client &client = server.getClient(fd);
+    const std::string &client_nick = client.getNick();
     if (tokens.size() < 3) {
-        sendError(fd, 461, client_nick, tokens[0]);
+        sendError(fd, 461, client_nick, tokens[0]); // ERR_NEEDMOREPARAMS
         return;
-    } else if (tokens.size() >= 4 && tokens[3][0] == ':') {
-        comment = tokens[3].substr(1);
-    } else {
-        comment = tokens[2];
     }
+    // If a fourth token is present and begins with ':', remove it; otherwise, default to the target nick.
+    std::string comment = (tokens.size() >= 4 && !tokens[3].empty() && tokens[3][0] == ':') ? tokens[3].substr(1) : tokens[2];
+
     Channel* targetChannel = server.getChannel(tokens[1]);
     if (!targetChannel) {
-        sendError(fd, 403, client_nick, tokens[1]);
+        sendError(fd, 403, client_nick, tokens[1]); // ERR_NOSUCHCHANNEL
         return;
     }
     if (targetChannel->isMember(fd) == false) {
-        sendError(fd, 442, "", targetChannel->getcName());
+        sendError(fd, 442, "", targetChannel->getcName()); // ERR_NOTONCHANNEL
         return;
     }
     if (targetChannel->isOperator(fd) == false) {
-        sendError(fd, 482, "", targetChannel->getcName());
+        sendError(fd, 482, "", targetChannel->getcName()); // ERR_CHANOPRIVSNEEDED
         return;
     }
     Client* targetClient = server.getClientByNick(tokens[2]);
     if (!targetClient || !targetChannel->isMember(targetClient->getFd())) {
-        sendError(fd, 441, tokens[2], targetChannel->getcName());
+        sendError(fd, 441, tokens[2], targetChannel->getcName()); // ERR_USERNOTINCHANNEL
         return;
     }
-    std::string user = server.getClient(fd).getUser();
-    std::string host = server.getClient(fd).getIp();
+    std::string user = client.getUser();
+    std::string host = client.getIp();
     std::string kickMsg = ":" + client_nick + "!" + user + "@" + host + \
                             " KICK " + targetChannel->getcName() + \
                             " " + targetClient->getNick() + " :" + comment + "\r\n";
