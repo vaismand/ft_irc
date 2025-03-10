@@ -693,7 +693,7 @@ void Command::executeCommand(Server &server, int fd, const std::string &command)
         commandWho(server, fd, command);
     } else if (command.find("TOPIC") == 0) {
         commandTopic(server, fd, command);
-    } else if (command.find("QUIT ") == 0) {
+    } else if (command.find("QUIT") == 0) {
         commandQuit(server, fd, command);
     } else {
         sendError(fd, 421, server.getClient(fd).getNick(), command.substr(0, command.find(" ")));
