@@ -24,7 +24,8 @@ void Command::initErrorMap()
     errorMap[404] = "Cannot send to channel";
     errorMap[411] = "No recipient given";
     errorMap[421] = "Unknown command";
-    errorMap[432] = "Erroneous nickname";
+    errorMap[431] = "No nickname given";
+    errorMap[432] = "Erroneous Nickname";
     errorMap[433] = "Nickname is already in use";
     errorMap[451] = "You have not registered";
     errorMap[461] = "Not enough parameters";
@@ -69,21 +70,19 @@ void Command::commandCap(int fd, const std::string &command)
 
 void Command::commandNick(Server &server, int fd, const std::string &command) {
     std::vector<std::string> tokens = dvais::cmdtokenizer(command);
+    Client &client = server.getClient(fd);
+    const std::string &currentNick = client.getNick();
     if (tokens.size() < 2) {
-        // Not enough parameters; send an error message for missing NICK parameter.
-        sendError(fd, 461, server.getClient(fd).getNick(), "NICK");
+        sendError(fd, 431, currentNick, ""); // ERR_NONICKNAMEGIVEN 
         return;
     }
-    std::string nickname = tokens[1]; //!! solve : problem by only allowing alphanumeric characters for nick
-    std::string currentNick = server.getClient(fd).getNick();
-    if (currentNick.empty())
-        currentNick = "*";
+    std::string nickname = tokens[1]; 
     if (server.isNickInUse(nickname, fd)) {
-        sendError(fd, 433, currentNick, nickname);
+        sendError(fd, 433, currentNick, nickname); // ERR_NICKNAMEINUSE
         return;
     }
     if (nickname.empty() || !isValidNick(nickname)) {
-        sendError(fd, 432, "", nickname);
+        sendError(fd, 432, currentNick, nickname); // ERR_ERRONEUSNICKNAME
         return;
     }
     std::string user = server.getClient(fd).getUser();
@@ -186,7 +185,7 @@ void Command::commandPart(Server &server, int fd, const std::string &command)
     Client &client = server.getClient(fd);
     const std::string &nick = client.getNick();
     if (tokens.size() < 2) {
-        sendError(fd, 461, nick, "PART");
+        sendError(fd, 461, nick, "PART"); // ERR_NEEDMOREPARAMS 
         return;
     }
     std::string reason = (tokens.size() >= 3 && !tokens[2].empty() && tokens[2][0] == ':') ? tokens[2] : "";
@@ -194,11 +193,11 @@ void Command::commandPart(Server &server, int fd, const std::string &command)
     std::string channelName = tokens[1];
     Channel* channelToPart = server.getChannel(channelName);
     if (!channelToPart) {
-        sendError(fd, 421, nick, channelName);
+        sendError(fd, 403, nick, channelName); // ERR_NOSUCHCHANNEL
         return;
     }
     if (!channelToPart->isMember(fd)) {
-        sendError(fd, 442, nick, channelName);
+        sendError(fd, 442, nick, channelName); // ERR_NOTONCHANNEL 
         return;
     }
     std::string user = client.getUser();
@@ -612,7 +611,7 @@ void Command::commandKick(Server &server, int fd, const std::string &command) {
 void Command::executeCommand(Server &server, int fd, const std::string &command) {
     if (command.find("CAP ") == 0) {
         commandCap(fd, command);
-    } else if (command.find("NICK ") == 0) {
+    } else if (command.find("NICK") == 0) {
         commandNick(server, fd, command);
     } else if (command.find("USER ") == 0) {
         commandUser(server, fd, command);
