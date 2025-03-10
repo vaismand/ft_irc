@@ -183,32 +183,33 @@ void Command::commandJoin(Server &server, int fd, const std::string &command) {
 void Command::commandPart(Server &server, int fd, const std::string &command)
 {
     std::vector<std::string> tokens = dvais::cmdtokenizer(command);
-    std::string nick = server.getClient(fd).getNick();
+    Client &client = server.getClient(fd);
+    const std::string &nick = client.getNick();
     if (tokens.size() < 2) {
         sendError(fd, 461, nick, "PART");
         return;
     }
+    std::string reason = (tokens.size() >= 3 && !tokens[2].empty() && tokens[2][0] == ':') ? tokens[2] : "";
+
     std::string channelName = tokens[1];
-    Channel* tmp = server.getChannel(channelName);
-    if (!tmp) {
+    Channel* channelToPart = server.getChannel(channelName);
+    if (!channelToPart) {
         sendError(fd, 421, nick, channelName);
         return;
     }
-    if (!tmp->isMember(fd)) {
+    if (!channelToPart->isMember(fd)) {
         sendError(fd, 442, nick, channelName);
         return;
     }
-    std::string user = server.getClient(fd).getUser();
-    std::string host = server.getClient(fd).getIp();
+    std::string user = client.getUser();
+    std::string host = client.getIp();
     std::string prefix = ":" + nick + "!" + user + "@" + host;
-    std::string msg = prefix + " PART " + channelName + "\r\n";
-    tmp->broadcast(fd, msg);
+    std::string msg = prefix + " PART " + channelName + " " + reason + "\r\n";
+    channelToPart->broadcast(fd, msg);
     dvais::sendMessage(fd, msg);
-    tmp->rmClient(fd);
-    if (tmp->getJoined().empty())
-    {
+    channelToPart->rmClient(fd);
+    if (channelToPart->getJoined().empty())
         server.rmChannel(channelName);
-    }
 }
 
 void Command::commandWhois(Server &server, int fd, const std::string &command) {
@@ -578,7 +579,7 @@ void Command::commandKick(Server &server, int fd, const std::string &command) {
         return;
     }
     // If a fourth token is present and begins with ':', remove it; otherwise, default to the target nick.
-    std::string comment = (tokens.size() >= 4 && !tokens[3].empty() && tokens[3][0] == ':') ? tokens[3].substr(1) : tokens[2];
+    std::string comment = (tokens.size() >= 4 && !tokens[3].empty() && tokens[3][0] == ':') ? tokens[3] : ":" + tokens[2];
 
     Channel* targetChannel = server.getChannel(tokens[1]);
     if (!targetChannel) {
@@ -602,7 +603,7 @@ void Command::commandKick(Server &server, int fd, const std::string &command) {
     std::string host = client.getIp();
     std::string kickMsg = ":" + client_nick + "!" + user + "@" + host + \
                             " KICK " + targetChannel->getcName() + \
-                            " " + targetClient->getNick() + " :" + comment + "\r\n";
+                            " " + targetClient->getNick() + " " + comment + "\r\n";
     targetChannel->broadcast(-1, kickMsg);
     targetChannel->rmClient(targetClient->getFd());
 }
