@@ -129,15 +129,23 @@ void Command::commandUser(Server &server, int fd, const std::string &command) {
 }
 
 /**
- * @brief 
+ * @brief Handles the JOIN command in the IRC server.
  * 
- * @param server 
- * @param fd 
- * @param command 
+ * @throws
  */
 void Command::commandJoin(Server &server, int fd, const std::string &command) {
-    std::string nick = server.getClient(fd).getNick();
     std::vector<std::string> tokens = dvais::cmdtokenizer(command);
+    Client &client = server.getClient(fd);
+    const std::string &nick = client.getNick();
+    if (tokens.size() < 2 || tokens[1].empty()) {
+        sendError(fd, 461, nick, "JOIN"); // ERR_NEEDMOREPARAMS
+        return;
+    }
+    std::vector<std::string> channels = dvais::split(tokens[1], ',');
+    std::vector<std::string> keys;
+    if (tokens.size() >= 3 && !tokens[2].empty()) {
+        keys = dvais::split(tokens[2], ',');
+    }
     std::string channelName = tokens[1];
     if (channelName.find(",") != std::string::npos) {
         sendError(fd, 475, nick, channelName);
