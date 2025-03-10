@@ -27,7 +27,7 @@ class Command;
 class Server
 {
 	private:
-		// Constructors
+		// private Constructors
 		Server();
 		Server(const Server &src);
 		Server &operator=(const Server &src);
@@ -40,14 +40,14 @@ class Server
 		std::map <int, Client*> _clients;
 		std::map <std::string, Channel*> _channels;
 
-		// Methods
+		// private Methods
 		void bindSocket();
 		void addClient();
 		void handleClient(int fd);
 		void tryRegisterClient(int fd);
 
 	public:
-		// Constructors
+		// public Constructors
 		Server(const std::string &port, const std::string &pass);
 		~Server();
 
@@ -57,15 +57,15 @@ class Server
 		std::string getClientNick(int fd) const;
 		std::string getPass() const;
 		const std::map<int, Client*>& getClients() const;
+		Client *getClientByNick(const std::string &nickname);
 
-
-		// Methods
+		// public Methods
 		ssize_t sendMessage(int fd, const std::string &message);
 		void addChannel(const int &fd, const std::string &name, const std::string &pass);
 		void rmChannel(const std::string &name);
-		void removeClient(int fd);
+		void rmClient(int fd);
 		void run();
 		void broadcastAll(int fd, const std::string &msg);
 		bool isNickInUse(const std::string &nickname, int excludeFd = -1) const;
-		Client *getClientByNick(const std::string &nickname);
+		bool isValidNick(const std::string &nickname);
 };

@@ -20,26 +20,27 @@ Command::~Command() {}
 
 void Command::initErrorMap()
 {
+    errorMap[331] = "No topic is set";
     errorMap[401] = "No such nick/channel";
+    errorMap[403] = "No such channel";
     errorMap[404] = "Cannot send to channel";
+    errorMap[405] = "You're already on that channel";
     errorMap[411] = "No recipient given";
+    errorMap[412] = "No text to send";
     errorMap[421] = "Unknown command";
     errorMap[431] = "No nickname given";
     errorMap[432] = "Erroneous Nickname";
     errorMap[433] = "Nickname is already in use";
+    errorMap[442] = "Not on channel";
     errorMap[451] = "You have not registered";
     errorMap[461] = "Not enough parameters";
+    errorMap[462] = "You may not reregister";
     errorMap[464] = "Password incorrect";
-    errorMap[475] = "Cannot join channel (invite only)";
-    errorMap[403] = "No such channel";
-    errorMap[412] = "No text to send";
-    errorMap[442] = "Not on channel";
-    errorMap[482] = "You're not channel operator";
-    errorMap[331] = "No topic is set";
-    errorMap[405] = "You're already on that channel";
     errorMap[471] = "Channel is full";
-    errorMap[473] = "Cannot join channel (invite only)";
     errorMap[472] = "is unknown mode char to me";
+    errorMap[473] = "Cannot join channel (invite only)";
+    errorMap[475] = "Cannot join channel (invite only)";
+    errorMap[482] = "You're not channel operator";
 }
 
 void Command::sendError(int fd, int errorCode, const std::string &nick, const std::string &command)
@@ -68,7 +69,15 @@ void Command::commandCap(int fd, const std::string &command)
     }
     sendError(fd, 421, "", "CAP");
 }
-
+/**
+ * @brief Handles the NICK command in the IRC server.
+ * This command sets and updates the nickname of the client. It needs a valid nickname as parameter.
+ * Nickname change is broadcasted to all.
+ * 
+ * @throws ERR_NEEDMOREPARAMS (461) - if no nickname is provided.
+ * @throws ERR_ERRONEUSNICKNAME (432) - if provided nickname has invalid format.
+ * @throws ERR_NICKNAMEINUSE (433) - if provided nickname is already taken by another client.
+ */
 void Command::commandNick(Server &server, int fd, const std::string &command) {
     std::vector<std::string> tokens = dvais::cmdtokenizer(command);
     Client &client = server.getClient(fd);
@@ -82,7 +91,7 @@ void Command::commandNick(Server &server, int fd, const std::string &command) {
         sendError(fd, 433, currentNick, nickname); // ERR_NICKNAMEINUSE
         return;
     }
-    if (nickname.empty() || !isValidNick(nickname)) {
+    if (nickname.empty() || !server.isValidNick(nickname)) {
         sendError(fd, 432, currentNick, nickname); // ERR_ERRONEUSNICKNAME
         return;
     }
@@ -94,29 +103,38 @@ void Command::commandNick(Server &server, int fd, const std::string &command) {
     server.broadcastAll(fd, msg);
 }
 
+/**
+ * @brief Handles the USER command in the IRC server.
+ * This command sets the username for the client. It needs username as parameter and can
+ * be set only once.
+ * 
+ * @throws ERR_NEEDMOREPARAMS (461) - if no username is provided.
+ * @throws ERR_ALREADYREGISTERED (462) - if client is already registered.
+ */
 void Command::commandUser(Server &server, int fd, const std::string &command) {
     std::vector<std::string> tokens = dvais::cmdtokenizer(command);
+    Client &client = server.getClient(fd);
+    const std::string &nick = client.getNick();
     if (tokens.size() < 2 || tokens[1].empty()) {
-        // Not enough parameters; send an error message.
-        sendError(fd, 461, server.getClient(fd).getNick(), "USER");
+        sendError(fd, 461, nick, "USER"); // ERR_NEEDMOREPARAMS
+        return;
+    }
+    if (client.getStatus() == REGISTERED) {
+        sendError(fd, 462, nick, "USER"); // ERR_ALREADYREGISTERED
         return;
     }
     std::string username = tokens[1];
-    server.getClient(fd).setUser(username);
+    client.setUser(username);
     dvais::sendMessage(fd, "Username set to " + username + "\r\n");
 }
 
-bool Command::isValidNick(const std::string &nickname) {
-    if (nickname.empty() || !isalpha(nickname[0]))
-        return false;
-    for (size_t i = 0; i < nickname.length(); ++i) {
-        char c = nickname[i];
-        if (!isalnum(c) && c != '-' && c != '_')
-            return false;
-    }
-    return true;
-}
-
+/**
+ * @brief 
+ * 
+ * @param server 
+ * @param fd 
+ * @param command 
+ */
 void Command::commandJoin(Server &server, int fd, const std::string &command) {
     std::string nick = server.getClient(fd).getNick();
     std::vector<std::string> tokens = dvais::cmdtokenizer(command);
@@ -444,7 +462,7 @@ void Command::commandPass(Server &server, int fd, const std::string &command) {
     std::string providedPass = command.substr(5);
     if (providedPass != server.getPass()) {
         sendError(fd, 464, "", "");
-        server.removeClient(fd);
+        server.rmClient(fd);
     } else {
         server.getClient(fd).setPassAccepted(true);
     }
@@ -476,7 +494,7 @@ void Command::commandMsg(Server &server, int fd, const std::string &command, boo
         }
         std::string msg = ":" + server.getClient(fd).getNick() + " " + cmd[0] + " " + ChannelToChat->getcName() + " " + cmd[2] + " \r\n";
         ChannelToChat->broadcast(fd, msg);
-    } else if (isValidNick(cmd[1])) {
+    } else if (server.isValidNick(cmd[1])) {
         Client* ClientToChat = server.getClientByNick(cmd[1]);
         if (ClientToChat == NULL) {
             if (sendErs)
@@ -570,7 +588,7 @@ void Command::commandQuit(Server &server, int fd, const std::string &command) {
     std::string prefix = ":" + nick + "!" + user + "@" + host;
     std::string msg = prefix + " QUIT :" + quitMessage + "\r\n";
     server.broadcastAll(fd, msg);
-    server.removeClient(fd);
+    server.rmClient(fd);
 }
 
 void Command::commandInvite(Server &server, int fd, const std::string &command) {

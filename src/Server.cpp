@@ -1,9 +1,6 @@
 #include "../inc/Server.hpp"
 
-Server::Server(const std::string &port, const std::string &pass) : _port(port), _pass(pass), _socket(-1) 
-{
-}
-
+Server::Server(const std::string &port, const std::string &pass) : _port(port), _pass(pass), _socket(-1) {}
 Server::Server(const Server &src) : _port(src._port), _pass(src._pass) {}
 
 Server::~Server()
@@ -11,26 +8,51 @@ Server::~Server()
 	if (_socket != -1)
 		close(_socket);
     for (std::map<int, Client*>::iterator it = _clients.begin(); it != _clients.end(); it++)
-    {
         delete it->second;
-    }
     for (std::map<std::string, Channel*>::iterator it = _channels.begin(); it != _channels.end(); it++)
-    {
         delete it->second;
-    }
     _clients.clear();
     for (std::vector<struct pollfd>::iterator it = _pollfds.begin(); it != _pollfds.end(); it++)
-    {
         close(it->fd);
-    }
     _pollfds.clear();
 }
 
-std::string Server::getPass() const
+// ----- getter Functions -----
+std::string Server::getPass() const { return _pass; }
+
+const std::map<int, Client*>& Server::getClients() const { return _clients; }
+
+Client &Server::getClient(int fd) const
 {
-	return _pass;
+    if (_clients.find(fd) == _clients.end())
+        throw std::runtime_error("Error: Client not found.");
+    return *_clients.at(fd);
 }
 
+std::string Server::getClientNick(int fd) const
+{
+    if (_clients.find(fd) == _clients.end())
+        throw std::runtime_error("Error: Client not found.");
+    return _clients.at(fd)->getNick();
+}
+
+Client* Server::getClientByNick(const std::string &nick)
+{
+    for (std::map<int, Client*>::iterator it = _clients.begin(); it != _clients.end(); ++it) {
+        if (it->second->getNick() == nick)
+            return it->second;
+    }
+    return NULL;
+}
+
+Channel *Server::getChannel(const std::string &name)
+{
+    if (_channels.find(name) == _channels.end())
+        return NULL;
+    return _channels[name];
+}
+
+// ----- methods -----
 void Server::bindSocket()
 {
 	struct sockaddr_in server_addr;
@@ -83,7 +105,7 @@ void Server::run()
 		{
             if (_pollfds[i].revents & (POLLERR | POLLHUP | POLLNVAL))
             {
-                removeClient(_pollfds[i].fd);
+                rmClient(_pollfds[i].fd);
                 continue;
             }
             if (_pollfds[i].revents & POLLIN)
@@ -98,32 +120,6 @@ void Server::run()
         }
     }
     std::cerr << "Server shutting down..." << std::endl;
-}
-
-Client &Server::getClient(int fd) const
-{
-    if (_clients.find(fd) == _clients.end())
-    {
-        throw std::runtime_error("Error: Client not found.");
-    }
-    return *_clients.at(fd);
-}
-
-std::string Server::getClientNick(int fd) const
-{
-    if (_clients.find(fd) == _clients.end()) {
-        throw std::runtime_error("Error: Client not found.");
-    }
-    return _clients.at(fd)->getNick();
-}
-
-Client* Server::getClientByNick(const std::string &nick)
-{
-    for (std::map<int, Client*>::iterator it = _clients.begin(); it != _clients.end(); ++it) {
-        if (it->second->getNick() == nick)
-            return it->second;
-    }
-    return NULL;
 }
 
 void Server::addClient()
@@ -152,7 +148,7 @@ void Server::addClient()
     std::cout << "Client Connected: " << client_fd << std::endl;
 }
 
-void Server::removeClient(int fd) 
+void Server::rmClient(int fd) 
 {
     std::cout << "Client disconnected: " << fd << std::endl;
     for (std::map<std::string, Channel*>::iterator it = _channels.begin(); it != _channels.end(); ++it)
@@ -173,12 +169,6 @@ void Server::removeClient(int fd)
     _clients.erase(fd);
 }
 
-Channel *Server::getChannel(const std::string &name)
-{
-    if (_channels.find(name) == _channels.end())
-        return NULL;
-    return _channels[name];
-}
 
 void Server::addChannel(const int &fd, const std::string &name, const std::string &pass)
 {
@@ -224,7 +214,7 @@ void Server::handleClient(int fd)
     ssize_t bytes_received = recv(fd, buffer, sizeof(buffer) - 1, 0);
     if (bytes_received <= 0)
     {
-        removeClient(fd);
+        rmClient(fd);
         return;
     }
 
@@ -248,7 +238,7 @@ void Server::handleClient(int fd)
             std::cerr << "Command execution error: " << e.what() << std::endl;
             if (dvais::sendMessage(fd, "Error processing command.\r\n") < 0)
             {
-                removeClient(fd);
+                rmClient(fd);
                 return;
             }
         }
@@ -267,7 +257,13 @@ bool Server::isNickInUse(const std::string &nickname, int excludeFd) const {
     return false;
 }
 
-const std::map<int, Client*>& Server::getClients() const
-{
-    return _clients;
+bool Server::isValidNick(const std::string &nickname) {
+    if (nickname.empty() || !isalpha(nickname[0]))
+        return false;
+    for (size_t i = 0; i < nickname.length(); ++i) {
+        char c = nickname[i];
+        if (!isalnum(c) && c != '-' && c != '_')
+            return false;
+    }
+    return true;
 }
