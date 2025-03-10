@@ -60,7 +60,7 @@ void Server::bindSocket()
 void Server::run()
 {
     bindSocket();
-    while (true)
+    while (g_running)
 	{
         int poll_count = poll(_pollfds.data(), _pollfds.size(), -1);
         if (poll_count < 0)

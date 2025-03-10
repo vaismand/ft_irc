@@ -15,11 +15,13 @@
 #include <cstdio>
 #include <vector>
 #include <cstdlib>
+#include <csignal>
 #include "Client.hpp"
 #include "Channel.hpp"
 #include "Command.hpp"
 #include "Tools.hpp"
 
+extern bool g_running;
 class Command;
 
 class Server
