@@ -7,10 +7,8 @@ static void signalHandler(int signal)
 {
     if (signal == SIGINT)
     {
-        std::cerr << "Server shutting down..." << std::endl;
         g_running = false;
     } else if (signal == SIGQUIT) {
-        std::cerr << "Server shutting down..." << std::endl;
         g_running = false;
     }
 }

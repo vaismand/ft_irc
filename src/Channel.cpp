@@ -11,7 +11,11 @@ _cKey(key), _cTopic("")
     _topicRestricted = false;
 }
 
-Channel::~Channel() {}
+Channel::~Channel() {
+    _joined.clear();
+    _invited.clear();
+    _operators.clear();
+}
 
 // ----- getter Functions -----
 const std::string& Channel::getcName() const { return _cName; }

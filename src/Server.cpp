@@ -19,6 +19,11 @@ Server::~Server()
         delete it->second;
     }
     _clients.clear();
+    for (std::vector<struct pollfd>::iterator it = _pollfds.begin(); it != _pollfds.end(); it++)
+    {
+        close(it->fd);
+    }
+    _pollfds.clear();
 }
 
 std::string Server::getPass() const
@@ -65,6 +70,12 @@ void Server::run()
         int poll_count = poll(_pollfds.data(), _pollfds.size(), -1);
         if (poll_count < 0)
 		{
+            if (errno == EINTR)
+            {
+                if (!g_running)
+                    break;
+                continue;
+            }
             perror("poll");
             break;
         }
@@ -86,6 +97,7 @@ void Server::run()
             }
         }
     }
+    std::cerr << "Server shutting down..." << std::endl;
 }
 
 Client &Server::getClient(int fd) const

@@ -151,9 +151,11 @@ void Command::commandJoin(Server &server, int fd, const std::string &command) {
         return;
     }
     Channel* ChannelToJoin = server.getChannel(channelName);
+    bool newChannel = false;
     if (ChannelToJoin == NULL) {
         server.addChannel(fd, channelName, "");
         ChannelToJoin = server.getChannel(channelName);
+        newChannel = true;
     }
     else
     {
@@ -181,10 +183,20 @@ void Command::commandJoin(Server &server, int fd, const std::string &command) {
     std::string user = server.getClient(fd).getUser();
     std::string host = server.getClient(fd).getIp();
     ChannelToJoin->broadcast(-1, ":" + nick + "!" + user + "@" + host + " JOIN " + channelName + "\r\n");
+    if (newChannel)
+        ChannelToJoin->broadcast(-1, ":ircserv MODE " + channelName + " +nt\r\n");
+    if (!ChannelToJoin->getcTopic().empty())
+    {
+        time_t topicTime = ChannelToJoin->getTopicSetTime();
+        std::ostringstream oss;
+        oss << topicTime;
+        std::string timeStr = oss.str();
+        dvais::sendMessage(fd, ":ircserv 332 " + nick + " " + channelName + " :" + ChannelToJoin->getcTopic() + "\r\n");
+        dvais::sendMessage(fd, ":ircserv 333 " + nick + " " + channelName + " " 
+            + ChannelToJoin->getTopicSetter() + " " + timeStr + "\r\n");    }
+    commandNames(server, fd, "NAMES " + ChannelToJoin->getcName());
     if (ChannelToJoin->isInvited(fd))
         ChannelToJoin->rmInvited(fd);
-    ChannelToJoin->getcTopic();
-    commandNames(server, fd, "NAMES " + ChannelToJoin->getcName());
 }
 
 void Command::commandPart(Server &server, int fd, const std::string &command)
