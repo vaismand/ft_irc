@@ -22,7 +22,7 @@ Client& Client::operator=(const Client& rhs) {
 
 void Client::ClientInit() {
 	_username = "";
-	_nickname = "";
+	_nickname = "*";
 	_status = UNREGISTERED;
 	_isAdmin = false;
 	_passAccepted = false;

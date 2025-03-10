@@ -24,7 +24,8 @@ void Command::initErrorMap()
     errorMap[404] = "Cannot send to channel";
     errorMap[411] = "No recipient given";
     errorMap[421] = "Unknown command";
-    errorMap[432] = "Erroneous nickname";
+    errorMap[431] = "No nickname given";
+    errorMap[432] = "Erroneous Nickname";
     errorMap[433] = "Nickname is already in use";
     errorMap[451] = "You have not registered";
     errorMap[461] = "Not enough parameters";
@@ -70,21 +71,19 @@ void Command::commandCap(int fd, const std::string &command)
 
 void Command::commandNick(Server &server, int fd, const std::string &command) {
     std::vector<std::string> tokens = dvais::cmdtokenizer(command);
+    Client &client = server.getClient(fd);
+    const std::string &currentNick = client.getNick();
     if (tokens.size() < 2) {
-        // Not enough parameters; send an error message for missing NICK parameter.
-        sendError(fd, 461, server.getClient(fd).getNick(), "NICK");
+        sendError(fd, 431, currentNick, ""); // ERR_NONICKNAMEGIVEN 
         return;
     }
-    std::string nickname = tokens[1]; //!! solve : problem by only allowing alphanumeric characters for nick
-    std::string currentNick = server.getClient(fd).getNick();
-    if (currentNick.empty())
-        currentNick = "*";
+    std::string nickname = tokens[1]; 
     if (server.isNickInUse(nickname, fd)) {
-        sendError(fd, 433, currentNick, nickname);
+        sendError(fd, 433, currentNick, nickname); // ERR_NICKNAMEINUSE
         return;
     }
     if (nickname.empty() || !isValidNick(nickname)) {
-        sendError(fd, 432, "", nickname);
+        sendError(fd, 432, currentNick, nickname); // ERR_ERRONEUSNICKNAME
         return;
     }
     std::string user = server.getClient(fd).getUser();
@@ -202,42 +201,33 @@ void Command::commandJoin(Server &server, int fd, const std::string &command) {
 void Command::commandPart(Server &server, int fd, const std::string &command)
 {
     std::vector<std::string> tokens = dvais::cmdtokenizer(command);
-    std::string nick = server.getClient(fd).getNick();
-    std::string reason;
+    Client &client = server.getClient(fd);
+    const std::string &nick = client.getNick();
     if (tokens.size() < 2) {
-        sendError(fd, 461, nick, "PART");
+        sendError(fd, 461, nick, "PART"); // ERR_NEEDMOREPARAMS 
         return;
     }
-    if (tokens.size() >= 3)
-    {
-        if (!tokens[2].empty() && tokens[2][0] == ':')
-            reason = tokens[2].substr(1);
-        else
-            reason = tokens[2];
-    }
-    if (reason.empty())
-        reason = "Leaving";
+    std::string reason = (tokens.size() >= 3 && !tokens[2].empty() && tokens[2][0] == ':') ? tokens[2] : "";
+
     std::string channelName = tokens[1];
-    Channel* tmp = server.getChannel(channelName);
-    if (!tmp) {
-        sendError(fd, 421, nick, channelName);
+    Channel* channelToPart = server.getChannel(channelName);
+    if (!channelToPart) {
+        sendError(fd, 403, nick, channelName); // ERR_NOSUCHCHANNEL
         return;
     }
-    if (!tmp->isMember(fd)) {
-        sendError(fd, 442, nick, channelName);
+    if (!channelToPart->isMember(fd)) {
+        sendError(fd, 442, nick, channelName); // ERR_NOTONCHANNEL 
         return;
     }
-    std::string user = server.getClient(fd).getUser();
-    std::string host = server.getClient(fd).getIp();
+    std::string user = client.getUser();
+    std::string host = client.getIp();
     std::string prefix = ":" + nick + "!" + user + "@" + host;
-    std::string msg = prefix + " PART " + channelName + ": " + reason + "\r\n"; 
+    std::string msg = prefix + " PART " + channelName + " " + reason + "\r\n";
+    channelToPart->broadcast(fd, msg);
     dvais::sendMessage(fd, msg);
-    tmp->broadcast(fd, msg);
-    tmp->rmClient(fd);
-    if (tmp->getJoined().empty())
-    {
+    channelToPart->rmClient(fd);
+    if (channelToPart->getJoined().empty())
         server.rmChannel(channelName);
-    }
 }
 
 void Command::commandWhois(Server &server, int fd, const std::string &command) {
@@ -622,39 +612,38 @@ void Command::commandInvite(Server &server, int fd, const std::string &command) 
 
 void Command::commandKick(Server &server, int fd, const std::string &command) {
     std::vector<std::string> tokens = dvais::cmdtokenizer(command);
-    std::string client_nick = server.getClient(fd).getNick();
-    std::string comment = "";
+    Client &client = server.getClient(fd);
+    const std::string &client_nick = client.getNick();
     if (tokens.size() < 3) {
-        sendError(fd, 461, client_nick, tokens[0]);
+        sendError(fd, 461, client_nick, tokens[0]); // ERR_NEEDMOREPARAMS
         return;
-    } else if (tokens.size() >= 4 && tokens[3][0] == ':') {
-        comment = tokens[3].substr(1);
-    } else {
-        comment = tokens[2];
     }
+    // If a fourth token is present and begins with ':', remove it; otherwise, default to the target nick.
+    std::string comment = (tokens.size() >= 4 && !tokens[3].empty() && tokens[3][0] == ':') ? tokens[3] : ":" + tokens[2];
+
     Channel* targetChannel = server.getChannel(tokens[1]);
     if (!targetChannel) {
-        sendError(fd, 403, client_nick, tokens[1]);
+        sendError(fd, 403, client_nick, tokens[1]); // ERR_NOSUCHCHANNEL
         return;
     }
     if (targetChannel->isMember(fd) == false) {
-        sendError(fd, 442, "", targetChannel->getcName());
+        sendError(fd, 442, "", targetChannel->getcName()); // ERR_NOTONCHANNEL
         return;
     }
     if (targetChannel->isOperator(fd) == false) {
-        sendError(fd, 482, "", targetChannel->getcName());
+        sendError(fd, 482, "", targetChannel->getcName()); // ERR_CHANOPRIVSNEEDED
         return;
     }
     Client* targetClient = server.getClientByNick(tokens[2]);
     if (!targetClient || !targetChannel->isMember(targetClient->getFd())) {
-        sendError(fd, 441, tokens[2], targetChannel->getcName());
+        sendError(fd, 441, tokens[2], targetChannel->getcName()); // ERR_USERNOTINCHANNEL
         return;
     }
-    std::string user = server.getClient(fd).getUser();
-    std::string host = server.getClient(fd).getIp();
+    std::string user = client.getUser();
+    std::string host = client.getIp();
     std::string kickMsg = ":" + client_nick + "!" + user + "@" + host + \
                             " KICK " + targetChannel->getcName() + \
-                            " " + targetClient->getNick() + " :" + comment + "\r\n";
+                            " " + targetClient->getNick() + " " + comment + "\r\n";
     targetChannel->broadcast(-1, kickMsg);
     targetChannel->rmClient(targetClient->getFd());
 }
@@ -663,7 +652,7 @@ void Command::commandKick(Server &server, int fd, const std::string &command) {
 void Command::executeCommand(Server &server, int fd, const std::string &command) {
     if (command.find("CAP ") == 0) {
         commandCap(fd, command);
-    } else if (command.find("NICK ") == 0) {
+    } else if (command.find("NICK") == 0) {
         commandNick(server, fd, command);
     } else if (command.find("USER ") == 0) {
         commandUser(server, fd, command);
