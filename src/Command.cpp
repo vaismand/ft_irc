@@ -289,25 +289,32 @@ void Command::commandPart(Server &server, int fd, const std::string &command) {
         partClientAll(server, client, channels, reason);
 }
 
-
+/**
+ * @brief Handles the WHOIS command in the IRC server.
+ * function retrieves information about that target nick. It sends a series of numeric replies:
+ * - RPL_WHOISUSER (311): Provides basic user info (nickname, username, hostname).
+ * - RPL_WHOISSERVER (312): Provides server info the target is connected to.
+ * - RPL_WHOISCHANNELS (319): Provides info about the channels client is in.
+ * - RPL_ENDOFWHOIS (318): End of the WHOIS reply.
+ * 
+ * @throws ERR_NEEDMOREPARAMS (461) - if no target nickname is provided.
+ * @throws ERR_NOSUCHNICK (401) - if the specified target nickname does not exist.
+ */
 void Command::commandWhois(Server &server, int fd, const std::string &command) {
-    std::istringstream iss(command);
-    std::string cmd, targetNick;
-    iss >> cmd >> targetNick;
-    targetNick = dvais::trim(targetNick);
+    std::vector<std::string> tokens = dvais::cmdtokenizer(command);
+    Client &client = server.getClient(fd);
+    const std::string &requesterNick = client.getNick();
+    std::string targetNick = tokens[1];
 
-    if (targetNick.empty())
-    {
-        sendError(fd, 461, server.getClient(fd).getNick(), "WHOIS");
+    if (targetNick.empty()) {
+        sendError(fd, 461, requesterNick, "WHOIS"); // ERR_NEEDMOREPARAMS 
         return;
     }
     Client* target = server.getClientByNick(targetNick);
-    if (!target)
-    {
-        sendError(fd, 401, server.getClient(fd).getNick(), targetNick);
+    if (!target) {
+        sendError(fd, 401, requesterNick, targetNick); // ERR_NOSUCHNICK
         return;
     }
-    std::string requesterNick = server.getClient(fd).getNick();
     std::ostringstream oss;
     oss << ":ircserv 311 " << requesterNick << " " << target->getNick()
         << " :[~" << target->getNick() << "@" << target->getIp() << "]\r\n";
@@ -316,6 +323,15 @@ void Command::commandWhois(Server &server, int fd, const std::string &command) {
     oss.str("");
     oss << ":ircserv 312 " << requesterNick << " " << target->getNick()
         << " ircserv :Welcome to ircserv\r\n";
+    dvais::sendMessage(fd, oss.str());
+
+    oss.str("");
+    oss << ":ircserv 319 " << requesterNick << " " << target->getNick() << " :";
+    std::vector<std::string> channelList = target->getChannelList();
+    for (std::vector<std::string>::iterator it = channelList.begin(); it != channelList.end(); it++) {
+        oss << *it << " ";
+    }
+    oss << "\r\n";
     dvais::sendMessage(fd, oss.str());
 
     oss.str("");
