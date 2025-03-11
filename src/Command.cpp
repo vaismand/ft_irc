@@ -160,12 +160,12 @@ void Command::commandJoin(Server &server, int fd, const std::string &command) {
         keys = dvais::split(tokens[2], ',');
     }
     if (!channels.empty() && channels[0] == "0") {
-        partClientAll(server, client);
+        partClientAll(server, client, client.getChannelList(), "");
         channels.erase(channels.begin());
         if (!keys.empty())
             keys.erase(keys.begin());
     }
-    for (int i = 0; i < channels.size(); i++) {
+    for (std::size_t i = 0; i < channels.size(); i++) {
         if (channels[i].find("#") != 0) {
             sendError(fd, 403, nick, channels[i]); // ERR_NOSUCHCHANNEL
             continue;
@@ -231,28 +231,35 @@ void Command::printChannelWelcome(Server &server, Client &client, Channel &chann
 }
 
 /**
- * @brief Parts Client of all Channels.
+ * @brief Parts Client from all specified Channels.
+ * Iterates over the provided list of channel names and sends a PART message for each.
  */
-void Command::partClientAll(Server &server, Client &client) {
-    std::vector<std::string> list = client.getChannelList();
+void Command::partClientAll(Server &server, Client &client, std::vector<std::string> list, std::string reason) {
     std::string user = client.getUser();
     std::string host = client.getIp();
     std::string nick = client.getNick();
     std::string prefix = ":" + nick + "!" + user + "@" + host;
 
     for (std::vector<std::string>::iterator it = list.begin(); it != list.end(); it++) {
-        std::string msg = prefix + " PART " + *it + "" + "\r\n";
-        server.getChannel(*it)->broadcast(client.getFd(), msg);
-        dvais::sendMessage(client.getFd(), msg);
-        if (server.getChannel(*it)->getJoined().empty())
-            server.rmChannel(*it);
+        std::string msg = prefix + " PART " + *it + " " + reason + "\r\n";
+        Channel* channel = server.getChannel(*it);
+        if (channel) {
+            channel->broadcast(client.getFd(), msg);
+            dvais::sendMessage(client.getFd(), msg);
+            channel->rmClient(client.getFd());
+            if (channel->getJoined().empty())
+                server.rmChannel(*it);
+        }
     }
 }
 
 /**
  * @brief Handles the PART command in the IRC server.
+ * Processes a comma-separated list of channels from which the client wants to part.
  * 
- *
+ * @throws ERR_NEEDMOREPARAMS (461) - if no channel is provided.
+ * @throws ERR_NOSUCHCHANNEL (403) - if a specified channel does not exist.
+ * @throws ERR_NOTONCHANNEL (442) - if the client is not a member of a specified channel.
  */
 void Command::commandPart(Server &server, int fd, const std::string &command) {
     std::vector<std::string> tokens = dvais::cmdtokenizer(command);
@@ -264,26 +271,24 @@ void Command::commandPart(Server &server, int fd, const std::string &command) {
     }
     std::string reason = (tokens.size() >= 3 && !tokens[2].empty() && tokens[2][0] == ':') ? tokens[2] : "";
 
-    std::string channelName = tokens[1];
-    Channel* channelToPart = server.getChannel(channelName);
-    if (!channelToPart) {
-        sendError(fd, 403, nick, channelName); // ERR_NOSUCHCHANNEL
-        return;
+    std::vector<std::string> channels = dvais::split(tokens[1], ',');
+    std::vector<std ::string> validChannels;
+    for (std::vector<std::string>::iterator it = channels.begin(); it != channels.end(); it++) {
+        Channel* channelToPart = server.getChannel(*it);
+        if (!channelToPart) {
+            sendError(fd, 403, nick, *it); // ERR_NOSUCHCHANNEL
+            continue;
+        }
+        if (!channelToPart->isMember(fd)) {
+            sendError(fd, 442, nick, *it); // ERR_NOTONCHANNEL 
+            continue;
+        }
+        validChannels.push_back(*it);
     }
-    if (!channelToPart->isMember(fd)) {
-        sendError(fd, 442, nick, channelName); // ERR_NOTONCHANNEL 
-        return;
-    }
-    std::string user = client.getUser();
-    std::string host = client.getIp();
-    std::string prefix = ":" + nick + "!" + user + "@" + host;
-    std::string msg = prefix + " PART " + channelName + " " + reason + "\r\n";
-    channelToPart->broadcast(fd, msg);
-    dvais::sendMessage(fd, msg);
-    channelToPart->rmClient(fd);
-    if (channelToPart->getJoined().empty())
-        server.rmChannel(channelName);
+    if (!validChannels.empty())
+        partClientAll(server, client, channels, reason);
 }
+
 
 void Command::commandWhois(Server &server, int fd, const std::string &command) {
     std::istringstream iss(command);

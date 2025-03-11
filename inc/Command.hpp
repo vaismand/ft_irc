@@ -44,5 +44,5 @@ private:
     std::string getErrorMessage(int errorCode, const std::string &nick, const std::string &command = "");
     void initErrorMap();
     void printChannelWelcome(Server &server, Client &client, Channel &channel, bool isnew);
-    void partClientAll(Server &server, Client &client);
+    void partClientAll(Server &server, Client &client, std::vector<std::string> channels, std::string reason);
 };

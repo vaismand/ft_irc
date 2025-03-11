@@ -38,7 +38,6 @@ AuthState Client::getStatus() const { return _status; }
 bool Client::getRights() const { return _isAdmin; }
 bool Client::getPassAccepted() const { return _passAccepted; }
 int  Client::getFd() const { return _fd; }
-std::string& Client::getBuffer() { return _buffer; }
 const std::vector<std::string>& Client::getChannelList() const { return _channelList; }
 
 // ----- setter Functions -----
