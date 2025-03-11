@@ -22,6 +22,8 @@ std::string Server::getPass() const { return _pass; }
 
 const std::map<int, Client*>& Server::getClients() const { return _clients; }
 
+std::size_t Server::getChannelLimit() const { return _channelLimit; }
+
 Client &Server::getClient(int fd) const
 {
     if (_clients.find(fd) == _clients.end())
@@ -51,6 +53,7 @@ Channel *Server::getChannel(const std::string &name)
         return NULL;
     return _channels[name];
 }
+
 
 // ----- methods -----
 void Server::bindSocket()

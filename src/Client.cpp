@@ -38,6 +38,8 @@ AuthState Client::getStatus() const { return _status; }
 bool Client::getRights() const { return _isAdmin; }
 bool Client::getPassAccepted() const { return _passAccepted; }
 int  Client::getFd() const { return _fd; }
+std::string& Client::getBuffer() { return _buffer; }
+const std::vector<std::string>& Client::getChannelList() const { return _channelList; }
 
 // ----- setter Functions -----
 void Client::setUser(const std::string& name) { _username = name; }
@@ -45,3 +47,4 @@ void Client::setNick(const std::string& name) { _nickname = name; }
 void Client::setStatus(AuthState status) { _status = status; }
 void Client::setRights() { _isAdmin = !_isAdmin; }
 void Client::setPassAccepted(bool passAccepted) { _passAccepted = passAccepted; }
+void Client::setChannelList(const std::string& channelName) { _channelList.push_back(channelName); }

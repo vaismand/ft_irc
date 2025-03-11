@@ -74,7 +74,7 @@ void Command::commandCap(int fd, const std::string &command)
  * This command sets and updates the nickname of the client. It needs a valid nickname as parameter.
  * Nickname change is broadcasted to all.
  * 
- * @throws ERR_NEEDMOREPARAMS (461) - if no nickname is provided.
+ * @throws ERR_NONICKNAMEGIVEN (431) - if no nickname is provided.
  * @throws ERR_ERRONEUSNICKNAME (432) - if provided nickname has invalid format.
  * @throws ERR_NICKNAMEINUSE (433) - if provided nickname is already taken by another client.
  */
@@ -95,10 +95,10 @@ void Command::commandNick(Server &server, int fd, const std::string &command) {
         sendError(fd, 432, currentNick, nickname); // ERR_ERRONEUSNICKNAME
         return;
     }
-    std::string user = server.getClient(fd).getUser();
-    std::string host = server.getClient(fd).getIp();
+    std::string user = client.getUser();
+    std::string host = client.getIp();
     std::string msg = ":" + currentNick + "!" + user + "@" + host + " NICK :" + nickname + "\r\n";
-    server.getClient(fd).setNick(nickname);
+    client.setNick(nickname);
     dvais::sendMessage(fd, msg);
     server.broadcastAll(fd, msg);
 }
@@ -130,8 +130,21 @@ void Command::commandUser(Server &server, int fd, const std::string &command) {
 
 /**
  * @brief Handles the JOIN command in the IRC server.
+ * This command allows a client to join existing channels or create new channels.
+ * Processes comma-separated lists of channels and keys. For each channel:
+ * - Validates the channel name.
+ * - Checks that the client is not exceeding the channel limit.
+ * - Creates the channel if it doesn't exist (using the provided key if any).
+ * - Verifies that the client can join (key, invite, user limit, etc.).
+ * - Adds the client to the channel and broadcasts the JOIN message.
+ * - Finally, sends topic and names replies.
  * 
- * @throws
+ * @throws ERR_NEEDMOREPARAMS (461) - if no channel is provided.
+ * @throws ERR_NOSUCHCHANNEL (403) - if a specified channel is invalid.
+ * @throws ERR_TOOMANYCHANNELS (405) - if the client has exceeded the maximum number of channels.
+ * @throws ERR_BADCHANNELKEY (475) - if the provided key does not match the channel's key.
+ * @throws ERR_CHANNELISFULL (471) - if the channel has reached its user limit.
+ * @throws ERR_INVITEONLYCHAN (473) - if the channel is invite-only and the client is not invited.
  */
 void Command::commandJoin(Server &server, int fd, const std::string &command) {
     std::vector<std::string> tokens = dvais::cmdtokenizer(command);
@@ -146,86 +159,102 @@ void Command::commandJoin(Server &server, int fd, const std::string &command) {
     if (tokens.size() >= 3 && !tokens[2].empty()) {
         keys = dvais::split(tokens[2], ',');
     }
-    std::string channelName = tokens[1];
-    if (channelName.find(",") != std::string::npos) {
-        sendError(fd, 475, nick, channelName);
-        return;
+    if (!channels.empty() && channels[0] == "0") {
+        partClientAll(server, client);
+        channels.erase(channels.begin());
+        if (!keys.empty())
+            keys.erase(keys.begin());
     }
-    if (channelName.find(" ") != std::string::npos) {
-        sendError(fd, 461, nick, "JOIN");
-        return;
-    }
-    if (channelName.find("#") != 0) {
-        sendError(fd, 403, nick, channelName);
-        return;
-    }
-    if (server.getClient(fd).getStatus() != REGISTERED) {
-        sendError(fd, 451, nick, "JOIN");
-        return;
-    }
-    if (server.getClient(fd).getNick().empty()) {
-        sendError(fd, 451, nick, "JOIN");
-        return;
-    }
-    if (server.getClient(fd).getUser().empty()) {
-        sendError(fd, 451, nick, "JOIN");
-        return;
-    }
-    if (!server.getClient(fd).getPassAccepted()) {
-        sendError(fd, 464, nick, "JOIN");
-        return;
-    }
-    Channel* ChannelToJoin = server.getChannel(channelName);
-    bool newChannel = false;
-    if (ChannelToJoin == NULL) {
-        server.addChannel(fd, channelName, "");
-        ChannelToJoin = server.getChannel(channelName);
-        newChannel = true;
-    }
-    else
-    {
-        if (ChannelToJoin->isMember(fd)) {
-            sendError(fd, 405, nick, channelName);
-            return;
+    for (int i = 0; i < channels.size(); i++) {
+        if (channels[i].find("#") != 0) {
+            sendError(fd, 403, nick, channels[i]); // ERR_NOSUCHCHANNEL
+            continue;
         }
-        if (ChannelToJoin->getUserLimit() > 0 &&
-        ChannelToJoin->getJoined().size() >= static_cast<std::vector<int>::size_type>(ChannelToJoin->getUserLimit())) {
-            sendError(fd, 471, nick, channelName);
-            return;
+        if (channels.size() > server.getChannelLimit()) {
+            sendError(fd, 405, nick, channels[i]); // ERR_TOOMANYCHANNELS
+            break;
         }
-        if (ChannelToJoin->getChannelType() && !ChannelToJoin->isInvited(fd)) {
-            sendError(fd, 473, nick, channelName);
-            return;
-        }
-        if (!ChannelToJoin->getcKey().empty()) {
-            if (tokens.size() < 3 || tokens[2] != ChannelToJoin->getcKey()) {
-                sendError(fd, 475, nick, channelName);
-                return;
+        Channel* ChannelToJoin = server.getChannel(channels[i]);
+        bool newChannel = false;
+        if (ChannelToJoin == NULL) {
+            std::string key = (i < keys.size()) ? keys[i] : "";
+            server.addChannel(fd, channels[i], key);
+            ChannelToJoin = server.getChannel(channels[i]);
+            newChannel = true;
+        } else {
+            if (ChannelToJoin->isMember(fd))
+                continue;
+            const size_t userLimit = ChannelToJoin->getUserLimit();
+            if (userLimit > 0 && ChannelToJoin->getJoined().size() >= userLimit) {
+                sendError(fd, 471, nick, channels[i]); // ERR_CHANNELISFULL
+                continue;
+            }
+            if (ChannelToJoin->getChannelType() && !ChannelToJoin->isInvited(fd)) {
+                sendError(fd, 473, nick, channels[i]); // ERR_INVITEONLYCHAN
+                continue;
+            }
+            if (!ChannelToJoin->getcKey().empty() && (keys.empty() || keys[i] != ChannelToJoin->getcKey())) {
+                sendError(fd, 475, nick, channels[i]); // ERR_BADCHANNELKEY 
+                continue;
             }
         }
+        ChannelToJoin->addClient(fd);
+        std::string user = client.getUser();
+        std::string host = client.getIp();
+        client.setChannelList(ChannelToJoin->getcName());
+        std::string prefix = ":" + nick + "!" + user + "@" + host;
+        ChannelToJoin->broadcast(-1, prefix + " " + tokens[0] + " " + channels[i] + "\r\n");
+        printChannelWelcome(server, client, *ChannelToJoin, newChannel);
+        if (ChannelToJoin->isInvited(fd))
+        ChannelToJoin->rmInvited(fd);
     }
-    ChannelToJoin->addClient(server.getClient(fd).getFd());
-    std::string user = server.getClient(fd).getUser();
-    std::string host = server.getClient(fd).getIp();
-    ChannelToJoin->broadcast(-1, ":" + nick + "!" + user + "@" + host + " JOIN " + channelName + "\r\n");
-    if (newChannel)
-        ChannelToJoin->broadcast(-1, ":ircserv MODE " + channelName + " +nt\r\n");
-    if (!ChannelToJoin->getcTopic().empty())
-    {
-        time_t topicTime = ChannelToJoin->getTopicSetTime();
+}
+
+/**
+ * @brief Prints the Welcome Infos and the members of the Channel.
+ */
+void Command::printChannelWelcome(Server &server, Client &client, Channel &channel, bool isnew) {
+    std::string cname = channel.getcName();
+    int fd = client.getFd();
+    if (isnew)
+        channel.broadcast(-1, ":ircserv MODE " + cname + " +nt\r\n");
+    if (!channel.getcTopic().empty()) {
+        time_t topicTime = channel.getTopicSetTime();
         std::ostringstream oss;
         oss << topicTime;
         std::string timeStr = oss.str();
-        dvais::sendMessage(fd, ":ircserv 332 " + nick + " " + channelName + " :" + ChannelToJoin->getcTopic() + "\r\n");
-        dvais::sendMessage(fd, ":ircserv 333 " + nick + " " + channelName + " " 
-            + ChannelToJoin->getTopicSetter() + " " + timeStr + "\r\n");    }
-    commandNames(server, fd, "NAMES " + ChannelToJoin->getcName());
-    if (ChannelToJoin->isInvited(fd))
-        ChannelToJoin->rmInvited(fd);
+        dvais::sendMessage(fd, ":ircserv 332 " + client.getNick() + " " + cname + " :" + channel.getcTopic() + "\r\n");
+        dvais::sendMessage(fd, ":ircserv 333 " + client.getNick() + " " + cname + " " 
+                                                                + channel.getTopicSetter() + " " + timeStr + "\r\n");
+    }
+    commandNames(server, fd, "NAMES " + cname);
 }
 
-void Command::commandPart(Server &server, int fd, const std::string &command)
-{
+/**
+ * @brief Parts Client of all Channels.
+ */
+void Command::partClientAll(Server &server, Client &client) {
+    std::vector<std::string> list = client.getChannelList();
+    std::string user = client.getUser();
+    std::string host = client.getIp();
+    std::string nick = client.getNick();
+    std::string prefix = ":" + nick + "!" + user + "@" + host;
+
+    for (std::vector<std::string>::iterator it = list.begin(); it != list.end(); it++) {
+        std::string msg = prefix + " PART " + *it + "" + "\r\n";
+        server.getChannel(*it)->broadcast(client.getFd(), msg);
+        dvais::sendMessage(client.getFd(), msg);
+        if (server.getChannel(*it)->getJoined().empty())
+            server.rmChannel(*it);
+    }
+}
+
+/**
+ * @brief Handles the PART command in the IRC server.
+ * 
+ *
+ */
+void Command::commandPart(Server &server, int fd, const std::string &command) {
     std::vector<std::string> tokens = dvais::cmdtokenizer(command);
     Client &client = server.getClient(fd);
     const std::string &nick = client.getNick();

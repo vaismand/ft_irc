@@ -21,7 +21,7 @@ class Channel {
 		const bool& getTopicRestricted() const;
 		const bool& getNoExternalMsgs() const;
 		const std::vector<int>& getJoined() const;
-		const int& getUserLimit() const;
+		const size_t& getUserLimit() const;
 		std::string getTopic() const;
         std::string getTopicSetter() const;
         std::time_t getTopicSetTime() const;
@@ -54,7 +54,7 @@ class Channel {
 
 	private:
 		// Attributes
-		int 				_userLimit;
+		std::size_t 		_userLimit;
 		std::string 		_cName;
 		std::string 		_cKey;
 		std::string 		_cTopic;

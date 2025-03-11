@@ -100,3 +100,17 @@ std::string dvais::buildNamesList(Server &server, const Channel* channel)
     }
     return oss.str();
 }
+
+std::vector<std::string> dvais::split(const std::string& cmd, char delim) {
+    std::stringstream ss(cmd);
+    std::string tmp;
+    std::vector<std::string> cmdarg;
+    while (!ss.eof()) {
+        std::getline(ss, tmp, delim);
+        cmdarg.push_back(tmp);
+    }
+    for(std::vector<std::string>::iterator it = cmdarg.begin(); it != cmdarg.end(); it++)
+        std::cout << *it << " ";
+    std::cout << std::endl;
+    return cmdarg;
+}

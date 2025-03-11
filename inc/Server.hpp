@@ -36,6 +36,7 @@ class Server
 		const std::string _port;
 		const std::string _pass;
 		int _socket;
+		std::size_t _channelLimit;
 		std::vector <struct pollfd> _pollfds;
 		std::map <int, Client*> _clients;
 		std::map <std::string, Channel*> _channels;
@@ -58,6 +59,7 @@ class Server
 		std::string getPass() const;
 		const std::map<int, Client*>& getClients() const;
 		Client *getClientByNick(const std::string &nickname);
+		std::size_t getChannelLimit() const;
 
 		// public Methods
 		ssize_t sendMessage(int fd, const std::string &message);

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <vector>
 
 enum AuthState {
 	UNREGISTERED,
@@ -22,6 +23,8 @@ class Client
 		AuthState getStatus() const;
 		int  getFd() const;
 		bool getRights() const;
+		bool getPassAccepted() const;
+		const std::vector<std::string>& getChannelList() const;
 
 		// Setters
 		void setUser(const std::string& name);
@@ -29,7 +32,7 @@ class Client
 		void setStatus(AuthState status);
 		void setRights();
 		void setPassAccepted(bool passAccepted);
-		bool getPassAccepted() const;
+		void setChannelList(const std::string& channelName);
 
 	private:
 		// Constructors
@@ -42,6 +45,7 @@ class Client
 		std::string _username;
 		std::string _nickname;
 		std::string _buffer;
+		std::vector<std::string> _channelList;
 		AuthState	_status;
 		bool		_isAdmin;
 		bool 		_passAccepted;

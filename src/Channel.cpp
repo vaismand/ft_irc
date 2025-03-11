@@ -25,7 +25,7 @@ const bool& Channel::getChannelType() const { return _isInviteOnly; }
 const bool& Channel::getTopicRestricted() const { return _topicRestricted; }
 const bool& Channel::getNoExternalMsgs() const { return _noExternalMsgs; }
 const std::vector<int>& Channel::getJoined() const { return _joined; }
-const int& Channel::getUserLimit() const { return _userLimit; }
+const size_t& Channel::getUserLimit() const { return _userLimit; }
 std::string Channel::getTopic() const { return _cTopic; }
 std::string Channel::getTopicSetter() const { return _topicSetter; }
 std::time_t Channel::getTopicSetTime() const { return _topicSetTime; }
@@ -56,7 +56,6 @@ void Channel::addClient(int fd)
 
 bool Channel::isMember(const int &fd) const {
     return std::find(_joined.begin(), _joined.end(), fd) != _joined.end();
-
 }
 
 void Channel::rmClient(int fd)
