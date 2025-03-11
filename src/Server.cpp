@@ -14,11 +14,12 @@ Server::~Server()
     {
         delete it->second;
     }
+    _clients.clear();
     for (std::map<std::string, Channel*>::iterator it = _channels.begin(); it != _channels.end(); it++)
     {
         delete it->second;
     }
-    _clients.clear();
+    _channels.clear();
     for (std::vector<struct pollfd>::iterator it = _pollfds.begin(); it != _pollfds.end(); it++)
     {
         close(it->fd);
@@ -161,7 +162,6 @@ void Server::removeClient(int fd)
             it->second->rmClient(fd);
     }
     close(fd);
-
     for (std::vector<struct pollfd>::reverse_iterator it = _pollfds.rbegin(); it != _pollfds.rend(); it++)
     {
         if (it->fd == fd)
@@ -171,6 +171,7 @@ void Server::removeClient(int fd)
         }
     }
     _clients.erase(fd);
+    delete _clients[fd];
 }
 
 Channel *Server::getChannel(const std::string &name)
