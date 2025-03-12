@@ -496,7 +496,12 @@ void Command::commandMode(Server &server, int fd, const std::string &command)
     }
     sendError(fd, 421, clientNick, "MODE");
 }
-
+/**
+ * @brief Handles the PING command in the IRC server.
+ * 
+ * NOTE for DAVID - I think we should also add a function that periodically Pings our clients and
+ * when they dont answer with PONG the will QUIT automatically.
+ */
 void Command::commandPing(int fd, const std::string &command) {
     std::string servername = command.substr(5);
     dvais::sendMessage(fd, "PONG " + servername + "\r\n");
@@ -600,21 +605,29 @@ void Command::commandTopic(Server &server, int fd, const std::string &command)
     }
 }
 
+/**
+ * @brief Handles the NAMES command in the IRC server.
+ * It shows a list of nicknames in a specific channel for members of the channel only.
+ * Command needs channel name as argument. It sends two numeric replies:
+ * - RPL_NAMREPLY (353): Contains the list of user nicknames in the channel.
+ * - RPL_ENDOFNAMES (366): Indicates the end of the NAMES list.
+ * 
+ * @throws ERR_NEEDMOREPARAMS (461) - if no channel is provided.
+ */
 void Command::commandNames(Server &server, int fd, const std::string &command)
 {
     std::vector<std::string> tokens = dvais::cmdtokenizer(command);
     std::string client_nick = server.getClient(fd).getNick();
     if (tokens.size() < 2) {
+        sendError(fd, 461, client_nick, "NAMES"); // ERR_NEEDMOREPARAMS
         return;
     }
     Channel* channel = server.getChannel(tokens[1]);
-    if (!channel) {
-        sendError(fd, 403, client_nick, tokens[1]);
-        return;
+    if (channel) {
+        std::string namesList = dvais::buildNamesList(server, channel);
+        dvais::sendMessage(fd, ":ircserv 353 " + client_nick + " = " + channel->getcName() + " :" + namesList + "\r\n");
     }
-    std::string namesList = dvais::buildNamesList(server, channel);
-    dvais::sendMessage(fd, ":ircserv 353 " + client_nick + " = " + channel->getcName() + " :" + namesList + "\r\n");
-    dvais::sendMessage(fd, ":ircserv 366 " + client_nick + " " + channel->getcName() + " :End of /NAMES list\r\n");
+    dvais::sendMessage(fd, ":ircserv 366 " + client_nick + " " + tokens[1] + " :End of /NAMES list\r\n");
 }
 
 void Command::commandQuit(Server &server, int fd, const std::string &command) {
@@ -672,6 +685,16 @@ void Command::commandInvite(Server &server, int fd, const std::string &command) 
     }
 }
 
+/**
+ * @brief Handles the KICK command in the IRC server.
+ * Broadcasts the KICK message and removes the target from the channel.
+ * 
+ * @throws ERR_NEEDMOREPARAMS (461) - if fewer than 3 parameters are provided.
+ * @throws ERR_NOSUCHCHANNEL (403) - if specified channel doesn't exist.
+ * @throws ERR_NOTONCHANNEL (442) - if client isn't in the channel.
+ * @throws ERR_CHANOPRIVSNEEDED (482) - if client lacks operator status.
+ * @throws ERR_USERNOTINCHANNEL (441) - if target isn't in the channel.
+ */
 void Command::commandKick(Server &server, int fd, const std::string &command) {
     std::vector<std::string> tokens = dvais::cmdtokenizer(command);
     Client &client = server.getClient(fd);
@@ -680,7 +703,6 @@ void Command::commandKick(Server &server, int fd, const std::string &command) {
         sendError(fd, 461, client_nick, tokens[0]); // ERR_NEEDMOREPARAMS
         return;
     }
-    // If a fourth token is present and begins with ':', remove it; otherwise, default to the target nick.
     std::string comment = (tokens.size() >= 4 && !tokens[3].empty() && tokens[3][0] == ':') ? tokens[3] : ":" + tokens[2];
 
     Channel* targetChannel = server.getChannel(tokens[1]);
@@ -710,41 +732,40 @@ void Command::commandKick(Server &server, int fd, const std::string &command) {
     targetChannel->rmClient(targetClient->getFd());
 }
 
-
 void Command::executeCommand(Server &server, int fd, const std::string &command) {
-    if (command.find("CAP ") == 0) {
+    if (command.find("CAP ") == 0) { // D
         commandCap(fd, command);
-    } else if (command.find("NICK") == 0) {
+    } else if (command.find("NICK") == 0) { // R done
         commandNick(server, fd, command);
-    } else if (command.find("USER ") == 0) {
+    } else if (command.find("USER ") == 0) { // R done
         commandUser(server, fd, command);
-    } else if (command.find("JOIN ") == 0) {
+    } else if (command.find("JOIN ") == 0) { // R done
         commandJoin(server, fd, command);
-    } else if (command.find("PING ") == 0) {
+    } else if (command.find("PING ") == 0) { // D
         commandPing(fd, command);
-    } else if (command.find("INVITE ") == 0) {
+    } else if (command.find("INVITE ") == 0) { // R
         commandInvite(server, fd, command);
-    } else if (command.find("MODE ") == 0) {
+    } else if (command.find("MODE ") == 0) { // D
         commandMode(server, fd, command);
-    } else if (command.find("KICK ") == 0) {
+    } else if (command.find("KICK ") == 0) { // R done
         commandKick(server, fd, command);
-    } else if (command.find("PASS ") == 0) {
+    } else if (command.find("PASS ") == 0) { // D
         commandPass(server, fd, command);
-    } else if (command.find("PART ") == 0) {
+    } else if (command.find("PART ") == 0) { // R done
         commandPart(server, fd, command);
-    } else if (command.find("PRIVMSG ") == 0) {
+    } else if (command.find("PRIVMSG ") == 0) { // R
         commandMsg(server, fd, command, true);
-    } else if (command.find("NOTICE ") == 0) {
+    } else if (command.find("NOTICE ") == 0) { // R
         commandMsg(server, fd, command, false);
-    } else if (command.find("NAMES ") == 0) {
+    } else if (command.find("NAMES ") == 0) { // R done
         commandNames(server, fd, command);
-    } else if (command.find("WHOIS") == 0) {
+    } else if (command.find("WHOIS") == 0) { // R done
         commandWhois(server, fd, command);
-    } else if (command.find("WHO") == 0) {
+    } else if (command.find("WHO") == 0) { // D
         commandWho(server, fd, command);
-    } else if (command.find("TOPIC") == 0) {
+    } else if (command.find("TOPIC") == 0) { // D
         commandTopic(server, fd, command);
-    } else if (command.find("QUIT") == 0) {
+    } else if (command.find("QUIT") == 0) { // D
         commandQuit(server, fd, command);
     } else {
         sendError(fd, 421, server.getClient(fd).getNick(), command.substr(0, command.find(" ")));
