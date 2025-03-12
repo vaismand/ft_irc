@@ -90,7 +90,7 @@ void Command::commandNick(Server &server, int fd, const std::string &command) {
         sendError(fd, 433, currentNick, nickname); // ERR_NICKNAMEINUSE
         return;
     }
-    if (nickname.empty() || !isValidNick(nickname)) {
+    if (nickname.empty() || !server.isValidNick(nickname)) {
         sendError(fd, 432, currentNick, nickname); // ERR_ERRONEUSNICKNAME
         return;
     }
@@ -133,7 +133,6 @@ void Command::commandUser(Server &server, int fd, const std::string &command) {
  * @throws ERR_INVITEONLYCHAN (473) - if the channel is invite-only and the client is not invited.
  */
 void Command::commandJoin(Server &server, int fd, const std::string &command) {
-    std::string nick = server.getClient(fd).getNick();
     std::vector<std::string> tokens = dvais::cmdtokenizer(command);
     Client &client = server.getClient(fd);
     const std::string &nick = client.getNick();
@@ -539,7 +538,7 @@ void Command::commandMsg(Server &server, int fd, const std::string &command, boo
         }
         std::string msg = ":" + server.getClient(fd).getNick() + " " + cmd[0] + " " + ChannelToChat->getcName() + " " + cmd[2] + " \r\n";
         ChannelToChat->broadcast(fd, msg);
-    } else if (isValidNick(cmd[1])) {
+    } else if (server.isValidNick(cmd[1])) {
         Client* ClientToChat = server.getClientByNick(cmd[1]);
         if (ClientToChat == NULL) {
             if (sendErs)

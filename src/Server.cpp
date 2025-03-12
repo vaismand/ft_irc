@@ -135,32 +135,6 @@ void Server::run()
     std::cerr << "Server shutting down..." << std::endl;
 }
 
-Client &Server::getClient(int fd) const
-{
-    if (_clients.find(fd) == _clients.end())
-    {
-        throw std::runtime_error("Error: Client not found.");
-    }
-    return *_clients.at(fd);
-}
-
-std::string Server::getClientNick(int fd) const
-{
-    if (_clients.find(fd) == _clients.end()) {
-        throw std::runtime_error("Error: Client not found.");
-    }
-    return _clients.at(fd)->getNick();
-}
-
-Client* Server::getClientByNick(const std::string &nick)
-{
-    for (std::map<int, Client*>::iterator it = _clients.begin(); it != _clients.end(); ++it) {
-        if (it->second->getNick() == nick)
-            return it->second;
-    }
-    return NULL;
-}
-
 void Server::addClient()
 {
     struct sockaddr_in client_addr;
@@ -206,13 +180,6 @@ void Server::removeClient(int fd)
     }
     _clients.erase(fd);
     delete _clients[fd];
-}
-
-Channel *Server::getChannel(const std::string &name)
-{
-    if (_channels.find(name) == _channels.end())
-        return NULL;
-    return _channels[name];
 }
 
 void Server::addChannel(const int &fd, const std::string &name, const std::string &pass)
@@ -302,7 +269,13 @@ bool Server::isNickInUse(const std::string &nickname, int excludeFd) const {
     return false;
 }
 
-const std::map<int, Client*>& Server::getClients() const
-{
-    return _clients;
+bool Server::isValidNick(const std::string &nickname) {
+    if (nickname.empty() || !isalpha(nickname[0]))
+        return false;
+    for (size_t i = 0; i < nickname.length(); ++i) {
+        char c = nickname[i];
+        if (!isalnum(c) && c != '-' && c != '_')
+            return false;
+    }
+    return true;
 }

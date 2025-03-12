@@ -42,7 +42,6 @@ private:
     // Attributes
     std::map<int, std::string> errorMap;
     std::string getErrorMessage(int errorCode, const std::string &nick, const std::string &command = "");
-    bool isValidNick(const std::string &nickname);
     void initErrorMap();
     void printChannelWelcome(Server &server, Client &client, Channel &channel, bool isnew);
     void partClientAll(Server &server, Client &client, std::vector<std::string> channels, std::string reason);
