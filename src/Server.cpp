@@ -1,6 +1,6 @@
 #include "../inc/Server.hpp"
 
-Server::Server(const std::string &port, const std::string &pass) : _port(port), _pass(pass), _socket(-1) 
+Server::Server(const std::string &port, const std::string &pass) : _port(port), _pass(pass), _socket(-1), _channelLimit(10)
 {
 }
 

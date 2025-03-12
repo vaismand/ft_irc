@@ -47,3 +47,11 @@ void Client::setStatus(AuthState status) { _status = status; }
 void Client::setRights() { _isAdmin = !_isAdmin; }
 void Client::setPassAccepted(bool passAccepted) { _passAccepted = passAccepted; }
 void Client::setChannelList(const std::string& channelName) { _channelList.push_back(channelName); }
+
+// ----- methods -----
+void Client::rmChannelInList(const std::string& channelName) {
+	std::vector<std::string>::iterator it = std::find(_channelList.begin(), _channelList.end(), channelName);
+	if (it != _channelList.end()) {
+		_channelList.erase(it);
+	}
+}

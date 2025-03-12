@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <vector>
+#include <algorithm>
 
 enum AuthState {
 	UNREGISTERED,
@@ -33,6 +34,9 @@ class Client
 		void setRights();
 		void setPassAccepted(bool passAccepted);
 		void setChannelList(const std::string& channelName);
+
+		// Method
+		void rmChannelInList(const std::string& channelName);
 
 	private:
 		// Constructors

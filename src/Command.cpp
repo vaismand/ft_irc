@@ -20,26 +20,27 @@ Command::~Command() {}
 
 void Command::initErrorMap()
 {
+    errorMap[331] = "No topic is set";
     errorMap[401] = "No such nick/channel";
+    errorMap[403] = "No such channel";
     errorMap[404] = "Cannot send to channel";
+    errorMap[405] = "You have joined too many channels";
     errorMap[411] = "No recipient given";
+    errorMap[412] = "No text to send";
     errorMap[421] = "Unknown command";
     errorMap[431] = "No nickname given";
     errorMap[432] = "Erroneous Nickname";
     errorMap[433] = "Nickname is already in use";
+    errorMap[442] = "You're not on that channel";
     errorMap[451] = "You have not registered";
     errorMap[461] = "Not enough parameters";
+    errorMap[462] = "You may not reregister";
     errorMap[464] = "Password incorrect";
-    errorMap[475] = "Cannot join channel (invite only)";
-    errorMap[403] = "No such channel";
-    errorMap[412] = "No text to send";
-    errorMap[442] = "Not on channel";
-    errorMap[482] = "You're not channel operator";
-    errorMap[331] = "No topic is set";
-    errorMap[405] = "You're already on that channel";
     errorMap[471] = "Channel is full";
-    errorMap[473] = "Cannot join channel (invite only)";
     errorMap[472] = "is unknown mode char to me";
+    errorMap[473] = "Cannot join channel (invite only)";
+    errorMap[475] = "Cannot join channel (invite only)";
+    errorMap[482] = "You're not channel operator";
 }
 
 void Command::sendError(int fd, int errorCode, const std::string &nick, const std::string &command)
@@ -107,15 +108,28 @@ void Command::commandNick(Server &server, int fd, const std::string &command) {
     server.broadcastAll(fd, msg);
 }
 
+/**
+ * @brief Handles the USER command in the IRC server.
+ * This command sets the username for the client. It needs username as parameter and can
+ * be set only once.
+ * 
+ * @throws ERR_NEEDMOREPARAMS (461) - if no username is provided.
+ * @throws ERR_ALREADYREGISTERED (462) - if client is already registered.
+ */
 void Command::commandUser(Server &server, int fd, const std::string &command) {
     std::vector<std::string> tokens = dvais::cmdtokenizer(command);
+    Client &client = server.getClient(fd);
+    const std::string &nick = client.getNick();
     if (tokens.size() < 2 || tokens[1].empty()) {
-        // Not enough parameters; send an error message.
-        sendError(fd, 461, server.getClient(fd).getNick(), "USER");
+        sendError(fd, 461, nick, "USER"); // ERR_NEEDMOREPARAMS
+        return;
+    }
+    if (client.getStatus() == REGISTERED) {
+        sendError(fd, 462, nick, ""); // ERR_ALREADYREGISTERED
         return;
     }
     std::string username = tokens[1];
-    server.getClient(fd).setUser(username);
+    client.setUser(username);
     dvais::sendMessage(fd, "Username set to " + username + "\r\n");
 }
 
@@ -161,9 +175,10 @@ void Command::commandJoin(Server &server, int fd, const std::string &command) {
             sendError(fd, 403, nick, channels[i]); // ERR_NOSUCHCHANNEL
             continue;
         }
-        if (channels.size() > server.getChannelLimit()) {
+        std::cout << client.getChannelList().size() << " Server channel limit: " << server.getChannelLimit() << std::endl;
+        if (client.getChannelList().size() >= server.getChannelLimit()) {
             sendError(fd, 405, nick, channels[i]); // ERR_TOOMANYCHANNELS
-            break;
+            continue;
         }
         Channel* ChannelToJoin = server.getChannel(channels[i]);
         bool newChannel = false;
@@ -238,6 +253,7 @@ void Command::partClientAll(Server &server, Client &client, std::vector<std::str
             channel->broadcast(client.getFd(), msg);
             dvais::sendMessage(client.getFd(), msg);
             channel->rmClient(client.getFd());
+            client.rmChannelInList(channel->getcName());
             if (channel->getJoined().empty())
                 server.rmChannel(*it);
         }
