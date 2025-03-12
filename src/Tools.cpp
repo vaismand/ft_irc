@@ -41,6 +41,17 @@ std::string dvais::trim(const std::string &s)
     return s.substr(start, end - start + 1);
 }
 
+std::string dvais::topicSetterTime(std::string setter, std::time_t setTime)
+{
+    struct tm *timeinfo = std::localtime(&setTime);  // from <ctime>
+    char buffer[64];
+    std::strftime(buffer, sizeof(buffer), "%c", timeinfo);
+
+    std::ostringstream oss;
+    oss << setter << " " << buffer;
+    return oss.str();
+}
+
 std::string dvais::extractCommand(std::string &buffer)
 {
     size_t pos = buffer.find('\n');

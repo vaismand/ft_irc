@@ -601,56 +601,74 @@ void Command::commandMsg(Server &server, int fd, const std::string &command, boo
 }
 
 /**
- * @brief 
+ * @brief Handles the TOPIC command in the IRC server. If no topic is provided, it sends the current topic.
+ * If a topic is provided, it sets the new topic and broadcasts it to all members.
  * 
+ * @throws ERR_NEEDMOREPARAMS (461) - if no channel is provided.
+ * @throws ERR_NOSUCHCHANNEL (403) - if the specified channel does not exist.
+ * @throws ERR_NOTONCHANNEL (442) - if the client is not a member of the specified channel.
+ * @throws ERR_CHANOPRIVSNEEDED (482) - if the channel is invite-only and the client is not an operator.
  */
 void Command::commandTopic(Server &server, int fd, const std::string &command)
 {
-    std::istringstream iss(command);
-    std::string cmd, channelName;
-    iss >> cmd >> channelName;
-    std::string topic = dvais::extractTopic(iss);
-    std::string nick = server.getClient(fd).getNick();
+    std::vector<std::string> cmd = dvais::cmdtokenizer(command);
+    Client &client = server.getClient(fd);
+    const std::string &nick = client.getNick();
 
-    if (channelName.empty() || channelName[0] != '#') {
-        sendError(fd, 403, nick, channelName); // No such channel
+    if (cmd.size() < 2)
+    {
+        sendError(fd, 461, nick, "TOPIC"); // Not enough parameters
+        return;
+    }
+    std::string channelName = cmd[1];
+    if (channelName.empty() || channelName[0] != '#')
+    {
+        sendError(fd, 403, nick, channelName); // ERR_NOSUCHCHANNEL
         return;
     }
     Channel* channel = server.getChannel(channelName);
-    if (!channel) {
-        sendError(fd, 403, nick, channelName); // No such channel
+    if (!channel)
+    {
+        sendError(fd, 403, nick, channelName); // ERR_NOSUCHCHANNEL
         return;
     }
-    if (!channel->isMember(fd)) {
-        sendError(fd, 442, nick, channelName); // Not on channel
+    if (!channel->isMember(fd))
+    {
+        sendError(fd, 442, nick, channelName); // ERR_NOTONCHANNEL
         return;
     }
-    if (topic.empty())
+    if (cmd.size() < 3)
     {
         std::string currentTopic = channel->getTopic();
-        if (currentTopic.empty()) {
-            sendError(fd, 331, nick, channelName); // No topic is set
-        } else {
+        if (currentTopic.empty())
+        {
+            sendError(fd, 331, nick, channelName); // ERR_NOTOPIC
+        }
+        else
+        {
             dvais::sendMessage(fd, ":ircserv 332 " + nick + " " + channelName + " :" + currentTopic + "\r\n");
-
-            std::ostringstream oss;
-            oss << channel->getTopicSetTime();
-            dvais::sendMessage(fd, ":ircserv 333 " + nick + " " + channelName + " " + channel->getTopicSetter() + " " + oss.str() + "\r\n");
+            dvais::sendMessage(fd, ":ircserv 333 " + nick + " " + channelName + " "
+                                   + dvais::topicSetterTime(channel->getTopicSetter(), channel->getTopicSetTime()) 
+                                   + "\r\n");
         }
-    } 
-    else 
+        return;
+    }
+    std::string rawTopic = cmd[2];
+    if (!rawTopic.empty() && rawTopic[0] == ':')
+        rawTopic.erase(0, 1);
+    if (channel->getTopicRestricted() && !channel->isOperator(fd))
     {
-        if (!channel->isOperator(fd) && channel->getTopicRestricted()) {
-            sendError(fd, 482, nick, channelName); 
-            return;
-        }
-        if (topic.empty()) {
-            channel->clearTopic();
-            channel->broadcast(-1, ":" + nick + " TOPIC " + channelName + " :\r\n");
-        } else {
-            channel->setTopic(topic, nick);
-            channel->broadcast(-1, ":" + nick + " TOPIC " + channelName + " :" + topic + "\r\n");
-        }
+        sendError(fd, 482, nick, channelName); // ERR_CHANOPRIVSNEEDED
+    }
+    if (rawTopic.empty())
+    {
+        channel->clearTopic();
+        channel->broadcast(-1, ":" + nick + " TOPIC " + channelName + " :\r\n");
+    }
+    else
+    {
+        channel->setTopic(rawTopic, nick);
+        channel->broadcast(-1, ":" + nick + " TOPIC " + channelName + " :" + rawTopic + "\r\n");
     }
 }
 
