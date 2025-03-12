@@ -53,6 +53,10 @@ void Command::sendError(int fd, int errorCode, const std::string &nick, const st
     dvais::sendMessage(fd, oss.str());
 }
 
+/**
+ * @brief 
+ * 
+ */
 void Command::commandCap(int fd, const std::string &command)
 {
     if (command.find("CAP LS") == 0) {
@@ -68,6 +72,7 @@ void Command::commandCap(int fd, const std::string &command)
     }
     sendError(fd, 421, "", "CAP");
 }
+
 /**
  * @brief Handles the NICK command in the IRC server.
  * This command sets and updates the nickname of the client. It needs a valid nickname as parameter.
@@ -325,6 +330,10 @@ void Command::commandWhois(Server &server, int fd, const std::string &command) {
     dvais::sendMessage(fd, oss.str());
 }
 
+/**
+ * @brief 
+ * 
+ */
 void Command::commandWho(Server &server, int fd, const std::string &command) {
     std::istringstream iss(command);
     std::string cmd, targetNick;
@@ -352,6 +361,10 @@ void Command::commandWho(Server &server, int fd, const std::string &command) {
     dvais::sendMessage(fd, oss.str());
 }
 
+/**
+ * @brief 
+ * 
+ */
 void Command::commandMode(Server &server, int fd, const std::string &command)
 {
     std::vector<std::string> tokens = dvais::cmdtokenizer(command);
@@ -507,6 +520,10 @@ void Command::commandPing(int fd, const std::string &command) {
     dvais::sendMessage(fd, "PONG " + servername + "\r\n");
 }
 
+/**
+ * @brief 
+ * 
+ */
 void Command::commandPass(Server &server, int fd, const std::string &command) {
     std::string providedPass = command.substr(5);
     if (providedPass != server.getPass()) {
@@ -517,44 +534,60 @@ void Command::commandPass(Server &server, int fd, const std::string &command) {
     }
 }
 
+/**
+ * @brief Handles PRIVMSG and NOTICE commands in the IRC server.
+ * Processes a message from a client to a target (channel or user). If sendErs flag is true, 
+ * it sends error replies (PRIVMSG):
+ *
+ * @throws ERR_NORECIPIENT (411) - if no recipient is provided.
+ * @throws ERR_NOTEXTTOSEND (412) - if the message text is missing.
+ * @throws ERR_NOSUCHNICK (401) - if the target nick or channel doesn't exist.
+ * @throws ERR_CANNOTSENDTOCHAN (404) - if the client is not allowed to send to the channel.
+ */
 void Command::commandMsg(Server &server, int fd, const std::string &command, bool sendErs) {
     std::vector<std::string> cmd = dvais::cmdtokenizer(command);
+    Client &client = server.getClient(fd);
+    const std::string &nick = client.getNick();
     if (cmd.size() < 3) {
         if (sendErs)
-            sendError(fd, 411, server.getClient(fd).getNick(), cmd[0]);
+            sendError(fd, 411, nick, cmd[0]); // ERR_NORECIPIENT
         return;
     }
     if (cmd[2].empty() || cmd[2][0] != ':') {
         if (sendErs)
-            sendError(fd, 412, server.getClient(fd).getNick(), "PRIVMSG");
+            sendError(fd, 412, nick, "PRIVMSG"); // ERR_NOTEXTTOSEND
         return;
     }
     if (cmd[1][0] == '#') {
         Channel* ChannelToChat = server.getChannel(cmd[1]);
         if (ChannelToChat == NULL) {
             if (sendErs)
-                sendError(fd, 401, server.getClient(fd).getNick(), cmd[1]);
+                sendError(fd, 401, nick, cmd[1]); // ERR_NOSUCHNICK
             return;
         }
         if (!ChannelToChat->isMember(fd) && !ChannelToChat->getNoExternalMsgs()) {
             if (sendErs)
-                sendError(fd, 404, server.getClient(fd).getNick(), ChannelToChat->getcName());
+                sendError(fd, 404, nick, ChannelToChat->getcName()); // ERR_CANNOTSENDTOCHAN
             return;
         }
-        std::string msg = ":" + server.getClient(fd).getNick() + " " + cmd[0] + " " + ChannelToChat->getcName() + " " + cmd[2] + " \r\n";
+        std::string msg = ":" + nick + " " + cmd[0] + " " + ChannelToChat->getcName() + " " + cmd[2] + " \r\n";
         ChannelToChat->broadcast(fd, msg);
     } else if (server.isValidNick(cmd[1])) {
-        Client* ClientToChat = server.getClientByNick(cmd[1]);
-        if (ClientToChat == NULL) {
+        Client* targetClient = server.getClientByNick(cmd[1]);
+        if (targetClient == NULL) {
             if (sendErs)
                 sendError(fd, 401, server.getClient(fd).getNick(), cmd[1]);
             return;
         }
-        std::string msg = ":" + server.getClient(fd).getNick() + " " + cmd[0] + " " + ClientToChat->getNick() + " " + cmd[2] + " \r\n";
-        dvais::sendMessage(ClientToChat->getFd(), msg);
+        std::string msg = ":" + server.getClient(fd).getNick() + " " + cmd[0] + " " + targetClient->getNick() + " " + cmd[2] + " \r\n";
+        dvais::sendMessage(targetClient->getFd(), msg);
     }
 }
 
+/**
+ * @brief 
+ * 
+ */
 void Command::commandTopic(Server &server, int fd, const std::string &command)
 {
     std::istringstream iss(command);
@@ -629,7 +662,10 @@ void Command::commandNames(Server &server, int fd, const std::string &command)
     }
     dvais::sendMessage(fd, ":ircserv 366 " + client_nick + " " + tokens[1] + " :End of /NAMES list\r\n");
 }
-
+/**
+ * @brief 
+ *  
+ */
 void Command::commandQuit(Server &server, int fd, const std::string &command) {
     std::istringstream iss(command);
     std::string cmd;
@@ -648,41 +684,60 @@ void Command::commandQuit(Server &server, int fd, const std::string &command) {
     server.removeClient(fd);
 }
 
+/**
+ * @brief Handles the INVITE command in the IRC server. 
+ * Sends an invitation to the target user for the given channel and notifies the inviter.
+ * It sends back one numeric reply:
+ * - RPL_INVITING (341): When target is successfully invited.
+ *  
+ * @throws ERR_NEEDMOREPARAMS (461) - if less than 3 parameters provided.
+ * @throws ERR_NOSUCHCHANNEL (403) - if the specified channel does not exist.
+ * @throws ERR_NOTONCHANNEL (442) - if the inviter is not on the channel.
+ * @throws ERR_CHANOPRIVSNEEDED (482) - if the channel is invite-only and the inviter is not an operator.
+ * @throws ERR_USERONCHANNEL (443) - if the target is already on the channel. 
+ * @throws ERR_NOSUCHNICK (401) - if the target nickname does not exist.
+ */
 void Command::commandInvite(Server &server, int fd, const std::string &command) {
     std::vector<std::string> tokens = dvais::cmdtokenizer(command);
     std::string client_nick = server.getClient(fd).getNick();
+    if (tokens.size() < 3) {
+        sendError(fd, 461, client_nick, "INVITE"); // ERR_NEEDMOREPARAMS
+        return;
+    }
 
+    Client* target_client = server.getClientByNick(tokens[1]);
     Channel* channel = server.getChannel(tokens[2]);
+
+    if (!target_client) {
+        sendError(fd, 401, client_nick, tokens[1]); // ERR_NOSUCHNICK
+        return;
+    }
     if (!channel) {
-        sendError(fd, 403, "", tokens[2]);
+        sendError(fd, 403, client_nick, tokens[2]); // ERR_NOSUCHCHANNEL
         return;
     }
     if (channel->isMember(fd) == false) {
-        sendError(fd, 442, "", channel->getcName());
+        sendError(fd, 442, client_nick, channel->getcName()); // ERR_NOTONCHANNEL
         return;
     }
     if (channel->getChannelType() == true && channel->isOperator(fd) == false) {
-        sendError(fd, 482, "", channel->getcName());
+        sendError(fd, 482, client_nick, channel->getcName()); // ERR_CHANOPRIVSNEEDED
         return;
     }
-    Client* target_client = server.getClientByNick(tokens[1]);
-    if (target_client && channel->isMember(target_client->getFd()) == true) {
-        sendError(fd, 443, tokens[1], channel->getcName());
+    if (channel->isMember(target_client->getFd()) == true) {
+        sendError(fd, 443, tokens[1], channel->getcName()); // ERR_USERONCHANNEL
         return;
     } 
-    else if (target_client && channel->isMember(target_client->getFd()) == false)
-    {
-        if (channel->isInvited(target_client->getFd()))
-            return;
-        std::string RPL_INVITING = ":ircserv " + tokens[1] + " " + channel->getcName() + "\r\n";
-        std::string user = server.getClient(fd).getUser();
-        std::string host = server.getClient(fd).getIp();
-        std::string prefix = ":" + client_nick + "!" + user + "@" + host;
-        std::string msg = prefix + " INVITE " + tokens[1] + " " + tokens[2] + "\r\n";
-        dvais::sendMessage(fd, RPL_INVITING);
-        dvais::sendMessage(target_client->getFd(), msg);
-        channel->addInvited(target_client->getFd());
-    }
+    if (channel->isInvited(target_client->getFd()))
+        return;
+    std::string RPL_INVITING = ":ircserv " + tokens[1] + " " + channel->getcName() + "\r\n";
+    std::string user = server.getClient(fd).getUser();
+    std::string host = server.getClient(fd).getIp();
+    std::string prefix = ":" + client_nick + "!" + user + "@" + host;
+    std::string msg = prefix + " INVITE " + tokens[1] + " " + tokens[2] + "\r\n";
+    dvais::sendMessage(fd, RPL_INVITING);
+    dvais::sendMessage(target_client->getFd(), msg);
+    channel->addInvited(target_client->getFd());
 }
 
 /**
@@ -737,27 +792,27 @@ void Command::executeCommand(Server &server, int fd, const std::string &command)
         commandCap(fd, command);
     } else if (command.find("NICK") == 0) { // R done
         commandNick(server, fd, command);
-    } else if (command.find("USER ") == 0) { // R done
+    } else if (command.find("USER") == 0) { // R done
         commandUser(server, fd, command);
-    } else if (command.find("JOIN ") == 0) { // R done
+    } else if (command.find("JOIN") == 0) { // R done
         commandJoin(server, fd, command);
-    } else if (command.find("PING ") == 0) { // D
+    } else if (command.find("PING") == 0) { // D
         commandPing(fd, command);
-    } else if (command.find("INVITE ") == 0) { // R
+    } else if (command.find("INVITE") == 0) { // R done
         commandInvite(server, fd, command);
-    } else if (command.find("MODE ") == 0) { // D
+    } else if (command.find("MODE") == 0) { // D
         commandMode(server, fd, command);
-    } else if (command.find("KICK ") == 0) { // R done
+    } else if (command.find("KICK") == 0) { // R done
         commandKick(server, fd, command);
-    } else if (command.find("PASS ") == 0) { // D
+    } else if (command.find("PASS") == 0) { // D
         commandPass(server, fd, command);
-    } else if (command.find("PART ") == 0) { // R done
+    } else if (command.find("PART") == 0) { // R done
         commandPart(server, fd, command);
-    } else if (command.find("PRIVMSG ") == 0) { // R
+    } else if (command.find("PRIVMSG") == 0) { // R done
         commandMsg(server, fd, command, true);
-    } else if (command.find("NOTICE ") == 0) { // R
+    } else if (command.find("NOTICE") == 0) { // R done
         commandMsg(server, fd, command, false);
-    } else if (command.find("NAMES ") == 0) { // R done
+    } else if (command.find("NAMES") == 0) { // R done
         commandNames(server, fd, command);
     } else if (command.find("WHOIS") == 0) { // R done
         commandWhois(server, fd, command);
