@@ -528,12 +528,17 @@ void Command::commandMode(Server &server, int fd, const std::string &command)
 /**
  * @brief Handles the PING command in the IRC server.
  * 
- * NOTE for DAVID - I think we should also add a function that periodically Pings our clients and
- * when they dont answer with PONG the will QUIT automatically.
+ *
+ * @throws ERR_NEEDMOREPARAMS (461) - if no servername is provided.
  */
 void Command::commandPing(int fd, const std::string &command) {
-    std::string servername = command.substr(5);
-    dvais::sendMessage(fd, "PONG " + servername + "\r\n");
+    std::vector<std::string> tokens = dvais::cmdtokenizer(command);
+    if (tokens.size() < 2) {
+        sendError(fd, 461, "", "PING"); // ERR_NEEDMOREPARAMS
+        return;
+    }
+    std::string token = tokens[1];
+    dvais::sendMessage(fd, "PONG " + token + "\r\n");
 }
 
 /**
