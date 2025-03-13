@@ -27,6 +27,7 @@ public:
     void commandMode(Server &server, int fd, const std::string &command);
     void commandKick(Server &server, int fd, const std::string &command);
     void commandPing(int fd, const std::string &command);
+    void commandPong(Server &server, int fd, const std::string &command);
     void commandPass(Server &server, int fd, const std::string &command);
     void commandMsg(Server &server, int fd, const std::string &command, bool sendErs);
     void commandNames(Server &server, int fd, const std::string &command);

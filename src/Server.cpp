@@ -102,7 +102,7 @@ void Server::run()
     bindSocket();
     while (g_running)
 	{
-        int poll_count = poll(_pollfds.data(), _pollfds.size(), -1);
+        int poll_count = poll(_pollfds.data(), _pollfds.size(), 1000);
         if (poll_count < 0)
 		{
             if (errno == EINTR)
@@ -131,6 +131,7 @@ void Server::run()
                 }
             }
         }
+        checkIdleClients();
     }
     std::cerr << "Server shutting down..." << std::endl;
 }
@@ -178,8 +179,9 @@ void Server::removeClient(int fd)
             break;
         }
     }
+    Client* toDelete = _clients[fd];
     _clients.erase(fd);
-    delete _clients[fd];
+    delete toDelete;
 }
 
 void Server::addChannel(const int &fd, const std::string &name, const std::string &pass)
@@ -218,6 +220,34 @@ void Server::tryRegisterClient(int fd)
     dvais::sendMessage(fd, welcome);
 }
 
+void Server::checkIdleClients()
+{
+    time_t now = time(NULL);
+    for (std::map<int, Client*>::iterator it = _clients.begin(); it != _clients.end();)
+    {
+        Client *client = it->second;
+        double diff = difftime(now, client->getLastActivity());
+        if (diff > 60 && !client->getPingSent())
+        {
+            dvais::sendMessage(client->getFd(), "PING :ircserv\r\n");
+            client->setPingSent(true);
+            client->setLastActivity(now);
+        }
+        else if (diff > 90)
+        {
+            int fd = client->getFd();
+            std::map<int, Client*>::iterator next = it;
+            ++next;
+            removeClient(fd);
+            it = next;
+        }
+        else
+        {
+            ++it;
+        }
+    }
+}
+
 void Server::handleClient(int fd)
 {
     char buffer[1024];
@@ -229,7 +259,7 @@ void Server::handleClient(int fd)
         removeClient(fd);
         return;
     }
-
+    _clients[fd]->setLastActivity(time(NULL));
     buffer[bytes_received] = '\0';
     std::string &clientBuffer = _clients[fd]->getBuffer();
     clientBuffer += buffer;

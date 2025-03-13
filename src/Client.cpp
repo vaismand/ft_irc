@@ -26,7 +26,8 @@ void Client::ClientInit() {
 	_status = UNREGISTERED;
 	_isAdmin = false;
 	_passAccepted = false;
-
+	_pingSent = false;
+	_lastActivity = time(NULL);
 }
 
 // ----- getter Functions -----
@@ -35,6 +36,7 @@ std::string Client::getNick() const { return _nickname; }
 std::string Client::getIp() const { return _ip; }
 std::string& Client::getBuffer() { return _buffer; }
 AuthState Client::getStatus() const { return _status; }
+time_t Client::getLastActivity() const { return _lastActivity; }
 bool Client::getRights() const { return _isAdmin; }
 bool Client::getPassAccepted() const { return _passAccepted; }
 int  Client::getFd() const { return _fd; }

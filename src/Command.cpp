@@ -347,14 +347,14 @@ void Command::commandWhois(Server &server, int fd, const std::string &command) {
 }
 
 /**
- * @brief 
+ * @brief Handles the WHO command in the IRC server. 
  * 
+ * @throws ERR_NEEDMOREPARAMS (461) - if no target nickname is provided.
+ * @throws ERR_NOSUCHCHANNEL (403) - if the specified channel does not exist.
  */
 void Command::commandWho(Server &server, int fd, const std::string &command) {
-    std::istringstream iss(command);
-    std::string cmd, targetNick;
-    iss >> cmd >> targetNick;
-    targetNick = dvais::trim(targetNick);
+    std::vector<std::string> tokens = dvais::cmdtokenizer(command);
+    std::string targetNick = tokens[1];
 
     if (targetNick.empty())
     {
@@ -378,7 +378,7 @@ void Command::commandWho(Server &server, int fd, const std::string &command) {
 }
 
 /**
- * @brief 
+ * @brief Need to divide this shit into smaller parts
  * 
  */
 void Command::commandMode(Server &server, int fd, const std::string &command)
@@ -525,9 +525,9 @@ void Command::commandMode(Server &server, int fd, const std::string &command)
     }
     sendError(fd, 421, clientNick, "MODE");
 }
+
 /**
  * @brief Handles the PING command in the IRC server.
- * 
  *
  * @throws ERR_NEEDMOREPARAMS (461) - if no servername is provided.
  */
@@ -542,14 +542,42 @@ void Command::commandPing(int fd, const std::string &command) {
 }
 
 /**
- * @brief 
+ * @brief Handles the PONG received from client and update his Activity time.
+ *
+ * @throws ERR_NEEDMOREPARAMS (461) - if no servername is provided.
+ */
+void Command::commandPong(Server &server, int fd, const std::string &command) {
+    std::vector<std::string> tokens = dvais::cmdtokenizer(command);
+    if (tokens.size() < 2) {
+        sendError(fd, 461, "", "PING"); // ERR_NEEDMOREPARAMS
+        return;
+    }
+    std::string token = tokens[1];
+    Client &client = server.getClient(fd);
+    client.setLastActivity(time(NULL));
+    client.setPingSent(false);
+}
+
+/**
+ * @brief Handles the PASS command in the IRC server. If the provided password is correct,
+ * it sets the passAccepted flag to true. If not, it sends an error reply and removes the client.
  * 
+ * @throws ERR_NEEDMOREPARAMS (461) - if no password is provided.
+ * @throws ERR_PASSWDMISMATCH (464) - if the provided password is incorrect.
+ * @throws ERR_ALREADYREGISTERED (462) - if the client is already registered.
  */
 void Command::commandPass(Server &server, int fd, const std::string &command) {
-    std::string providedPass = command.substr(5);
+    std::vector<std::string> tokens = dvais::cmdtokenizer(command);
+    if (tokens.size() < 2) {
+        sendError(fd, 461, "", "PASS"); // ERR_NEEDMOREPARAMS
+        return;
+    }
+    std::string providedPass = tokens[1];
     if (providedPass != server.getPass()) {
-        sendError(fd, 464, "", "");
+        sendError(fd, 464, "", ""); // ERR_PASSWDMISMATCH
         server.removeClient(fd);
+    } else if (server.getClient(fd).getPassAccepted()) {
+        sendError(fd, 462, "", ""); // ERR_ALREADYREGISTERED
     } else {
         server.getClient(fd).setPassAccepted(true);
     }
@@ -702,17 +730,17 @@ void Command::commandNames(Server &server, int fd, const std::string &command)
     dvais::sendMessage(fd, ":ircserv 366 " + client_nick + " " + tokens[1] + " :End of /NAMES list\r\n");
 }
 /**
- * @brief 
- *  
+ * @brief Handles the QUIT command in the IRC server. Can be sent with or without a quit message.
+ * Broadcasts the QUIT message to all channels and removes the client from the server.
+ * No numeric replies are sent.
  */
 void Command::commandQuit(Server &server, int fd, const std::string &command) {
-    std::istringstream iss(command);
-    std::string cmd;
-    iss >> cmd;
-    
-    std::string quitMessage = dvais::extractTopic(iss);
-    if (quitMessage.empty())
-        quitMessage = "Client Quit";
+    std::vector<std::string> tokens = dvais::cmdtokenizer(command);
+    if (tokens.size() < 2) {
+        commandQuit(server, fd, "QUIT :Client Quit\r\n");
+        return;
+    }
+    std::string quitMessage = tokens[1];
     
     std::string nick = server.getClient(fd).getNick();
     std::string user = server.getClient(fd).getUser();
@@ -835,15 +863,17 @@ void Command::executeCommand(Server &server, int fd, const std::string &command)
         commandUser(server, fd, command);
     } else if (command.find("JOIN") == 0) { // R done
         commandJoin(server, fd, command);
-    } else if (command.find("PING") == 0) { // D
+    } else if (command.find("PING") == 0) { // D done
         commandPing(fd, command);
+    } else if (command.find("PONG") == 0) { // D done
+        commandPong(server, fd, command);
     } else if (command.find("INVITE") == 0) { // R done
         commandInvite(server, fd, command);
     } else if (command.find("MODE") == 0) { // D
         commandMode(server, fd, command);
     } else if (command.find("KICK") == 0) { // R done
         commandKick(server, fd, command);
-    } else if (command.find("PASS") == 0) { // D
+    } else if (command.find("PASS") == 0) { // D done
         commandPass(server, fd, command);
     } else if (command.find("PART") == 0) { // R done
         commandPart(server, fd, command);
@@ -857,9 +887,9 @@ void Command::executeCommand(Server &server, int fd, const std::string &command)
         commandWhois(server, fd, command);
     } else if (command.find("WHO") == 0) { // D
         commandWho(server, fd, command);
-    } else if (command.find("TOPIC") == 0) { // D
+    } else if (command.find("TOPIC") == 0) { // D done
         commandTopic(server, fd, command);
-    } else if (command.find("QUIT") == 0) { // D
+    } else if (command.find("QUIT") == 0) { // D done
         commandQuit(server, fd, command);
     } else {
         sendError(fd, 421, server.getClient(fd).getNick(), command.substr(0, command.find(" ")));
