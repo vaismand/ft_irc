@@ -348,33 +348,58 @@ void Command::commandWhois(Server &server, int fd, const std::string &command) {
 
 /**
  * @brief Handles the WHO command in the IRC server. 
+ * Can be used with a target nickname or a channel name.
  * 
  * @throws ERR_NEEDMOREPARAMS (461) - if no target nickname is provided.
  * @throws ERR_NOSUCHCHANNEL (403) - if the specified channel does not exist.
+ * @throws ERR_NOSUCHNICK (401) - if the specified target nickname does not exist.
  */
 void Command::commandWho(Server &server, int fd, const std::string &command) {
     std::vector<std::string> tokens = dvais::cmdtokenizer(command);
-    std::string targetNick = tokens[1];
-
-    if (targetNick.empty())
-    {
-        sendError(fd, 461, server.getClient(fd).getNick(), "WHO");
-        return;
-    }
-    Channel* channel = server.getChannel(targetNick);
-    if (!channel)
-    {
-        sendError(fd, 403, server.getClient(fd).getNick(), targetNick);
-        return;
-    }
     std::string requesterNick = server.getClient(fd).getNick();
-    std::ostringstream oss;
-    oss << ":ircserv 352 " << requesterNick << " " << targetNick << " ircserv ircserv " << channel->getcName() << " H :0 ircserv\r\n";
-    dvais::sendMessage(fd, oss.str());
 
-    oss.str("");
-    oss << ":ircserv 315 " << requesterNick << " " << targetNick << " :End of WHO list\r\n";
-    dvais::sendMessage(fd, oss.str());
+    if (tokens.size() < 2) {
+        sendError(fd, 461, requesterNick, "WHO"); // ERR_NEEDMOREPARAMS
+        return;
+    }
+    std::string target = tokens[1];
+    if (target[0] == '#')
+    {
+        Channel* channel = server.getChannel(target);
+        if (!channel) {
+            sendError(fd, 403, requesterNick, target); // ERR_NOSUCHCHANNEL
+            return;
+        }
+    const std::vector<int>& joined = server.getChannel(target)->getJoined();
+    for (size_t i = 0; i < joined.size(); ++i)
+    {
+        Client &c = server.getClient(joined[i]);
+        std::ostringstream reply;
+        reply << ":ircserv 352 " << requesterNick << " " << target << " "
+                << c.getUser() << " " << c.getIp() << " ircserv "
+                << c.getNick() << " H :0 " << c.getUser() << "\r\n";
+        dvais::sendMessage(fd, reply.str());
+    }
+    std::ostringstream end;
+    end << ":ircserv 315 " << requesterNick << " " << target << " :End of WHO list\r\n";
+    dvais::sendMessage(fd, end.str());
+    }
+    else
+    {
+        Client *client = server.getClientByNick(target);
+        if (!client) {
+            sendError(fd, 401, requesterNick, target); // ERR_NOSUCHNICK
+            return;
+        }
+        std::ostringstream reply;
+        reply << ":ircserv 352 " << requesterNick << " " << target << " "
+                << client->getUser() << " " << client->getIp() << " ircserv "
+                << client->getNick() << " H :0 " << client->getUser() << "\r\n";
+        dvais::sendMessage(fd, reply.str());
+        std::ostringstream end;
+        end << ":ircserv 315 " << requesterNick << " " << target << " :End of WHO list\r\n";
+        dvais::sendMessage(fd, end.str());
+    }
 }
 
 /**
