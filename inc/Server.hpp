@@ -47,6 +47,8 @@ class Server
 		void handleClient(int fd);
 		void tryRegisterClient(int fd);
 		void checkIdleClients();
+		void setPollfd(int fd, short int events, std::vector<struct pollfd> &pollfds);
+
 	public:
 		// Constructors
 		Server(const std::string &port, const std::string &pass);

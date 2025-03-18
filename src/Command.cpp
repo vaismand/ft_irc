@@ -39,7 +39,7 @@ void Command::initErrorMap()
     errorMap[471] = "Channel is full";
     errorMap[472] = "is unknown mode char to me";
     errorMap[473] = "Cannot join channel (invite only)";
-    errorMap[475] = "Cannot join channel (invite only)";
+    errorMap[475] = "Cannot join channel (+k)";
     errorMap[482] = "You're not channel operator";
 }
 
@@ -55,23 +55,27 @@ void Command::sendError(int fd, int errorCode, const std::string &nick, const st
 }
 
 /**
- * @brief 
- * 
+ * @brief Handles capability negotiation for IRC clients by processing CAP command.
+ * If client requests "LS", a list of supported capabilities is returned.
+ * If client requests "REQ", it acknowledges the requested capabilities.
+ * "END" terminates the capability negotiation.
  */
-void Command::commandCap(int fd, const std::string &command)
+void Command::commandCap(Server &server, int fd, const std::vector<std::string> &cmd)
 {
-    if (command.find("CAP LS") == 0) {
-        dvais::sendMessage(fd, "CAP * LS :multi-prefix away-notify\r\n");
+    if (cmd.size() < 2) 
+        sendError(fd, 421, "", "CAP");
+    std::string nick = server.getClientNick(fd);
+    if (cmd[1] == "LS") {
+        dvais::sendMessage(fd, "CAP " + nick + " LS :multi-prefix away-notify\r\n");
         return;
     }
-    if (command.find("CAP REQ") == 0) {
-        dvais::sendMessage(fd, "CAP * ACK :multi-prefix away-notify\r\n");
+    if (cmd[1] == "REQ") {
+        dvais::sendMessage(fd, "CAP " + nick + " ACK :multi-prefix away-notify\r\n");
         return;
     }
-    if (command.find("CAP END") == 0) {
+    if (cmd[1] == "END") {
         return;
     }
-    sendError(fd, 421, "", "CAP");
 }
 
 /**
@@ -83,8 +87,7 @@ void Command::commandCap(int fd, const std::string &command)
  * @throws ERR_ERRONEUSNICKNAME (432) - if provided nickname has invalid format.
  * @throws ERR_NICKNAMEINUSE (433) - if provided nickname is already taken by another client.
  */
-void Command::commandNick(Server &server, int fd, const std::string &command) {
-    std::vector<std::string> tokens = dvais::cmdtokenizer(command);
+void Command::commandNick(Server &server, int fd, const std::vector<std::string> &tokens) {
     Client &client = server.getClient(fd);
     const std::string &currentNick = client.getNick();
     if (tokens.size() < 2) {
@@ -116,8 +119,7 @@ void Command::commandNick(Server &server, int fd, const std::string &command) {
  * @throws ERR_NEEDMOREPARAMS (461) - if no username is provided.
  * @throws ERR_ALREADYREGISTERED (462) - if client is already registered.
  */
-void Command::commandUser(Server &server, int fd, const std::string &command) {
-    std::vector<std::string> tokens = dvais::cmdtokenizer(command);
+void Command::commandUser(Server &server, int fd, const std::vector<std::string> &tokens) {
     Client &client = server.getClient(fd);
     const std::string &nick = client.getNick();
     if (tokens.size() < 2 || tokens[1].empty()) {
@@ -151,8 +153,7 @@ void Command::commandUser(Server &server, int fd, const std::string &command) {
  * @throws ERR_CHANNELISFULL (471) - if the channel has reached its user limit.
  * @throws ERR_INVITEONLYCHAN (473) - if the channel is invite-only and the client is not invited.
  */
-void Command::commandJoin(Server &server, int fd, const std::string &command) {
-    std::vector<std::string> tokens = dvais::cmdtokenizer(command);
+void Command::commandJoin(Server &server, int fd, const std::vector<std::string> &tokens) {
     Client &client = server.getClient(fd);
     const std::string &nick = client.getNick();
     if (tokens.size() < 2 || tokens[1].empty()) {
@@ -233,7 +234,7 @@ void Command::printChannelWelcome(Server &server, Client &client, Channel &chann
         dvais::sendMessage(fd, ":ircserv 333 " + client.getNick() + " " + cname + " " 
                                                                 + channel.getTopicSetter() + " " + timeStr + "\r\n");
     }
-    commandNames(server, fd, "NAMES " + cname);
+    executeCommand(server, fd, "NAMES " + cname);
 }
 
 /**
@@ -268,8 +269,7 @@ void Command::partClientAll(Server &server, Client &client, std::vector<std::str
  * @throws ERR_NOSUCHCHANNEL (403) - if a specified channel does not exist.
  * @throws ERR_NOTONCHANNEL (442) - if the client is not a member of a specified channel.
  */
-void Command::commandPart(Server &server, int fd, const std::string &command) {
-    std::vector<std::string> tokens = dvais::cmdtokenizer(command);
+void Command::commandPart(Server &server, int fd, const std::vector<std::string> &tokens) {
     Client &client = server.getClient(fd);
     const std::string &nick = client.getNick();
     if (tokens.size() < 2) {
@@ -307,8 +307,7 @@ void Command::commandPart(Server &server, int fd, const std::string &command) {
  * @throws ERR_NEEDMOREPARAMS (461) - if no target nickname is provided.
  * @throws ERR_NOSUCHNICK (401) - if the specified target nickname does not exist.
  */
-void Command::commandWhois(Server &server, int fd, const std::string &command) {
-    std::vector<std::string> tokens = dvais::cmdtokenizer(command);
+void Command::commandWhois(Server &server, int fd, const std::vector<std::string> &tokens) {
     Client &client = server.getClient(fd);
     const std::string &requesterNick = client.getNick();
     std::string targetNick = tokens[1];
@@ -354,8 +353,7 @@ void Command::commandWhois(Server &server, int fd, const std::string &command) {
  * @throws ERR_NOSUCHCHANNEL (403) - if the specified channel does not exist.
  * @throws ERR_NOSUCHNICK (401) - if the specified target nickname does not exist.
  */
-void Command::commandWho(Server &server, int fd, const std::string &command) {
-    std::vector<std::string> tokens = dvais::cmdtokenizer(command);
+void Command::commandWho(Server &server, int fd, const std::vector<std::string> &tokens) {
     std::string requesterNick = server.getClient(fd).getNick();
 
     if (tokens.size() < 2) {
@@ -406,9 +404,8 @@ void Command::commandWho(Server &server, int fd, const std::string &command) {
  * @brief Need to divide this shit into smaller parts
  * 
  */
-void Command::commandMode(Server &server, int fd, const std::string &command)
+void Command::commandMode(Server &server, int fd, const std::vector<std::string> &tokens)
 {
-    std::vector<std::string> tokens = dvais::cmdtokenizer(command);
     std::string clientNick = server.getClient(fd).getNick();
 
     if (tokens.size() < 2) {
@@ -556,8 +553,7 @@ void Command::commandMode(Server &server, int fd, const std::string &command)
  *
  * @throws ERR_NEEDMOREPARAMS (461) - if no servername is provided.
  */
-void Command::commandPing(int fd, const std::string &command) {
-    std::vector<std::string> tokens = dvais::cmdtokenizer(command);
+void Command::commandPing(int fd, const std::vector<std::string> &tokens) {
     if (tokens.size() < 2) {
         sendError(fd, 461, "", "PING"); // ERR_NEEDMOREPARAMS
         return;
@@ -571,8 +567,7 @@ void Command::commandPing(int fd, const std::string &command) {
  *
  * @throws ERR_NEEDMOREPARAMS (461) - if no servername is provided.
  */
-void Command::commandPong(Server &server, int fd, const std::string &command) {
-    std::vector<std::string> tokens = dvais::cmdtokenizer(command);
+void Command::commandPong(Server &server, int fd, const std::vector<std::string> &tokens) {
     if (tokens.size() < 2) {
         sendError(fd, 461, "", "PING"); // ERR_NEEDMOREPARAMS
         return;
@@ -591,8 +586,7 @@ void Command::commandPong(Server &server, int fd, const std::string &command) {
  * @throws ERR_PASSWDMISMATCH (464) - if the provided password is incorrect.
  * @throws ERR_ALREADYREGISTERED (462) - if the client is already registered.
  */
-void Command::commandPass(Server &server, int fd, const std::string &command) {
-    std::vector<std::string> tokens = dvais::cmdtokenizer(command);
+void Command::commandPass(Server &server, int fd, const std::vector<std::string> &tokens) {
     if (tokens.size() < 2) {
         sendError(fd, 461, "", "PASS"); // ERR_NEEDMOREPARAMS
         return;
@@ -618,8 +612,7 @@ void Command::commandPass(Server &server, int fd, const std::string &command) {
  * @throws ERR_NOSUCHNICK (401) - if the target nick or channel doesn't exist.
  * @throws ERR_CANNOTSENDTOCHAN (404) - if the client is not allowed to send to the channel.
  */
-void Command::commandMsg(Server &server, int fd, const std::string &command, bool sendErs) {
-    std::vector<std::string> cmd = dvais::cmdtokenizer(command);
+void Command::commandMsg(Server &server, int fd, const std::vector<std::string> &cmd, bool sendErs) {
     Client &client = server.getClient(fd);
     const std::string &nick = client.getNick();
     if (cmd.size() < 3) {
@@ -667,9 +660,8 @@ void Command::commandMsg(Server &server, int fd, const std::string &command, boo
  * @throws ERR_NOTONCHANNEL (442) - if the client is not a member of the specified channel.
  * @throws ERR_CHANOPRIVSNEEDED (482) - if the channel is invite-only and the client is not an operator.
  */
-void Command::commandTopic(Server &server, int fd, const std::string &command)
+void Command::commandTopic(Server &server, int fd, const std::vector<std::string> &cmd)
 {
-    std::vector<std::string> cmd = dvais::cmdtokenizer(command);
     Client &client = server.getClient(fd);
     const std::string &nick = client.getNick();
 
@@ -739,9 +731,8 @@ void Command::commandTopic(Server &server, int fd, const std::string &command)
  * 
  * @throws ERR_NEEDMOREPARAMS (461) - if no channel is provided.
  */
-void Command::commandNames(Server &server, int fd, const std::string &command)
+void Command::commandNames(Server &server, int fd, const std::vector<std::string> &tokens)
 {
-    std::vector<std::string> tokens = dvais::cmdtokenizer(command);
     std::string client_nick = server.getClient(fd).getNick();
     if (tokens.size() < 2) {
         sendError(fd, 461, client_nick, "NAMES"); // ERR_NEEDMOREPARAMS
@@ -759,10 +750,9 @@ void Command::commandNames(Server &server, int fd, const std::string &command)
  * Broadcasts the QUIT message to all channels and removes the client from the server.
  * No numeric replies are sent.
  */
-void Command::commandQuit(Server &server, int fd, const std::string &command) {
-    std::vector<std::string> tokens = dvais::cmdtokenizer(command);
+void Command::commandQuit(Server &server, int fd, const std::vector<std::string> &tokens) {
     if (tokens.size() < 2) {
-        commandQuit(server, fd, "QUIT :Client Quit\r\n");
+        executeCommand(server, fd, "QUIT :Client Quit\r\n");
         return;
     }
     std::string quitMessage = tokens[1];
@@ -789,8 +779,7 @@ void Command::commandQuit(Server &server, int fd, const std::string &command) {
  * @throws ERR_USERONCHANNEL (443) - if the target is already on the channel. 
  * @throws ERR_NOSUCHNICK (401) - if the target nickname does not exist.
  */
-void Command::commandInvite(Server &server, int fd, const std::string &command) {
-    std::vector<std::string> tokens = dvais::cmdtokenizer(command);
+void Command::commandInvite(Server &server, int fd, const std::vector<std::string> &tokens) {
     std::string client_nick = server.getClient(fd).getNick();
     if (tokens.size() < 3) {
         sendError(fd, 461, client_nick, "INVITE"); // ERR_NEEDMOREPARAMS
@@ -842,8 +831,7 @@ void Command::commandInvite(Server &server, int fd, const std::string &command) 
  * @throws ERR_CHANOPRIVSNEEDED (482) - if client lacks operator status.
  * @throws ERR_USERNOTINCHANNEL (441) - if target isn't in the channel.
  */
-void Command::commandKick(Server &server, int fd, const std::string &command) {
-    std::vector<std::string> tokens = dvais::cmdtokenizer(command);
+void Command::commandKick(Server &server, int fd, const std::vector<std::string> &tokens) {
     Client &client = server.getClient(fd);
     const std::string &client_nick = client.getNick();
     if (tokens.size() < 3) {
@@ -879,43 +867,48 @@ void Command::commandKick(Server &server, int fd, const std::string &command) {
     targetChannel->rmClient(targetClient->getFd());
 }
 
-void Command::executeCommand(Server &server, int fd, const std::string &command) {
-    if (command.find("CAP ") == 0) { // D
-        commandCap(fd, command);
-    } else if (command.find("NICK") == 0) { // R done
-        commandNick(server, fd, command);
-    } else if (command.find("USER") == 0) { // R done
-        commandUser(server, fd, command);
-    } else if (command.find("JOIN") == 0) { // R done
-        commandJoin(server, fd, command);
-    } else if (command.find("PING") == 0) { // D done
-        commandPing(fd, command);
-    } else if (command.find("PONG") == 0) { // D done
-        commandPong(server, fd, command);
-    } else if (command.find("INVITE") == 0) { // R done
-        commandInvite(server, fd, command);
-    } else if (command.find("MODE") == 0) { // D
-        commandMode(server, fd, command);
-    } else if (command.find("KICK") == 0) { // R done
-        commandKick(server, fd, command);
-    } else if (command.find("PASS") == 0) { // D done
-        commandPass(server, fd, command);
-    } else if (command.find("PART") == 0) { // R done
-        commandPart(server, fd, command);
-    } else if (command.find("PRIVMSG") == 0) { // R done
-        commandMsg(server, fd, command, true);
-    } else if (command.find("NOTICE") == 0) { // R done
-        commandMsg(server, fd, command, false);
-    } else if (command.find("NAMES") == 0) { // R done
-        commandNames(server, fd, command);
-    } else if (command.find("WHOIS") == 0) { // R done
-        commandWhois(server, fd, command);
-    } else if (command.find("WHO") == 0) { // D
-        commandWho(server, fd, command);
-    } else if (command.find("TOPIC") == 0) { // D done
-        commandTopic(server, fd, command);
-    } else if (command.find("QUIT") == 0) { // D done
-        commandQuit(server, fd, command);
+void Command::executeCommand(Server &server, int fd, const std::string &cmd) {
+    std::vector<std::string> tokens = dvais::cmdtokenizer(cmd);
+    if (tokens.empty())
+        return;
+    std::string command = tokens[0];
+
+    if (command == "CAP") { // D
+        commandCap(server, fd, tokens);
+    } else if (command == "NICK") {
+        commandNick(server, fd, tokens);
+    } else if (command == "USER") {
+        commandUser(server, fd, tokens);
+    } else if (command == "JOIN") {
+        commandJoin(server, fd, tokens);
+    } else if (command == "PING") {
+        commandPing(fd, tokens);
+    } else if (command == "PONG") {
+        commandPong(server, fd, tokens);
+    } else if (command == "INVITE") {
+        commandInvite(server, fd, tokens);
+    } else if (command == "MODE") { // D
+        commandMode(server, fd, tokens);
+    } else if (command == "KICK") {
+        commandKick(server, fd, tokens);
+    } else if (command == "PASS") {
+        commandPass(server, fd, tokens);
+    } else if (command == "PART") {
+        commandPart(server, fd, tokens);
+    } else if (command == "PRIVMSG") {
+        commandMsg(server, fd, tokens, true);
+    } else if (command == "NOTICE") {
+        commandMsg(server, fd, tokens, false);
+    } else if (command == "NAMES") {
+        commandNames(server, fd, tokens);
+    } else if (command == "WHOIS") {
+        commandWhois(server, fd, tokens);
+    } else if (command == "WHO") {
+        commandWho(server, fd, tokens);
+    } else if (command == "TOPIC") {
+        commandTopic(server, fd, tokens);
+    } else if (command == "QUIT") {
+        commandQuit(server, fd, tokens);
     } else {
         sendError(fd, 421, server.getClient(fd).getNick(), command.substr(0, command.find(" ")));
     }

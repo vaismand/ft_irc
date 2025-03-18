@@ -19,23 +19,23 @@ public:
     ~Command();
 
     // Methods
-    void commandCap(int fd, const std::string &command);
-    void commandNick(Server &server, int fd, const std::string &command);
-    void commandUser(Server &server, int fd, const std::string &command);
-    void commandJoin(Server &server, int fd, const std::string &command);
-    void commandPart(Server &server, int fd, const std::string &command);
-    void commandMode(Server &server, int fd, const std::string &command);
-    void commandKick(Server &server, int fd, const std::string &command);
-    void commandPing(int fd, const std::string &command);
-    void commandPong(Server &server, int fd, const std::string &command);
-    void commandPass(Server &server, int fd, const std::string &command);
-    void commandMsg(Server &server, int fd, const std::string &command, bool sendErs);
-    void commandNames(Server &server, int fd, const std::string &command);
-    void commandWhois(Server &server, int fd, const std::string &command);
-    void commandWho(Server &server, int fd, const std::string &command);
-    void commandTopic(Server &server, int fd, const std::string &command);
-    void commandQuit(Server &server, int fd, const std::string &command);
-    void commandInvite(Server &server, int fd, const std::string &command);
+    void commandCap(Server &server, int fd, const std::vector<std::string> &tokens);
+    void commandNick(Server &server, int fd, const std::vector<std::string> &tokens);
+    void commandUser(Server &server, int fd, const std::vector<std::string> &tokens);
+    void commandJoin(Server &server, int fd, const std::vector<std::string> &tokens);
+    void commandPart(Server &server, int fd, const std::vector<std::string> &tokens);
+    void commandMode(Server &server, int fd, const std::vector<std::string> &tokens);
+    void commandKick(Server &server, int fd, const std::vector<std::string> &tokens);
+    void commandPing(int fd, const std::vector<std::string> &tokens);
+    void commandPong(Server &server, int fd, const std::vector<std::string> &tokens);
+    void commandPass(Server &server, int fd, const std::vector<std::string> &tokens);
+    void commandMsg(Server &server, int fd, const std::vector<std::string> &tokens, bool sendErs);
+    void commandNames(Server &server, int fd, const std::vector<std::string> &tokens);
+    void commandWhois(Server &server, int fd, const std::vector<std::string> &tokens);
+    void commandWho(Server &server, int fd, const std::vector<std::string> &tokens);
+    void commandTopic(Server &server, int fd, const std::vector<std::string> &tokens);
+    void commandQuit(Server &server, int fd, const std::vector<std::string> &tokens);
+    void commandInvite(Server &server, int fd, const std::vector<std::string> &tokens);
     void executeCommand(Server &server, int fd, const std::string &command);
     void sendError(int fd, int errorCode, const std::string &nick, const std::string &command);
 

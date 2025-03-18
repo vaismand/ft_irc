@@ -2,14 +2,7 @@
 #include "../inc/Channel.hpp"
 #include "../inc/Tools.hpp"
 
-void dvais::setPollfd(int fd, short int events, std::vector<struct pollfd> &pollfds)
-{
-	struct pollfd pollfd;
-	pollfd.fd = fd;
-	pollfd.events = events;
-	pollfd.revents = 0;
-	pollfds.push_back(pollfd);
-}
+
 
 ssize_t dvais::sendMessage(int fd, const std::string& message)
 {

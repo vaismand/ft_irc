@@ -88,12 +88,7 @@ void Server::bindSocket()
     if (listen(_socket, 10) < 0)
         throw std::runtime_error("Error: Listen failed.");
 
-    struct pollfd server_pollfd;
-    server_pollfd.fd = _socket;
-    server_pollfd.events = POLLIN; 
-    server_pollfd.revents = 0;
-    _pollfds.push_back(server_pollfd);
-
+    setPollfd(_socket, POLLIN, _pollfds);
     std::cout << "Server started, listening on port " << _port << std::endl;
 }
 
@@ -153,13 +148,18 @@ void Server::addClient()
         close(client_fd);
         return;
     }
-    struct pollfd client_pollfd;
-    client_pollfd.fd = client_fd;
-    client_pollfd.events = POLLIN;
-    client_pollfd.revents = 0;
-    _pollfds.push_back(client_pollfd);
+    setPollfd(client_fd, POLLIN, _pollfds);
     _clients[client_fd] = new Client(client_fd, inet_ntoa(client_addr.sin_addr));
     std::cout << "Client Connected: " << client_fd << std::endl;
+}
+
+void Server::setPollfd(int fd, short int events, std::vector<struct pollfd> &pollfds)
+{
+	struct pollfd pollfd;
+	pollfd.fd = fd;
+	pollfd.events = events;
+	pollfd.revents = 0;
+	pollfds.push_back(pollfd);
 }
 
 void Server::removeClient(int fd) 
