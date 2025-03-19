@@ -113,7 +113,7 @@ void Server::run()
 		{
             if (_pollfds[i].revents & (POLLERR | POLLHUP | POLLNVAL))
             {
-                removeClient(_pollfds[i].fd);
+                rmClient(_pollfds[i].fd);
                 continue;
             }
             if (_pollfds[i].revents & POLLIN)
@@ -162,7 +162,7 @@ void Server::setPollfd(int fd, short int events, std::vector<struct pollfd> &pol
 	pollfds.push_back(pollfd);
 }
 
-void Server::removeClient(int fd) 
+void Server::rmClient(int fd) 
 {
     std::cout << "Client disconnected: " << fd << std::endl;
     for (std::map<std::string, Channel*>::iterator it = _channels.begin(); it != _channels.end(); ++it)
@@ -204,6 +204,18 @@ void Server::broadcastAll(int fd, const std::string &msg)
     }
 }
 
+void welcomeToServerMessage(int fd, const std::string &nick)
+{
+    std::string welcome = ":ircserv 001 " + nick + " :Welcome to the IRC server " + nick + "!\r\n";
+    std::string yourHost = ":ircserv 002 " + nick + " :Your host is ircserv, running version 1.0\r\n";
+    std::string created = ":ircserv 003 " + nick + " :This server was created on 2021/09/01\r\n";
+    std::string myInfo = ":ircserv 004 " + nick + " ircserv 1.0 ao mtov\r\n";
+    std::string motd = ":ircserv 375 " + nick + " :- ircserv Message of the Day -\r\n";
+    std::string motd1 = ":ircserv 372 " + nick + " :- Welcome to the ircserv IRC Network\r\n";
+    std::string motd2 = ":ircserv 376 " + nick + " :End of /MOTD command.\r\n";
+    dvais::sendMessage(fd, welcome);
+}
+
 void Server::tryRegisterClient(int fd)
 {
     Client &client = getClient(fd);
@@ -216,8 +228,9 @@ void Server::tryRegisterClient(int fd)
         return;
     client.setStatus(REGISTERED);
 
-    std::string welcome = ":ircserv 001 " + client.getNick() + " :Welcome to the IRC server " + client.getNick() + "!\r\n";
-    dvais::sendMessage(fd, welcome);
+    //std::string welcome = ":ircserv 001 " + client.getNick() + " :Welcome to the IRC server " + client.getNick() + "!\r\n";
+    welcomeToServerMessage(fd, client.getNick());
+    //dvais::sendMessage(fd, welcome);
 }
 
 void Server::checkIdleClients()
@@ -238,7 +251,7 @@ void Server::checkIdleClients()
             int fd = client->getFd();
             std::map<int, Client*>::iterator next = it;
             ++next;
-            removeClient(fd);
+            rmClient(fd);
             it = next;
         }
         else
@@ -256,7 +269,7 @@ void Server::handleClient(int fd)
     ssize_t bytes_received = recv(fd, buffer, sizeof(buffer) - 1, 0);
     if (bytes_received <= 0)
     {
-        removeClient(fd);
+        rmClient(fd);
         return;
     }
     _clients[fd]->setLastActivity(time(NULL));
@@ -272,15 +285,14 @@ void Server::handleClient(int fd)
         std::cout << "Received from " << fd << ": " << command << std::endl;
         try
         {
-            Command cmd;
-            cmd.executeCommand(*this, fd, command);
+            _cmd.executeCommand(*this, fd, command);
         } 
         catch (const std::exception &e)
         {
             std::cerr << "Command execution error: " << e.what() << std::endl;
             if (dvais::sendMessage(fd, "Error processing command.\r\n") < 0)
             {
-                removeClient(fd);
+                rmClient(fd);
                 return;
             }
         }

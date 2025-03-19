@@ -125,6 +125,9 @@
     "__hash_table": "cpp",
     "__tree": "cpp",
     "cerrno": "cpp",
-    "csignal": "cpp"
+    "csignal": "cpp",
+    "complex": "cpp",
+    "ranges": "cpp",
+    "cinttypes": "cpp"
   }
 }

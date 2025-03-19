@@ -113,8 +113,5 @@ std::vector<std::string> dvais::split(const std::string& cmd, char delim) {
         std::getline(ss, tmp, delim);
         cmdarg.push_back(tmp);
     }
-    for(std::vector<std::string>::iterator it = cmdarg.begin(); it != cmdarg.end(); it++)
-        std::cout << *it << " ";
-    std::cout << std::endl;
     return cmdarg;
 }

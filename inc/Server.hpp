@@ -22,7 +22,6 @@
 #include "Tools.hpp"
 
 extern bool g_running;
-class Command;
 
 class Server
 {
@@ -40,6 +39,7 @@ class Server
 		std::vector <struct pollfd> _pollfds;
 		std::map <int, Client*> _clients;
 		std::map <std::string, Channel*> _channels;
+		Command _cmd;
 
 		// Methods
 		void bindSocket();
@@ -67,7 +67,7 @@ class Server
 		ssize_t sendMessage(int fd, const std::string &message);
 		void addChannel(const int &fd, const std::string &name, const std::string &pass);
 		void rmChannel(const std::string &name);
-		void removeClient(int fd);
+		void rmClient(int fd);
 		void run();
 		void broadcastAll(int fd, const std::string &msg);
 		bool isNickInUse(const std::string &nickname, int excludeFd = -1) const;

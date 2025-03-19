@@ -26,7 +26,6 @@ class Channel {
         std::string getTopicSetter() const;
         std::time_t getTopicSetTime() const;
 
-
 		// Setters
 		void setcName(const std::string& name);
 		void setcTopic(const std::string& topic);
@@ -36,7 +35,6 @@ class Channel {
 		void setTopicRestricted(bool restricted);
 		void setUserLimit(int limit);
 		void setNoExternalMsgs(bool noExternalMsgs);
-
 
 		// Methods
 		void addClient(int fd);
