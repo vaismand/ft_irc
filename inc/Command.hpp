@@ -10,7 +10,8 @@
 
 class Server;
 
-class Command {
+class Command
+{
     public:
         // Constructors
         Command();
@@ -37,12 +38,11 @@ class Command {
         void commandQuit(Server &server, int fd, const std::vector<std::string> &tokens);
         void commandInvite(Server &server, int fd, const std::vector<std::string> &tokens);
         void executeCommand(Server &server, int fd, const std::string &command);
-        void sendError(int fd, int errorCode, const std::string &nick, const std::string &command);
+        void sendError(int fd, int error, const std::string &nick, const std::string &command);
 
     private:
         // Attributes
         std::map<int, std::string> errorMap;
-        std::string getErrorMessage(int errorCode, const std::string &nick, const std::string &command = "");
         void initErrorMap();
         void printChannelWelcome(Server &server, Client &client, Channel &channel, bool isnew);
         void partClientAll(Server &server, Client &client, std::vector<std::string> channels, std::string reason);

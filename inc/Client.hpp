@@ -41,7 +41,7 @@ class Client
 
 		// Method
 		void rmChannelInList(const std::string& channelName);
-
+		
 	private:
 		// Constructors
 		Client (const Client& ref);

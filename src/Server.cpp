@@ -131,6 +131,26 @@ void Server::run()
     std::cerr << "Server shutting down..." << std::endl;
 }
 
+bool Server::isNickInUse(const std::string &nickname, int excludeFd) const {
+    for (std::map<int, Client*>::const_iterator it = _clients.begin(); it != _clients.end(); ++it) {
+        if (it->first != excludeFd && it->second->getNick() == nickname) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool Server::isValidNick(const std::string &nickname) {
+    if (nickname.empty() || !isalpha(nickname[0]))
+        return false;
+    for (size_t i = 0; i < nickname.length(); ++i) {
+        char c = nickname[i];
+        if (!isalnum(c) && c != '-' && c != '_')
+            return false;
+    }
+    return true;
+}
+
 void Server::addClient()
 {
     struct sockaddr_in client_addr;
@@ -244,13 +264,13 @@ void Server::checkIdleClients()
     {
         Client *client = it->second;
         double diff = difftime(now, client->getLastActivity());
-        if (diff > 60 && !client->getPingSent())
+        if (diff > 120 && !client->getPingSent())
         {
             dvais::sendMessage(client->getFd(), "PING :ircserv\r\n");
             client->setPingSent(true);
             client->setLastActivity(now);
         }
-        else if (diff > 90)
+        else if (diff > 160)
         {
             int fd = client->getFd();
             std::map<int, Client*>::iterator next = it;
@@ -304,24 +324,4 @@ void Server::handleClient(int fd)
             return;
         tryRegisterClient(fd);
     }
-}
-
-bool Server::isNickInUse(const std::string &nickname, int excludeFd) const {
-    for (std::map<int, Client*>::const_iterator it = _clients.begin(); it != _clients.end(); ++it) {
-        if (it->first != excludeFd && it->second->getNick() == nickname) {
-            return true;
-        }
-    }
-    return false;
-}
-
-bool Server::isValidNick(const std::string &nickname) {
-    if (nickname.empty() || !isalpha(nickname[0]))
-        return false;
-    for (size_t i = 0; i < nickname.length(); ++i) {
-        char c = nickname[i];
-        if (!isalnum(c) && c != '-' && c != '_')
-            return false;
-    }
-    return true;
 }

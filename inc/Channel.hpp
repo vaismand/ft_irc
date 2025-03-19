@@ -7,7 +7,8 @@
 #include "../inc/Client.hpp"
 #include "../inc/Tools.hpp"
 
-class Channel {
+class Channel
+{
 	public:
 		// Constructors
 		Channel(const int& fd, const std::string& name, const std::string& pass);
@@ -48,7 +49,6 @@ class Channel {
 		void rmInvited(int fd);
 		void broadcast(int fd, const std::string& msg);
 		void clearTopic();
-
 
 	private:
 		// Attributes

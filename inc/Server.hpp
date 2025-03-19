@@ -52,6 +52,7 @@ class Server
 		void checkIdleClients();
 		void setPollfd(int fd, short int events, std::vector<struct pollfd> &pollfds);
 		void welcomeToServerMessage(int fd, const std::string &nick);
+
 	public:
 		// Constructors
 		Server(const std::string &port, const std::string &pass);
@@ -67,12 +68,11 @@ class Server
 		std::size_t getChannelLimit() const;
 
 		// Methods
-		ssize_t sendMessage(int fd, const std::string &message);
 		void addChannel(const int &fd, const std::string &name, const std::string &pass);
 		void rmChannel(const std::string &name);
 		void rmClient(int fd);
 		void run();
 		void broadcastAll(int fd, const std::string &msg);
 		bool isNickInUse(const std::string &nickname, int excludeFd = -1) const;
-    	bool isValidNick(const std::string &nickname);
+		bool isValidNick(const std::string &nickname);
 };

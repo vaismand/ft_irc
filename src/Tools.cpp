@@ -2,8 +2,6 @@
 #include "../inc/Channel.hpp"
 #include "../inc/Tools.hpp"
 
-
-
 ssize_t dvais::sendMessage(int fd, const std::string& message)
 {
     size_t totalSent = 0;

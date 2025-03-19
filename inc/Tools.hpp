@@ -16,7 +16,6 @@ class Channel;
 namespace dvais
 {
 	// Tools
-	void setPollfd(int fd, short int events, std::vector<struct pollfd> &pollfds);
 	ssize_t sendMessage(int fd, const std::string& message);
 	std::string topicSetterTime(std::string setter, std::time_t setTime);
 	std::string extractCommand(std::string &buffer);
