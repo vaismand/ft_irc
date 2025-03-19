@@ -12,6 +12,9 @@ IRSSI client:
 `irssi`
 `/connect localhost <port> <pass>`
 
+Or
+`openssl s_client -connect irc.libera.chat:6697`
+
 Server - David:
 1. Server is running with port >1024 and any password
 2. Server finally connecting to irssi server

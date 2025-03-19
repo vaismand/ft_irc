@@ -21,6 +21,9 @@
 #include "Command.hpp"
 #include "Tools.hpp"
 
+#define BUILD_DATE __DATE__
+#define BUILD_TIME __TIME__
+
 extern bool g_running;
 
 class Server
@@ -48,7 +51,7 @@ class Server
 		void tryRegisterClient(int fd);
 		void checkIdleClients();
 		void setPollfd(int fd, short int events, std::vector<struct pollfd> &pollfds);
-
+		void welcomeToServerMessage(int fd, const std::string &nick);
 	public:
 		// Constructors
 		Server(const std::string &port, const std::string &pass);
