@@ -20,6 +20,7 @@
 #include "Channel.hpp"
 #include "Command.hpp"
 #include "Tools.hpp"
+#include "../inc/Bot.hpp"
 
 extern bool g_running;
 class Command;
@@ -40,6 +41,7 @@ class Server
 		std::vector <struct pollfd> _pollfds;
 		std::map <int, Client*> _clients;
 		std::map <std::string, Channel*> _channels;
+		Bot* bot_;
 
 		// Methods
 		void bindSocket();
@@ -67,6 +69,7 @@ class Server
 		void rmChannel(const std::string &name);
 		void removeClient(int fd);
 		void run();
+		void createBot();
 		void broadcastAll(int fd, const std::string &msg);
 		bool isNickInUse(const std::string &nickname, int excludeFd = -1) const;
     	bool isValidNick(const std::string &nickname);

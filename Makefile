@@ -9,6 +9,7 @@ SRC = src/ircserv.cpp \
 		src/Channel.cpp \
 		src/Command.cpp \
 		src/Tools.cpp \
+		src/Bot.cpp \
 
 OBJ = $(SRC:.cpp=.o)
 
