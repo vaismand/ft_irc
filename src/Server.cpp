@@ -95,11 +95,12 @@ void Server::bindSocket()
 void Server::run()
 {
     bindSocket();
+    createBot();
     while (g_running)
-	{
-        int poll_count = poll(_pollfds.data(), _pollfds.size(), 1000);
+    {
+        int poll_count = poll(_pollfds.data(), _pollfds.size(), -1);
         if (poll_count < 0)
-		{
+        {
             if (errno == EINTR)
             {
                 if (!g_running)
@@ -110,14 +111,14 @@ void Server::run()
             break;
         }
         for (size_t i = 0; i < _pollfds.size(); i++)
-		{
+        {
             if (_pollfds[i].revents & (POLLERR | POLLHUP | POLLNVAL))
             {
                 rmClient(_pollfds[i].fd);
                 continue;
             }
             if (_pollfds[i].revents & POLLIN)
-			{
+            {
                 if (_pollfds[i].fd == _socket) {
                     addClient();
                 }
@@ -126,7 +127,9 @@ void Server::run()
                 }
             }
         }
-        checkIdleClients();
+        if (bot_) {
+            bot_->sendRandomPhrase();
+        }
     }
     std::cerr << "Server shutting down..." << std::endl;
 }
@@ -207,6 +210,9 @@ void Server::rmClient(int fd)
 void Server::addChannel(const int &fd, const std::string &name, const std::string &pass)
 {
     _channels[name] = new Channel(fd, name, pass);
+    if (bot_) {
+        bot_->joinChannel(name);
+    }
 }
 
 void Server::rmChannel(const std::string &name)
@@ -324,4 +330,26 @@ void Server::handleClient(int fd)
             return;
         tryRegisterClient(fd);
     }
+}
+
+void Server::createBot() {
+    int sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    if (sockfd == -1) {
+        std::cerr << "Failed to create socket" << std::endl;
+        return;
+    }
+
+    sockaddr_in server_addr;
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(std::atoi(_port.c_str()));
+    inet_pton(AF_INET, "127.0.0.1", &server_addr.sin_addr);
+
+    if (connect(sockfd, (sockaddr*)&server_addr, sizeof(server_addr)) == -1) {
+        std::cerr << "Failed to connect to server" << std::endl;
+        close(sockfd);
+        return;
+    }
+
+    bot_ = new Bot(sockfd, "127.0.0.1", "BEEPBOOP");
+    bot_->connectToServer();
 }
