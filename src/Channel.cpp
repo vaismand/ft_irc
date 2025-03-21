@@ -28,6 +28,7 @@ const std::vector<int>& Channel::getJoined() const { return _joined; }
 const size_t& Channel::getUserLimit() const { return _userLimit; }
 std::string Channel::getTopic() const { return _cTopic; }
 std::string Channel::getTopicSetter() const { return _topicSetter; }
+std::string Channel::getModeList() const { return "+nt"; }
 std::time_t Channel::getTopicSetTime() const { return _topicSetTime; }
 
 // ----- setter Functions -----

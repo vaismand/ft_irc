@@ -324,148 +324,21 @@ void Command::commandWho(Server &server, int fd, const std::vector<std::string> 
  * @brief Need to divide this shit into smaller parts
  * 
  */
-void Command::commandMode(Server &server, int fd, const std::vector<std::string> &tokens)
+void Command::commandMode(Server &server, int fd, const std::vector<std::string> &tokens )
 {
-    std::string clientNick = server.getClient(fd).getNick();
+    std::string nick = server.getClient(fd).getNick();
 
     if (tokens.size() < 2) {
-        sendError(fd, 461, clientNick, "MODE");
+        sendError(fd, 461, nick, "MODE");
         return;
     }
     std::string target = tokens[1];
-    if (target == clientNick) {
-        dvais::sendMessage(fd, ":ircserv 221 " + clientNick + " :\r\n");
-        return;
-    }
-    if (target[0] == '#' || target[0] == '&') {
-        Channel* channel = server.getChannel(target);
-        if (!channel) {
-            sendError(fd, 403, clientNick, target);
-            return;
-        }
-        if (!channel->isMember(fd)) {
-            sendError(fd, 442, clientNick, target);
-            return;
-        }
-        if (tokens.size() < 3) {
-            dvais::sendMessage(fd, ":ircserv 324 " + clientNick + " " + target + " :+it\r\n");
-            dvais::sendMessage(fd, ":ircserv 329 " + clientNick + " " + target + " 1678901234\r\n");
-            return;
-        }
-        std::string modeStr = tokens[2];
-        bool requiresOp = false;
-        for (size_t i = 0; i < modeStr.size(); ++i) {
-            char c = modeStr[i];
-            if (c == '+' || c == '-')
-                continue;
-            if (c != 'b') {
-                requiresOp = true;
-                break;
-            }
-        }
-        if (requiresOp && !channel->isOperator(fd)) {
-            sendError(fd, 482, clientNick, target);
-            return;
-        }
-        int paramIndex = 3;
-        bool adding = true;
-        for (size_t i = 0; i < modeStr.length(); i++)
-        {
-            char modeChar = modeStr[i];
-            if (modeChar == '+') {
-                adding = true;
-                continue;
-            } else if (modeChar == '-') {
-                adding = false;
-                continue;
-            }
-            switch (modeChar) {
-                case 'b':
-                {
-                    if (adding) {
-                        if (paramIndex >= (int)tokens.size()) {
-                            dvais::sendMessage(fd, ":ircserv 367 " + clientNick + " " + target + " :\r\n");
-                            dvais::sendMessage(fd, ":ircserv 368 " + clientNick + " " + target + " :End of Channel Ban List\r\n"); // RPL_ENDOFBANLIST
-                        } else {
-                            sendError(fd, 472, clientNick, "b"); 
-                        }
-                    } else {
-                        sendError(fd, 472, clientNick, "b");
-                    }
-                    break;
-                }
-
-                case 'i':
-                    channel->setChannelType();
-                    break;
-                case 't':
-                    channel->setTopicRestricted(adding);
-                    break;
-                case 'k': {
-                    if (adding) {
-                        if (paramIndex >= (int)tokens.size()) {
-                            sendError(fd, 461, clientNick, "MODE");
-                            return;
-                        }
-                        std::string key = tokens[paramIndex++];
-                        channel->setcKey(key);
-                    } else {
-                        channel->setcKey("");
-                    }
-                    break;
-                }
-                case 'l': {
-                    if (adding) {
-                        if (paramIndex >= (int)tokens.size()) {
-                            sendError(fd, 461, clientNick, "MODE");
-                            return;
-                        }
-                        int limit = atoi(tokens[paramIndex++].c_str());
-                        channel->setUserLimit(limit);
-                    } else {
-                        channel->setUserLimit(0);
-                    }
-                    break;
-                }
-                case 'o': {
-                    if (paramIndex >= (int)tokens.size()) {
-                        sendError(fd, 461, clientNick, "MODE");
-                        return;
-                    }
-                    std::string targetNick = tokens[paramIndex++];
-                    Client* targetClient = server.getClientByNick(targetNick);
-                    if (!targetClient || !channel->isMember(targetClient->getFd())) {
-                        sendError(fd, 441, clientNick, targetNick);
-                        continue;
-                    }
-                    if (adding) {
-                        channel->addOperator(targetClient->getFd());
-                    } else {
-                        channel->rmOperator(targetClient->getFd());
-                    }
-                    break;
-                }
-                case 'n': {
-                    channel->setNoExternalMsgs(adding);
-                    break;
-                }
-                default:
-                    sendError(fd, 472, clientNick, std::string(1, modeChar));
-                    break;
-            }
-        }
-        std::ostringstream modeMsg;
-        modeMsg << ":" << clientNick << "!" << server.getClient(fd).getUser() 
-                << "@" << server.getClient(fd).getIp()
-                << " MODE " << target << " " << modeStr;
-        for (int j = 3; j < (int)tokens.size(); j++) {
-            modeMsg << " " << tokens[j];
-        }
-        modeMsg << "\r\n";
-        channel->broadcast(fd, modeMsg.str());
-        return;
-    }
-    sendError(fd, 421, clientNick, "MODE");
+    if (target == nick)
+        handleUserMode(server, fd, tokens);
+    else if (target[0] == '#' || target[0] == '&')
+        handleChannelMode(server, fd, tokens);
+    else
+        sendError(fd, 421, nick, "MODE");
 }
 
 /**

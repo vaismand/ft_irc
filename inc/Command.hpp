@@ -43,8 +43,14 @@ class Command
     private:
         // Attributes
         std::map<int, std::string> errorMap;
+
+        // Methods
         void initErrorMap();
         void printChannelWelcome(Server &server, Client &client, Channel &channel, bool isnew);
         void partClientAll(Server &server, Client &client, std::vector<std::string> channels, std::string reason);
+        void handleUserMode(Server &server, int fd, const std::vector<std::string> &tokens);
+        void handleChannelMode(Server &server, int fd, const std::vector<std::string> &tokens);
+        //void applySingleMode(Server &server, int fd, Channel* channel, char modeChar, bool adding, int &paramIndex, const std::vector<std::string> &tokens);
+
 };
 

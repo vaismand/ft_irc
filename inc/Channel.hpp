@@ -26,6 +26,7 @@ class Channel
 		std::string getTopic() const;
         std::string getTopicSetter() const;
         std::time_t getTopicSetTime() const;
+		std::string getModeList() const;
 
 		// Setters
 		void setcName(const std::string& name);
