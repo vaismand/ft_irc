@@ -27,6 +27,12 @@
 
 extern bool g_running;
 
+enum Limits {
+	MAX_DEFAULT_LEN = 16,
+	MAX_CHAN_LEN = 20,
+	MAX_TOPIC_LEN = 200,
+};
+
 class Server
 {
 	private:
@@ -45,6 +51,7 @@ class Server
 		std::map <std::string, Channel*> _channels;
 		Bot* bot_;
 		Command _cmd;
+		Limits _lenLimits;
 
 		// Methods
 		void bindSocket();

@@ -31,11 +31,11 @@ void Command::commandCap(Server &server, int fd, const std::vector<std::string> 
         sendError(fd, 421, "", "CAP"); // ERR_UNKNOWNCOMMAND
     std::string nick = server.getClientNick(fd);
     if (cmd[1] == "LS") {
-        dvais::sendMessage(fd, "CAP " + nick + " LS :multi-prefix away-notify\r\n");
+        dvais::sendMessage(fd, "CAP " + nick + " LS :\r\n");
         return;
     }
     if (cmd[1] == "REQ") {
-        dvais::sendMessage(fd, "CAP " + nick + " ACK :multi-prefix away-notify\r\n");
+        dvais::sendMessage(fd, "CAP " + nick + " NAK " + cmd[2] + "\r\n"); //need to be tested
         return;
     }
     if (cmd[1] == "END") {
@@ -666,7 +666,7 @@ void Command::executeCommand(Server &server, int fd, const std::string &cmd) {
         return;
     std::string command = tokens[0];
 
-    if (command == "CAP") { // D
+    if (command == "CAP") {
         commandCap(server, fd, tokens);
     } else if (command == "NICK") {
         commandNick(server, fd, tokens);
@@ -680,7 +680,7 @@ void Command::executeCommand(Server &server, int fd, const std::string &cmd) {
         commandPong(server, fd, tokens);
     } else if (command == "INVITE") {
         commandInvite(server, fd, tokens);
-    } else if (command == "MODE") { // D
+    } else if (command == "MODE") {
         commandMode(server, fd, tokens);
     } else if (command == "KICK") {
         commandKick(server, fd, tokens);
