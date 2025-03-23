@@ -20,4 +20,6 @@ private:
     std::vector<std::string> phrases_;
     std::vector<std::string> channels_;
     time_t lastPhraseTime_;
+    time_t joinTime_;
+    bool initialDelayPassed_;
 };

@@ -8,7 +8,7 @@
 #include <ctime>
 
 Bot::Bot(int fd, const std::string& ip, const std::string& nick)
-    : Client(fd, ip), lastPhraseTime_(0) {
+    : Client(fd, ip), lastPhraseTime_(0), joinTime_(std::time(0)), initialDelayPassed_(false) {
     setNick(nick);
     phrases_.push_back("Hello, world!");
     phrases_.push_back("How's it going?");
@@ -30,7 +30,6 @@ void Bot::connectToServer() {
 void Bot::joinChannel(const std::string& channel) {
     sendRawMessage("JOIN " + channel);
     channels_.push_back(channel);
-    sendRandomPhrase();
 }
 
 void Bot::handleMessage(const std::string& message) {
@@ -48,7 +47,19 @@ void Bot::sendRawMessage(const std::string& message) {
 void Bot::sendRandomPhrase() {
     if (channels_.empty())
         return;
+
     time_t now = std::time(0);
+
+    // Check if the initial delay has passed
+    if (!initialDelayPassed_) {
+        if (std::difftime(now, joinTime_) >= 15) {
+            initialDelayPassed_ = true;
+            lastPhraseTime_ = now - 60;
+        } else {
+            return;
+        }
+    }
+
     if (std::difftime(now, lastPhraseTime_) >= 60) {
         lastPhraseTime_ = now;
         std::string phrase = phrases_[std::rand() % phrases_.size()];
