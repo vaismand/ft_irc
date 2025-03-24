@@ -113,3 +113,9 @@ std::vector<std::string> dvais::split(const std::string& cmd, char delim) {
     }
     return cmdarg;
 }
+
+bool dvais::stoi(const char *str, int &nbr) {
+    std::istringstream iss(str);
+    iss >> nbr;
+    return !(iss.fail() || !iss.eof());
+}

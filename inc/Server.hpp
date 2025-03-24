@@ -27,6 +27,12 @@
 
 extern bool g_running;
 
+enum Limits {
+	MAX_DEFAULT_LEN = 16,
+	MAX_CHAN_LEN = 20,
+	MAX_TOPIC_LEN = 200,
+};
+
 class Server
 {
 	private:

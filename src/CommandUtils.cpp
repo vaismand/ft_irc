@@ -43,6 +43,7 @@ void Command::initErrorMap()
     errorMap[472] = "is unknown mode char to me";
     errorMap[473] = "Cannot join channel (invite only)";
     errorMap[475] = "Cannot join channel (+k)";
+    errorMap[475] = "Illegal channel name";
     errorMap[482] = "You're not channel operator";
 }
 

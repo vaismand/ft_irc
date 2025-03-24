@@ -13,13 +13,41 @@ static void signalHandler(int signal)
     }
 }
 
+
+
+bool argCheck(int argc, char **argv) {
+	if (argc != 3) {
+		std::cerr << "Usage: " << argv[0] << " <port>" << " <password>" << std::endl;
+		return false;
+	}
+	int port;
+	if (!dvais::stoi(argv[1], port)) {
+		std::cerr << "Invalid port: " << argv[1] << std::endl;
+		return false;
+	}
+	if (port < 6660 || port > 6669) {
+		std::cerr << "Please use valid ports [6660 - 6669]" << std::endl;
+		return false;
+	}
+	std::string password = argv[2];
+	if (password.size() > 16) {
+		std::cerr << "Invalid Password. Only 16 characters allowed." << std::endl;
+		return false;
+	}
+	for (std::size_t i = 0; i < password.size(); i++) {
+		if (!isascii(password[i])) {
+			std::cerr << "Invalid Password. Only ASCII characters are allowed." << std::endl;
+			return false;
+		}
+	}
+	return true;
+}
+
+
 int main(int argc, char **argv)
 {
-	if (argc != 3)
-	{
-		std::cerr << "Usage: " << argv[0] << " <port>" << " <password>" << std::endl;
+	if (!argCheck(argc, argv))
 		return 1;
-	}
 	std::signal(SIGINT, signalHandler);
 	std::signal(SIGQUIT, signalHandler);
 	Server server(argv[1], argv[2]);
