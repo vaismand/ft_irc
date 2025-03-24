@@ -7,8 +7,10 @@
 void Command::printChannelWelcome(Server &server, Client &client, Channel &channel, bool isnew) {
     std::string cname = channel.getcName();
     int fd = client.getFd();
-    if (isnew)
+    if (isnew && channel.getcKey().empty())
         channel.broadcast(-1, ":ircserv MODE " + cname + " +nt\r\n");
+    else if (isnew && !channel.getcKey().empty())
+        channel.broadcast(-1, ":ircserv MODE " + cname + " +ntk " + channel.getcKey() +"\r\n");
     if (!channel.getcTopic().empty()) {
         time_t topicTime = channel.getTopicSetTime();
         std::ostringstream oss;
@@ -104,7 +106,7 @@ void Command::handleUserModeShow(Server &server, int fd)
     Client &client = server.getClient(fd);
     std::string nick = client.getNick();
     std::string userModes = client.getUserModes();
-    if (userModes == "+")
+    if (userModes == "+" || userModes == "") 
         userModes = "No user modes are set";
     dvais::sendMessage(fd, ":ircserv 221 " + nick + " :" + userModes + "\r\n");
 }
