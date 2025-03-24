@@ -3,7 +3,7 @@
 CXX = c++
 CXXFLAGS = -Wall -Wextra -Werror -g -std=c++98
 
-SRC = src/ircserv.cpp \
+SRC = src/main.cpp \
 		src/Server.cpp \
 		src/Client.cpp \
 		src/Channel.cpp \

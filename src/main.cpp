@@ -1,4 +1,3 @@
-#include <iostream>
 #include "../inc/Server.hpp"
 
 bool g_running = true;
