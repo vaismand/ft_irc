@@ -22,7 +22,7 @@ Command::~Command() {}
 /**
  * @brief Handles capability negotiation for IRC clients by processing CAP command.
  * If client requests "LS", a list of supported capabilities is returned.
- * If client requests "REQ", it acknowledges the requested capabilities.
+ * If client requests "REQ", server refuses the requested capabilities.
  * "END" terminates the capability negotiation.
  */
 void Command::commandCap(Server &server, int fd, const std::vector<std::string> &cmd)
@@ -35,7 +35,10 @@ void Command::commandCap(Server &server, int fd, const std::vector<std::string> 
         return;
     }
     if (cmd[1] == "REQ") {
-        dvais::sendMessage(fd, "CAP " + nick + " NAK " + cmd[2] + "\r\n"); //need to be tested
+        if (cmd.size() < 3)
+            dvais::sendMessage(fd, "CAP " + nick + " NAK :No capability specified\r\n");
+        else
+            dvais::sendMessage(fd, "CAP " + nick + " NAK " + cmd[2] + "\r\n");
         return;
     }
     if (cmd[1] == "END") {
@@ -68,6 +71,8 @@ void Command::commandNick(Server &server, int fd, const std::vector<std::string>
         sendError(fd, 432, currentNick, nickname); // ERR_ERRONEUSNICKNAME
         return;
     }
+    if (nickname.size() > MAX_DEFAULT_LEN)
+        nickname.resize(MAX_DEFAULT_LEN);
     std::string user = client.getUser();
     std::string host = client.getIp();
     std::string msg = ":" + currentNick + "!" + user + "@" + host + " NICK :" + nickname + "\r\n";
@@ -87,7 +92,8 @@ void Command::commandNick(Server &server, int fd, const std::vector<std::string>
 void Command::commandUser(Server &server, int fd, const std::vector<std::string> &tokens) {
     Client &client = server.getClient(fd);
     const std::string &nick = client.getNick();
-    if (tokens.size() < 2 || tokens[1].empty()) {
+    if (tokens.size() < 5 || tokens[1].empty() || tokens[4].empty() || \
+    (tokens[4][0] == ':' && tokens[4].size() == 1)) {
         sendError(fd, 461, nick, "USER"); // ERR_NEEDMOREPARAMS
         return;
     }
@@ -96,8 +102,16 @@ void Command::commandUser(Server &server, int fd, const std::vector<std::string>
         return;
     }
     std::string username = tokens[1];
+    if (username.size() > MAX_DEFAULT_LEN)
+        username.resize(MAX_DEFAULT_LEN);
+
+    std::string realname = tokens[4];
+    if (realname[0] == ':')
+        realname.substr(1);
+
     client.setUser(username);
-    dvais::sendMessage(fd, "Username set to " + username + "\r\n");
+    client.setRealName(realname);
+    dvais::sendMessage(fd, "Username: " + username + " Realname: " + realname + "\r\n");
 }
 
 /**
@@ -117,6 +131,7 @@ void Command::commandUser(Server &server, int fd, const std::vector<std::string>
  * @throws ERR_BADCHANNELKEY (475) - if the provided key does not match the channel's key.
  * @throws ERR_CHANNELISFULL (471) - if the channel has reached its user limit.
  * @throws ERR_INVITEONLYCHAN (473) - if the channel is invite-only and the client is not invited.
+ * @throws ERR_BADCHANMASK (476) - if the max channel name length is exceeded.
  */
 void Command::commandJoin(Server &server, int fd, const std::vector<std::string> &tokens) {
     Client &client = server.getClient(fd);
@@ -139,6 +154,10 @@ void Command::commandJoin(Server &server, int fd, const std::vector<std::string>
     for (std::size_t i = 0; i < channels.size(); i++) {
         if (channels[i].find("#") != 0) {
             sendError(fd, 403, nick, channels[i]); // ERR_NOSUCHCHANNEL
+            continue;
+        }
+        if (channels[i].size() > MAX_CHAN_LEN) {
+            sendError(fd, 476, nick, channels[i]); // ERR_BADCHANMASK
             continue;
         }
         if (client.getChannelList().size() >= server.getChannelLimit()) {
@@ -397,7 +416,7 @@ void Command::commandPass(Server &server, int fd, const std::vector<std::string>
 
 /**
  * @brief Handles PRIVMSG and NOTICE commands in the IRC server.
- * Processes a message from a client to a target (channel or user). If sendErs flag is true, 
+ * Processes a message from a client to a targgetPassAccet (channel or user). If sendErs flag is true, 
  * it sends error replies (PRIVMSG):
  *
  * @throws ERR_NORECIPIENT (411) - if no recipient is provided.

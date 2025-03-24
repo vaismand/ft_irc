@@ -16,12 +16,14 @@ Client& Client::operator=(const Client& rhs) {
 		_ip = rhs._ip;
 		_nickname = rhs._nickname;
 		_username = rhs._username;
+		_realname = rhs._realname;
 	}
 	return *this;
 }
 
 void Client::ClientInit() {
 	_username = "";
+	_realname = "";
 	_nickname = "*";
 	_status = UNREGISTERED;
 	_isAdmin = false;
@@ -32,6 +34,7 @@ void Client::ClientInit() {
 
 // ----- getter Functions -----
 std::string Client::getUser() const { return _username; }
+std::string Client::getRealName() const { return _realname; }
 std::string Client::getNick() const { return _nickname; }
 std::string Client::getIp() const { return _ip; }
 std::string& Client::getBuffer() { return _buffer; }
@@ -44,6 +47,7 @@ const std::vector<std::string>& Client::getChannelList() const { return _channel
 
 // ----- setter Functions -----
 void Client::setUser(const std::string& name) { _username = name; }
+void Client::setRealName(const std::string& name) { _realname = name; }
 void Client::setNick(const std::string& name) { _nickname = name; }
 void Client::setStatus(AuthState status) { _status = status; }
 void Client::setRights() { _isAdmin = !_isAdmin; }

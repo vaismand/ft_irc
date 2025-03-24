@@ -51,7 +51,6 @@ class Server
 		std::map <std::string, Channel*> _channels;
 		Bot* bot_;
 		Command _cmd;
-		Limits _lenLimits;
 
 		// Methods
 		void bindSocket();

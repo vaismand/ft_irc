@@ -18,6 +18,7 @@ class Client
 		
 		// Getters
 		std::string getUser() const;
+		std::string getRealName() const;
 		std::string getNick() const;
 		std::string getIp() const;
 		std::string& getBuffer();
@@ -31,6 +32,7 @@ class Client
 
 		// Setters
 		void setUser(const std::string& name);
+		void setRealName(const std::string& name);
 		void setNick(const std::string& name);
 		void setStatus(AuthState status);
 		void setRights();
@@ -52,6 +54,7 @@ class Client
 		time_t _lastActivity;
 		std::string _ip;
 		std::string _username;
+		std::string _realname;
 		std::string _nickname;
 		std::string _buffer;
 		std::vector<std::string> _channelList;
