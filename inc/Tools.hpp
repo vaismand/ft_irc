@@ -24,4 +24,5 @@ namespace dvais
 	std::string extractTopic(std::istream &iss);
 	std::string buildNamesList(Server &server, const Channel* channel);
 	std::vector<std::string> split(const std::string& cmd, char delim);
+	bool stoi(const char *str, int &nbr);
 }
