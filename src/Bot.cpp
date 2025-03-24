@@ -8,7 +8,7 @@
 #include <ctime>
 
 Bot::Bot(int fd, const std::string& ip, const std::string& nick)
-    : Client(fd, ip), lastPhraseTime_(0), joinTime_(std::time(0)), initialDelayPassed_(false) {
+    : Client(fd, ip), joinTime_(std::time(0)) {
     setNick(nick);
     phrases_.push_back("Hello, world!");
     phrases_.push_back("How's it going?");
@@ -22,15 +22,22 @@ Bot::~Bot() {}
 void Bot::connectToServer() {
     sendRawMessage("NICK " + getNick());
     sendRawMessage("USER " + getNick() + " 0 * :" + getNick());
-    for (size_t i = 0; i < channels_.size(); ++i) {
-        joinChannel(channels_[i]);
+    for (size_t i = 0; i < _channelList.size(); ++i) {
+        joinChannel(_channelList[i]);
     }
 }
 
 void Bot::joinChannel(const std::string& channel) {
     sendRawMessage("JOIN " + channel);
-    channels_.push_back(channel);
-    joinTime_ = std::time(0);
+    
+    // Store the channel in the list if not already present
+    if (std::find(_channelList.begin(), _channelList.end(), channel) == _channelList.end()) {
+        _channelList.push_back(channel);
+    }
+    
+    // Set join time for this specific channel
+    channelJoinTimes_[channel] = std::time(0);
+    channelInitialMessageSent_[channel] = false;
 }
 
 void Bot::handleMessage(const std::string& message) {
@@ -46,29 +53,31 @@ void Bot::sendRawMessage(const std::string& message) {
 }
 
 void Bot::sendRandomPhrase() {
-    if (channels_.empty())
+    if (_channelList.empty())
         return;
 
     time_t now = std::time(0);
-
-    if (!initialDelayPassed_) {
-        if (std::difftime(now, joinTime_) >= 8) {
-            std::string phrase = phrases_[std::rand() % phrases_.size()];
-            for (size_t i = 0; i < channels_.size(); ++i) {
-                sendRawMessage("PRIVMSG " + channels_[i] + " :" + phrase);
+    
+    // Process each channel individually
+    for (size_t i = 0; i < _channelList.size(); ++i) {
+        const std::string& channel = _channelList[i];
+        
+        // Handle initial message (10-second delay after joining)
+        if (!channelInitialMessageSent_[channel]) {
+            if (std::difftime(now, channelJoinTimes_[channel]) >= 10) {
+                std::string phrase = phrases_[std::rand() % phrases_.size()];
+                sendRawMessage("PRIVMSG " + channel + " :" + phrase);
+                channelInitialMessageSent_[channel] = true;
+                channelJoinTimes_[channel] = now; // Reset for next interval
             }
-            initialDelayPassed_ = true;
-            lastPhraseTime_ = now;
-        } else {
-            return;
+            continue;
         }
-    }
-
-    if (std::difftime(now, lastPhraseTime_) >= 60) {
-        lastPhraseTime_ = now;
-        std::string phrase = phrases_[std::rand() % phrases_.size()];
-        for (size_t i = 0; i < channels_.size(); ++i) {
-            sendRawMessage("PRIVMSG " + channels_[i] + " :" + phrase);
+        
+        // Send periodic messages every 40 seconds
+        if (std::difftime(now, channelJoinTimes_[channel]) >= 40) {
+            std::string phrase = phrases_[std::rand() % phrases_.size()];
+            sendRawMessage("PRIVMSG " + channel + " :" + phrase);
+            channelJoinTimes_[channel] = now; // Reset for next interval
         }
     }
 }

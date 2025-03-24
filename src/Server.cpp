@@ -1,6 +1,6 @@
 #include "../inc/Server.hpp"
 
-Server::Server(const std::string &port, const std::string &pass) : _port(port), _pass(pass), _socket(-1), _channelLimit(10)
+Server::Server(const std::string &port, const std::string &pass) : _port(port), _pass(pass), _socket(-1), _channelLimit(10), bot_(NULL)
 {
 }
 
@@ -78,6 +78,11 @@ bool Server::shareChannel(int fd1, int fd2) const
     return false;
 }
 
+Bot &Server::getBot() const
+{
+    return *bot_;
+}
+
 // ----- methods -----
 void Server::bindSocket()
 {
@@ -117,7 +122,7 @@ void Server::run()
             if (errno == EINTR)
             {
                 if (!g_running)
-                    break;
+                break;
                 continue;
             }
             perror("poll");
@@ -169,9 +174,15 @@ bool Server::isValidNick(const std::string &nickname) {
 
 void Server::addClient()
 {
+    
     struct sockaddr_in client_addr;
     socklen_t addr_len = sizeof(client_addr);
     int client_fd = accept(_socket, (struct sockaddr*)&client_addr, &addr_len);
+    char ip_str[INET_ADDRSTRLEN];
+    inet_ntop(AF_INET, &(client_addr.sin_addr), ip_str, INET_ADDRSTRLEN);
+    std::cout << "Connection from IP: " << ip_str 
+              << ", Port: " << ntohs(client_addr.sin_port) 
+              << ", FD: " << client_fd << std::endl;
     
     if (client_fd < 0)
     {
@@ -347,6 +358,7 @@ void Server::handleClient(int fd)
 
 void Server::createBot() {
     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    std::cout <<"sockfd: " << sockfd << std::endl;
     if (sockfd == -1) {
         std::cerr << "Failed to create socket" << std::endl;
         return;

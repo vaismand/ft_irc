@@ -14,7 +14,7 @@ class Client
 	public:
 		// Constructors
 		Client(int fd, const std::string& ip);
-		~Client();
+		virtual ~Client();
 		
 		// Getters
 		std::string getUser() const;
@@ -25,7 +25,7 @@ class Client
 		std::string getUserModes() const;
 		AuthState getStatus() const;
 		time_t getLastActivity() const;
-		int  getFd() const;
+		virtual int  getFd() const;
 		bool getRights() const;
 		bool getPingSent() const;
 		bool getPassAccepted() const;
@@ -48,7 +48,7 @@ class Client
 		// Method
 		void rmChannelInList(const std::string& channelName);
 		
-	private:
+	protected:
 		// Constructors
 		Client (const Client& ref);
 		Client& operator= (const Client& rhs);
