@@ -86,6 +86,7 @@ void Command::partClientAll(Server &server, Client &client, std::vector<std::str
 void Command::updateAllModes(Server &server, int fd)
 {
     Client &client = server.getClient(fd);
+
     client.setUserModes();
     std::vector<std::string> channels = client.getChannelList();
     for (std::vector<std::string>::iterator it = channels.begin(); it != channels.end(); it++)

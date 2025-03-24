@@ -108,6 +108,13 @@ void Command::commandUser(Server &server, int fd, const std::vector<std::string>
     std::string realname = tokens[4];
     if (realname[0] == ':')
         realname = realname.substr(1);
+    if (!server.isValidNick(username)) {
+        executeCommand(server, fd, "NOTICE " + client.getNick() + " :*** Your username is invalid. " \
+                            "Please make sure that your username contains only alphanumeric characters.\r\n");
+        dvais::sendMessage(fd, "ERROR :Closing Link: Invalid username [~ " + client.getUser() + "]\r\n");
+        server.rmClient(fd);
+        return;
+    }
     client.setUser(username);
     client.setRealName(realname);
     dvais::sendMessage(fd, "Username: " + username + " Realname: " + realname + "\r\n");
