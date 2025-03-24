@@ -25,6 +25,9 @@ Server::~Server()
         close(it->fd);
     }
     _pollfds.clear();
+    if (bot_) {
+        delete bot_;
+    }
 }
 
 // ----- getter Functions -----
