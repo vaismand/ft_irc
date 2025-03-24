@@ -7,8 +7,10 @@
 void Command::printChannelWelcome(Server &server, Client &client, Channel &channel, bool isnew) {
     std::string cname = channel.getcName();
     int fd = client.getFd();
-    if (isnew)
+    if (isnew && channel.getcKey().empty())
         channel.broadcast(-1, ":ircserv MODE " + cname + " +nt\r\n");
+    else if (isnew && !channel.getcKey().empty())
+        channel.broadcast(-1, ":ircserv MODE " + cname + " +ntk " + channel.getcKey() +"\r\n");
     if (!channel.getcTopic().empty()) {
         time_t topicTime = channel.getTopicSetTime();
         std::ostringstream oss;
@@ -89,7 +91,6 @@ void Command::partClientAll(Server &server, Client &client, std::vector<std::str
                     std::cerr << "Error getting last client: " << e.what() << std::endl;
                 }
                 
-                // Check if last member is bot by nickname (more reliable than fd)
                 if (lastMember && lastMember->getNick() == server.getBot().getNick()) {
                     std::cout << "Bot is last member in " << channel->getcName() << ", removing it" << std::endl;
                     server.getBot().sendRawMessage("PART " + channel->getcName());
@@ -98,7 +99,6 @@ void Command::partClientAll(Server &server, Client &client, std::vector<std::str
                 }
             }
             
-            // Handle empty channel case as a fallback
             if (channel && channel->getJoined().empty())
                 server.rmChannel(*it);
         }
@@ -125,7 +125,9 @@ void Command::handleUserModeShow(Server &server, int fd)
 {
     Client &client = server.getClient(fd);
     std::string nick = client.getNick();
-    std::string userModes = client.getUserModes(); // or build it manually
+    std::string userModes = client.getUserModes();
+    if (userModes == "+" || userModes == "") 
+        userModes = "No user modes are set";
     dvais::sendMessage(fd, ":ircserv 221 " + nick + " :" + userModes + "\r\n");
 }
 
@@ -188,7 +190,7 @@ void Command::handleUserMode(Server &server, int fd, const std::vector<std::stri
                 break;
         }
     }
-    dvais::sendMessage(fd, ":ircserv 221 " + nick + " :\r\n");
+    dvais::sendMessage(fd, ":" + nick + " MODE " + nick + " :" + modeStr + "\r\n");
 }
 
 void Command::handleChannelMode(Server &server, int fd, const std::vector<std::string> &tokens) {

@@ -58,26 +58,23 @@ void Bot::sendRandomPhrase() {
 
     time_t now = std::time(0);
     
-    // Process each channel individually
     for (size_t i = 0; i < _channelList.size(); ++i) {
         const std::string& channel = _channelList[i];
         
-        // Handle initial message (10-second delay after joining)
         if (!channelInitialMessageSent_[channel]) {
             if (std::difftime(now, channelJoinTimes_[channel]) >= 10) {
                 std::string phrase = phrases_[std::rand() % phrases_.size()];
                 sendRawMessage("PRIVMSG " + channel + " :" + phrase);
                 channelInitialMessageSent_[channel] = true;
-                channelJoinTimes_[channel] = now; // Reset for next interval
+                channelJoinTimes_[channel] = now;
             }
             continue;
         }
         
-        // Send periodic messages every 40 seconds
         if (std::difftime(now, channelJoinTimes_[channel]) >= 40) {
             std::string phrase = phrases_[std::rand() % phrases_.size()];
             sendRawMessage("PRIVMSG " + channel + " :" + phrase);
-            channelJoinTimes_[channel] = now; // Reset for next interval
+            channelJoinTimes_[channel] = now;
         }
     }
 }

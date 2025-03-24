@@ -266,7 +266,7 @@ void Server::welcomeToServerMessage(int fd, const std::string &nick)
     "NICKLEN=16 USERLEN=16 CHANNELLEN=20 TOPICLEN=200 are supported by this server" << "\r\n";
     oss << ":ircserv 005 " << nick << " TARGMAX=NAMES:1,LIST:1,KICK:1,WHOIS:1,PRIVMSG:1,NOTICE:1 are supported by this server\r\n";
     oss << ":ircserv 254 " << nick << " :There are " << _channels.size() << " channels on the server" << "\r\n";
-    oss << ":ircserv 255 " << nick << " :There are " << _clients.size() << " clients and 1 bot service on the server" << "\r\n";
+    oss << ":ircserv 255 " << nick << " :There are " << _clients.size() - 1 << " clients and 1 bot service on the server" << "\r\n";
     oss << ":ircserv 375 " << nick << " :- ircserv Message of the Day -\r\n";
     oss << ":ircserv 372 " << nick << " :- Please let us pass this evaluation!\r\n";
     oss << ":ircserv 376 " << nick << " :End of /MOTD command.\r\n"; 
@@ -277,7 +277,7 @@ void Server::tryRegisterClient(int fd)
 {
     Client &client = getClient(fd);
     
-    if (client.getNick().empty() || client.getUser().empty())
+    if (client.getNick().empty() || client.getUser().empty() || client.getNick() == "*")
         return;
     if (client.getStatus() == REGISTERED)
         return;

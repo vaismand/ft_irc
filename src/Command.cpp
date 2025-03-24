@@ -77,7 +77,6 @@ void Command::commandNick(Server &server, int fd, const std::vector<std::string>
     std::string host = client.getIp();
     std::string msg = ":" + currentNick + "!" + user + "@" + host + " NICK :" + nickname + "\r\n";
     client.setNick(nickname);
-    dvais::sendMessage(fd, msg);
     server.broadcastAll(fd, msg);
 }
 
@@ -117,7 +116,6 @@ void Command::commandUser(Server &server, int fd, const std::vector<std::string>
     }
     client.setUser(username);
     client.setRealName(realname);
-    dvais::sendMessage(fd, "Username: " + username + " Realname: " + realname + "\r\n");
 }
 
 /**
@@ -331,6 +329,10 @@ void Command::commandWho(Server &server, int fd, const std::vector<std::string> 
     for (size_t i = 0; i < joined.size(); ++i)
     {
         Client &c = server.getClient(joined[i]);
+        if (c.isInvisible())
+        {
+            continue;
+        }
         std::ostringstream reply;
         reply << ":ircserv 352 " << requesterNick << " " << target << " "
                 << c.getUser() << " " << c.getIp() << " ircserv "
@@ -483,7 +485,7 @@ void Command::commandMsg(Server &server, int fd, const std::vector<std::string> 
                 sendError(fd, 401, nick, cmd[1]); // ERR_NOSUCHNICK
             return;
         }
-        if (!ChannelToChat->isMember(fd) && !ChannelToChat->getNoExternalMsgs()) {
+        if (!ChannelToChat->isMember(fd) && ChannelToChat->getNoExternalMsgs()) {
             if (sendErs)
                 sendError(fd, 404, nick, ChannelToChat->getcName()); // ERR_CANNOTSENDTOCHAN
             return;
@@ -692,6 +694,8 @@ void Command::commandKick(Server &server, int fd, const std::vector<std::string>
         return;
     }
     std::string comment = (tokens.size() >= 4 && !tokens[3].empty() && tokens[3][0] == ':') ? tokens[3] : ":" + tokens[2];
+    std::cout << "tokens[2]: " << tokens[2] << std::endl;
+    std::cout << "comment: " << comment << std::endl;
 
     Channel* targetChannel = server.getChannel(tokens[1]);
     if (!targetChannel) {
