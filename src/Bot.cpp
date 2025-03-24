@@ -30,6 +30,7 @@ void Bot::connectToServer() {
 void Bot::joinChannel(const std::string& channel) {
     sendRawMessage("JOIN " + channel);
     channels_.push_back(channel);
+    joinTime_ = std::time(0);
 }
 
 void Bot::handleMessage(const std::string& message) {
@@ -50,11 +51,14 @@ void Bot::sendRandomPhrase() {
 
     time_t now = std::time(0);
 
-    // Check if the initial delay has passed
     if (!initialDelayPassed_) {
-        if (std::difftime(now, joinTime_) >= 15) {
+        if (std::difftime(now, joinTime_) >= 8) {
+            std::string phrase = phrases_[std::rand() % phrases_.size()];
+            for (size_t i = 0; i < channels_.size(); ++i) {
+                sendRawMessage("PRIVMSG " + channels_[i] + " :" + phrase);
+            }
             initialDelayPassed_ = true;
-            lastPhraseTime_ = now - 60;
+            lastPhraseTime_ = now;
         } else {
             return;
         }
