@@ -84,4 +84,5 @@ class Server
 		void broadcastAll(int fd, const std::string &msg);
 		bool isNickInUse(const std::string &nickname, int excludeFd = -1) const;
 		bool isValidNick(const std::string &nickname);
+		bool shareChannel(int fd1, int fd2) const;
 };

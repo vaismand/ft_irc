@@ -86,19 +86,38 @@ std::string dvais::extractTopic(std::istream &iss)
     return dvais::trim(topic);
 }
 
-std::string dvais::buildNamesList(Server &server, const Channel* channel)
+std::string dvais::buildNamesList(Server &server, const Channel* channel, int requesterFd)
 {
     std::ostringstream oss;
     const std::vector<int>& members = channel->getJoined();
-    for (std::vector<int>::const_iterator it = members.begin(); it != members.end(); ++it) {
-        if (channel->isOperator(*it)) {
-            oss << "@" << server.getClient(*it).getNick() << " ";
+
+    for (std::vector<int>::const_iterator it = members.begin(); it != members.end(); ++it)
+    {
+        Client &c = server.getClient(*it);
+
+        if (c.isInvisible())
+        {
+            if (c.getFd() != requesterFd && !server.shareChannel(requesterFd, c.getFd()))
+            {
+                continue; 
+            }
         }
+        if (channel->isOperator(*it))
+            oss << "@" << c.getNick() << " ";
     }
-    for (std::vector<int>::const_iterator it = members.begin(); it != members.end(); ++it) {
-        if (!channel->isOperator(*it)) {
-            oss << server.getClient(*it).getNick() << " ";
+    for (std::vector<int>::const_iterator it = members.begin(); it != members.end(); ++it)
+    {
+        Client &c = server.getClient(*it);
+
+        if (c.isInvisible())
+        {
+            if (c.getFd() != requesterFd && !server.shareChannel(requesterFd, c.getFd()))
+            {
+                continue;
+            }
         }
+        if (!channel->isOperator(*it))
+            oss << c.getNick() << " ";
     }
     return oss.str();
 }

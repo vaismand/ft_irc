@@ -45,6 +45,7 @@ void Command::initErrorMap()
     errorMap[475] = "Cannot join channel (+k)";
     errorMap[475] = "Illegal channel name";
     errorMap[482] = "You're not channel operator";
+    errorMap[502] = "Can't change mode for other users";
 }
 
 void Command::sendError(int fd, int errorCode, const std::string &nick, const std::string &command)
@@ -82,36 +83,53 @@ void Command::partClientAll(Server &server, Client &client, std::vector<std::str
     }
 }
 
-void Command::handleUserMode(Server &server, int fd, const std::vector<std::string> &tokens) {
+void Command::handleUserMode(Server &server, int fd, const std::vector<std::string> &tokens)
+{
     Client &client = server.getClient(fd);
     const std::string &nick = client.getNick();
+
     if (tokens.size() < 2) {
         sendError(fd, 461, nick, "MODE"); // ERR_NEEDMOREPARAMS
         return;
     }
-    if (tokens[1][0] == '#') {
-        Channel* channel = server.getChannel(tokens[1]);
-        if (!channel) {
-            sendError(fd, 403, nick, tokens[1]); // ERR_NOSUCHCHANNEL
-            return;
-        }
-        if (!channel->isMember(fd)) {
-            sendError(fd, 442, nick, tokens[1]); // ERR_NOTONCHANNEL
-            return;
-        }
-        if (tokens.size() < 3) {
-            std::string modeList = channel->getModeList();
-            dvais::sendMessage(fd, ":ircserv 324 " + nick + " " + channel->getcName() + " " + modeList + "\r\n");
-            return;
-        }
-        if (tokens[2][0] == '+') {
-            handleChannelMode(server, fd, tokens);
-        } else {
-            sendError(fd, 472, nick, tokens[2]); // ERR_UNKNOWNMODE
-        }
-    } else {
-        sendError(fd, 461, nick, "MODE"); // ERR_NEEDMOREPARAMS
+    if (!tokens[1].empty() && (tokens[1][0] == '#' || tokens[1][0] == '&')) {
+        handleChannelMode(server, fd, tokens);
+        return;
     }
+    if (tokens[1] != nick) {
+        sendError(fd, 502, nick, tokens[1]); // ERR_USERSDONTMATCH
+        return;
+    }
+
+    if (tokens.size() < 3) {
+        // RPL_UMODEIS (221) typically shows the user’s current modes
+        // For a minimal approach, we just send an empty modes line
+        dvais::sendMessage(fd, ":ircserv 221 " + nick + " :\r\n");
+        return;
+    }
+    std::string modeStr = tokens[2];
+    bool adding = true;
+
+    for (size_t i = 0; i < modeStr.size(); i++)
+    {
+        if (modeStr[i] == '+') {
+            adding = true;
+            continue;
+        } else if (modeStr[i] == '-') {
+            adding = false;
+            continue;
+        }
+        switch (modeStr[i])
+        {
+            case 'i':
+                client.setInvisible(adding);
+                break;
+            default:
+                sendError(fd, 501, nick, std::string(1, modeStr[i]));
+                break;
+        }
+    }
+    dvais::sendMessage(fd, ":ircserv 221 " + nick + " :\r\n");
 }
 
 void Command::handleChannelMode(Server &server, int fd, const std::vector<std::string> &tokens) {

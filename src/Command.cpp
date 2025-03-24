@@ -260,6 +260,14 @@ void Command::commandWhois(Server &server, int fd, const std::vector<std::string
         sendError(fd, 401, requesterNick, targetNick); // ERR_NOSUCHNICK
         return;
     }
+    if (target->isInvisible())
+    {
+        if (target->getFd() != fd && !server.shareChannel(fd, target->getFd()))
+        {
+            sendError(fd, 401, requesterNick, targetNick); // ERR_NOSUCHNICK
+            return;
+        }
+    }
     std::ostringstream oss;
     oss << ":ircserv 311 " << requesterNick << " " << target->getNick()
         << " :[~" << target->getNick() << "@" << target->getIp() << "]\r\n";
@@ -328,6 +336,14 @@ void Command::commandWho(Server &server, int fd, const std::vector<std::string> 
             sendError(fd, 401, requesterNick, target); // ERR_NOSUCHNICK
             return;
         }
+        if (client->isInvisible())
+        {
+            if (client->getFd() != fd && !server.shareChannel(fd, client->getFd()))
+            {
+                sendError(fd, 401, requesterNick, target); // ERR_NOSUCHNICK
+                return; 
+            }
+        }
         std::ostringstream reply;
         reply << ":ircserv 352 " << requesterNick << " " << target << " "
                 << client->getUser() << " " << client->getIp() << " ircserv "
@@ -340,7 +356,18 @@ void Command::commandWho(Server &server, int fd, const std::vector<std::string> 
 }
 
 /**
- * @brief Need to divide this shit into smaller parts
+ * @brief Handles the MODE command in the IRC server.
+ * Can be used to set user modes or channel modes.
+ * 
+ * @throws ERR_NEEDMOREPARAMS (461) - if no target is provided.
+ * @throws ERR_NOSUCHNICK (401) - if the target nickname does not exist.
+ * @throws ERR_NOSUCHCHANNEL (403) - if the specified channel does not exist.
+ * @throws ERR_NOTONCHANNEL (442) - if the client is not a member of the specified channel.
+ * @throws ERR_KEYSET (467) - if the channel is set +k and the client is not a member.
+ * @throws ERR_CHANOPRIVSNEEDED (482) - if the client is not a channel operator.
+ * @throws ERR_UNKNOWNMODE (472) - if the mode is unknown.
+ * @throws ERR_CHANOPRIVSNEEDED (482) - if the client is not a channel operator.
+ * @throws ERR_NEEDMOREPARAMS (421) - if unknown command.
  * 
  */
 void Command::commandMode(Server &server, int fd, const std::vector<std::string> &tokens )
@@ -348,7 +375,7 @@ void Command::commandMode(Server &server, int fd, const std::vector<std::string>
     std::string nick = server.getClient(fd).getNick();
 
     if (tokens.size() < 2) {
-        sendError(fd, 461, nick, "MODE");
+        sendError(fd, 461, nick, "MODE"); // ERR_NEEDMOREPARAMS
         return;
     }
     std::string target = tokens[1];
@@ -357,7 +384,7 @@ void Command::commandMode(Server &server, int fd, const std::vector<std::string>
     else if (target[0] == '#' || target[0] == '&')
         handleChannelMode(server, fd, tokens);
     else
-        sendError(fd, 421, nick, "MODE");
+        sendError(fd, 421, nick, "MODE"); // ERR_UNKNOWNCOMMAND
 }
 
 /**
@@ -554,7 +581,7 @@ void Command::commandNames(Server &server, int fd, const std::vector<std::string
     }
     Channel* channel = server.getChannel(tokens[1]);
     if (channel) {
-        std::string namesList = dvais::buildNamesList(server, channel);
+        std::string namesList = dvais::buildNamesList(server, channel, fd);
         dvais::sendMessage(fd, ":ircserv 353 " + client_nick + " = " + channel->getcName() + " :" + namesList + "\r\n");
     }
     dvais::sendMessage(fd, ":ircserv 366 " + client_nick + " " + tokens[1] + " :End of /NAMES list\r\n");

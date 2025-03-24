@@ -26,8 +26,9 @@ class Client
 		time_t getLastActivity() const;
 		int  getFd() const;
 		bool getRights() const;
-		bool getPingSent() const { return _pingSent; }
+		bool getPingSent() const;
 		bool getPassAccepted() const;
+		bool isInvisible() const;
 		const std::vector<std::string>& getChannelList() const;
 
 		// Setters
@@ -38,8 +39,9 @@ class Client
 		void setRights();
 		void setPassAccepted(bool passAccepted);
 		void setChannelList(const std::string& channelName);
-		void setPingSent(bool pingSent) { _pingSent = pingSent; }
-		void setLastActivity(time_t lastActivity) { _lastActivity = lastActivity; }
+		void setPingSent(bool pingSent);
+		void setInvisible(bool invisible);
+		void setLastActivity(time_t lastActivity);
 
 		// Method
 		void rmChannelInList(const std::string& channelName);
@@ -62,6 +64,7 @@ class Client
 		bool		_isAdmin;
 		bool 		_passAccepted;
 		bool        _pingSent;
+		bool		_invisible;
 
 		// Methods
 		void ClientInit();

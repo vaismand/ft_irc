@@ -42,6 +42,8 @@ AuthState Client::getStatus() const { return _status; }
 time_t Client::getLastActivity() const { return _lastActivity; }
 bool Client::getRights() const { return _isAdmin; }
 bool Client::getPassAccepted() const { return _passAccepted; }
+bool Client::getPingSent() const { return _pingSent; }
+bool Client::isInvisible() const { return _invisible; }
 int  Client::getFd() const { return _fd; }
 const std::vector<std::string>& Client::getChannelList() const { return _channelList; }
 
@@ -52,6 +54,9 @@ void Client::setNick(const std::string& name) { _nickname = name; }
 void Client::setStatus(AuthState status) { _status = status; }
 void Client::setRights() { _isAdmin = !_isAdmin; }
 void Client::setPassAccepted(bool passAccepted) { _passAccepted = passAccepted; }
+void Client::setInvisible(bool invisible) { _invisible = invisible; }
+void Client::setPingSent(bool pingSent) { _pingSent = pingSent; }
+void Client::setLastActivity(time_t lastActivity) { _lastActivity = lastActivity; }
 void Client::setChannelList(const std::string& channelName) { _channelList.push_back(channelName); }
 
 // ----- methods -----

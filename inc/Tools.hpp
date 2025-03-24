@@ -22,7 +22,7 @@ namespace dvais
 	std::string trim(const std::string &str);
 	std::vector<std::string> cmdtokenizer(const std::string& command);
 	std::string extractTopic(std::istream &iss);
-	std::string buildNamesList(Server &server, const Channel* channel);
+	std::string buildNamesList(Server &server, const Channel* channel, int requesterFd);
 	std::vector<std::string> split(const std::string& cmd, char delim);
 	bool stoi(const char *str, int &nbr);
 }

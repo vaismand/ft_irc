@@ -67,6 +67,16 @@ Channel *Server::getChannel(const std::string &name)
     return _channels[name];
 }
 
+bool Server::shareChannel(int fd1, int fd2) const
+{
+    for (std::map<std::string, Channel*>::const_iterator it = _channels.begin(); it != _channels.end(); ++it)
+    {
+        const Channel* ch = it->second;
+        if (ch->isMember(fd1) && ch->isMember(fd2))
+            return true;
+    }
+    return false;
+}
 
 // ----- methods -----
 void Server::bindSocket()
