@@ -107,8 +107,7 @@ void Command::commandUser(Server &server, int fd, const std::vector<std::string>
 
     std::string realname = tokens[4];
     if (realname[0] == ':')
-        realname.substr(1);
-
+        realname = realname.substr(1);
     client.setUser(username);
     client.setRealName(realname);
     dvais::sendMessage(fd, "Username: " + username + " Realname: " + realname + "\r\n");
@@ -270,23 +269,29 @@ void Command::commandWhois(Server &server, int fd, const std::vector<std::string
     }
     std::ostringstream oss;
     oss << ":ircserv 311 " << requesterNick << " " << target->getNick()
-        << " :[~" << target->getNick() << "@" << target->getIp() << "]\r\n";
+        << " :[~" << target->getNick() << "@" << target->getIp() << "] :" << target->getRealName() << "\r\n";
     dvais::sendMessage(fd, oss.str());
 
     oss.str("");
     oss << ":ircserv 312 " << requesterNick << " " << target->getNick()
         << " ircserv :Welcome to ircserv\r\n";
     dvais::sendMessage(fd, oss.str());
-
+    
     oss.str("");
-    oss << ":ircserv 319 " << requesterNick << " " << target->getNick() << " :";
-    std::vector<std::string> channelList = target->getChannelList();
-    for (std::vector<std::string>::iterator it = channelList.begin(); it != channelList.end(); it++) {
-        oss << *it << " ";
+    if (!target->getChannelList().empty())
+    {
+        oss << ":ircserv 319 " << requesterNick << " " << target->getNick() << " :";
+        std::vector<std::string> channelList = target->getChannelList();
+        for (std::vector<std::string>::iterator it = channelList.begin(); it != channelList.end(); it++)
+        {
+            Channel* channel = server.getChannel(*it);
+            if (channel->isOperator(target->getFd()))
+                oss << "@";
+            oss << *it << " ";
+        }
+        oss << "\r\n";
+        dvais::sendMessage(fd, oss.str());
     }
-    oss << "\r\n";
-    dvais::sendMessage(fd, oss.str());
-
     oss.str("");
     oss << ":ircserv 318 " << requesterNick << " " << target->getNick() << " :End of WHOIS list\r\n";
     dvais::sendMessage(fd, oss.str());
@@ -730,6 +735,7 @@ void Command::executeCommand(Server &server, int fd, const std::string &cmd) {
         commandInvite(server, fd, tokens);
     } else if (command == "MODE") {
         commandMode(server, fd, tokens);
+        updateAllModes(server, fd);
     } else if (command == "KICK") {
         commandKick(server, fd, tokens);
     } else if (command == "PASS") {

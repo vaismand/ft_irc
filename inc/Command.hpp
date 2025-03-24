@@ -52,7 +52,7 @@ class Command
         void handleChannelMode(Server &server, int fd, const std::vector<std::string> &tokens);
         void handleUserModeShow(Server &server, int fd);
         void handleChannelModeShow(Server &server, int fd, Channel* channel);
-        //void applySingleMode(Server &server, int fd, Channel* channel, char modeChar, bool adding, int &paramIndex, const std::vector<std::string> &tokens);
+        void updateAllModes(Server &server, int fd);
 
 };
 

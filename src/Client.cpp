@@ -30,6 +30,7 @@ void Client::ClientInit() {
 	_passAccepted = false;
 	_pingSent = false;
 	_lastActivity = time(NULL);
+	_invisible = false;
 }
 
 // ----- getter Functions -----
@@ -57,9 +58,15 @@ void Client::setRights() { _isAdmin = !_isAdmin; }
 void Client::setPassAccepted(bool passAccepted) { _passAccepted = passAccepted; }
 void Client::setInvisible(bool invisible) { _invisible = invisible; }
 void Client::setPingSent(bool pingSent) { _pingSent = pingSent; }
-void Client::setUserModes(const std::string& modes) { _userModes = modes; }
 void Client::setLastActivity(time_t lastActivity) { _lastActivity = lastActivity; }
 void Client::setChannelList(const std::string& channelName) { _channelList.push_back(channelName); }
+
+void Client::setUserModes() {
+	_userModes.clear();
+	_userModes = "+";
+	if (_invisible)
+		_userModes += "i";
+ }
 
 // ----- methods -----
 void Client::rmChannelInList(const std::string& channelName) {

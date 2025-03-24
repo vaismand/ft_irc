@@ -83,6 +83,21 @@ void Command::partClientAll(Server &server, Client &client, std::vector<std::str
     }
 }
 
+void Command::updateAllModes(Server &server, int fd)
+{
+    Client &client = server.getClient(fd);
+    client.setUserModes();
+    std::vector<std::string> channels = client.getChannelList();
+    for (std::vector<std::string>::iterator it = channels.begin(); it != channels.end(); it++)
+    {
+        Channel* channel = server.getChannel(*it);
+        if (channel)
+        {
+            channel->setModeList();
+        }
+    }
+}
+
 void Command::handleUserModeShow(Server &server, int fd)
 {
     Client &client = server.getClient(fd);
@@ -94,7 +109,6 @@ void Command::handleUserModeShow(Server &server, int fd)
 void Command::handleChannelModeShow(Server &server, int fd, Channel* channel)
 {
     Client &requester = server.getClient(fd);
-    channel->setModeList();
     std::string requesterNick = requester.getNick();
     std::string channelModes = channel->getChannelModes();
 

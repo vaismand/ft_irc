@@ -6,10 +6,10 @@ _cKey(key), _cTopic("")
     addClient(fd);
     _operators.push_back(fd);
     _userLimit = 10;
-    _noExternalMsgs = false;
+    _noExternalMsgs = true;
     _isInviteOnly = false;
-    _topicRestricted = false;
-    _modeList = "+nt";
+    _topicRestricted = true;
+    _modeList = "+ntl";
     _creationTime = std::time(NULL);
 }
 

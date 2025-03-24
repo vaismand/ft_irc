@@ -42,7 +42,7 @@ class Client
 		void setChannelList(const std::string& channelName);
 		void setPingSent(bool pingSent);
 		void setInvisible(bool invisible);
-		void setUserModes(const std::string& modes);
+		void setUserModes();
 		void setLastActivity(time_t lastActivity);
 
 		// Method

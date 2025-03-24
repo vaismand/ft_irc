@@ -276,7 +276,7 @@ void Server::tryRegisterClient(int fd)
         _cmd.executeCommand(*this, fd, "NOTICE " + client.getNick() + " :*** Your username is invalid. " \
                             "Please make sure that your username contains only alphanumeric characters.\r\n");
         dvais::sendMessage(fd, "ERROR :Closing Link: Invalid username [~ " + client.getUser() + "]\r\n");
-        rmClient(fd);
+        return;
     }
     client.setStatus(REGISTERED);
     welcomeToServerMessage(fd, client.getNick());
