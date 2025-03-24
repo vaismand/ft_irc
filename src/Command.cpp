@@ -479,7 +479,7 @@ void Command::commandTopic(Server &server, int fd, const std::vector<std::string
 
     if (cmd.size() < 2)
     {
-        sendError(fd, 461, nick, "TOPIC"); // Not enough parameters
+        sendError(fd, 461, nick, "TOPIC"); // ERR_NEEDMOREPARAMS
         return;
     }
     std::string channelName = cmd[1];
@@ -518,6 +518,8 @@ void Command::commandTopic(Server &server, int fd, const std::vector<std::string
     std::string rawTopic = cmd[2];
     if (!rawTopic.empty() && rawTopic[0] == ':')
         rawTopic.erase(0, 1);
+    if (rawTopic.size() > MAX_TOPIC_LEN)
+        rawTopic.resize(MAX_TOPIC_LEN);
     if (channel->getTopicRestricted() && !channel->isOperator(fd))
     {
         sendError(fd, 482, nick, channelName); // ERR_CHANOPRIVSNEEDED
