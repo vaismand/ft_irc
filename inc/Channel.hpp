@@ -23,10 +23,11 @@ class Channel
 		const bool& getNoExternalMsgs() const;
 		const std::vector<int>& getJoined() const;
 		const size_t& getUserLimit() const;
+		time_t getCreationTime() const;
 		std::string getTopic() const;
         std::string getTopicSetter() const;
         std::time_t getTopicSetTime() const;
-		std::string getModeList() const;
+		std::string getChannelModes() const;
 
 		// Setters
 		void setcName(const std::string& name);
@@ -37,6 +38,7 @@ class Channel
 		void setTopicRestricted(bool restricted);
 		void setUserLimit(int limit);
 		void setNoExternalMsgs(bool noExternalMsgs);
+		void setModeList();
 
 		// Methods
 		void addClient(int fd);
@@ -58,7 +60,9 @@ class Channel
 		std::string 		_cKey;
 		std::string 		_cTopic;
 		std::string         _topicSetter;
+		std::string     	_modeList;
         std::time_t         _topicSetTime;
+		std::time_t     	_creationTime;
 		std::vector<int> 	_joined;
 		std::vector<int> 	_invited;
 		std::vector<int> 	_operators;

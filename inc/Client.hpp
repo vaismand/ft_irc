@@ -22,6 +22,7 @@ class Client
 		std::string getNick() const;
 		std::string getIp() const;
 		std::string& getBuffer();
+		std::string getUserModes() const;
 		AuthState getStatus() const;
 		time_t getLastActivity() const;
 		int  getFd() const;
@@ -41,6 +42,7 @@ class Client
 		void setChannelList(const std::string& channelName);
 		void setPingSent(bool pingSent);
 		void setInvisible(bool invisible);
+		void setUserModes(const std::string& modes);
 		void setLastActivity(time_t lastActivity);
 
 		// Method
@@ -59,6 +61,7 @@ class Client
 		std::string _realname;
 		std::string _nickname;
 		std::string _buffer;
+		std::string _userModes;
 		std::vector<std::string> _channelList;
 		AuthState	_status;
 		bool		_isAdmin;

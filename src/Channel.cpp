@@ -9,6 +9,8 @@ _cKey(key), _cTopic("")
     _noExternalMsgs = false;
     _isInviteOnly = false;
     _topicRestricted = false;
+    _modeList = "+nt";
+    _creationTime = std::time(NULL);
 }
 
 Channel::~Channel() {
@@ -26,9 +28,10 @@ const bool& Channel::getTopicRestricted() const { return _topicRestricted; }
 const bool& Channel::getNoExternalMsgs() const { return _noExternalMsgs; }
 const std::vector<int>& Channel::getJoined() const { return _joined; }
 const size_t& Channel::getUserLimit() const { return _userLimit; }
+time_t Channel::getCreationTime() const { return _creationTime; }
 std::string Channel::getTopic() const { return _cTopic; }
 std::string Channel::getTopicSetter() const { return _topicSetter; }
-std::string Channel::getModeList() const { return "+nt"; }
+std::string Channel::getChannelModes() const { return _modeList; }
 std::time_t Channel::getTopicSetTime() const { return _topicSetTime; }
 
 // ----- setter Functions -----
@@ -39,6 +42,21 @@ void Channel::setChannelType() { _isInviteOnly = !_isInviteOnly; }
 void Channel::setTopicRestricted(bool restricted) { _topicRestricted = restricted; }
 void Channel::setUserLimit(int limit) { _userLimit = limit; }
 void Channel::setNoExternalMsgs(bool noExternalMsgs) { _noExternalMsgs = noExternalMsgs; }
+
+void Channel::setModeList() {
+    _modeList.clear();
+    _modeList = "+";
+    if (_isInviteOnly)
+        _modeList += "i";
+    if (_topicRestricted)
+        _modeList += "t";
+    if (_noExternalMsgs)
+        _modeList += "n";
+    if (!_cKey.empty())
+        _modeList += "k";
+    if (_userLimit > 0)
+        _modeList += "l";
+}
 
 // ----- methods -----
 void Channel::addClient(int fd) 

@@ -38,6 +38,7 @@ std::string Client::getRealName() const { return _realname; }
 std::string Client::getNick() const { return _nickname; }
 std::string Client::getIp() const { return _ip; }
 std::string& Client::getBuffer() { return _buffer; }
+std::string Client::getUserModes() const { return _userModes; }
 AuthState Client::getStatus() const { return _status; }
 time_t Client::getLastActivity() const { return _lastActivity; }
 bool Client::getRights() const { return _isAdmin; }
@@ -56,6 +57,7 @@ void Client::setRights() { _isAdmin = !_isAdmin; }
 void Client::setPassAccepted(bool passAccepted) { _passAccepted = passAccepted; }
 void Client::setInvisible(bool invisible) { _invisible = invisible; }
 void Client::setPingSent(bool pingSent) { _pingSent = pingSent; }
+void Client::setUserModes(const std::string& modes) { _userModes = modes; }
 void Client::setLastActivity(time_t lastActivity) { _lastActivity = lastActivity; }
 void Client::setChannelList(const std::string& channelName) { _channelList.push_back(channelName); }
 

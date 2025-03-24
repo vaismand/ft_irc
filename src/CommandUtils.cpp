@@ -83,6 +83,30 @@ void Command::partClientAll(Server &server, Client &client, std::vector<std::str
     }
 }
 
+void Command::handleUserModeShow(Server &server, int fd)
+{
+    Client &client = server.getClient(fd);
+    std::string nick = client.getNick();
+    std::string userModes = client.getUserModes(); // or build it manually
+    dvais::sendMessage(fd, ":ircserv 221 " + nick + " :" + userModes + "\r\n");
+}
+
+void Command::handleChannelModeShow(Server &server, int fd, Channel* channel)
+{
+    Client &requester = server.getClient(fd);
+    channel->setModeList();
+    std::string requesterNick = requester.getNick();
+    std::string channelModes = channel->getChannelModes();
+
+    dvais::sendMessage(fd, ":ircserv 324 " + requesterNick + " " 
+                            + channel->getcName() + " :" + channelModes + "\r\n");
+
+    std::ostringstream oss;
+    oss << ":ircserv 329 " << requesterNick << " " << channel->getcName() << " "
+        << channel->getCreationTime() << "\r\n";
+    dvais::sendMessage(fd, oss.str());
+}
+
 void Command::handleUserMode(Server &server, int fd, const std::vector<std::string> &tokens)
 {
     Client &client = server.getClient(fd);
@@ -102,9 +126,7 @@ void Command::handleUserMode(Server &server, int fd, const std::vector<std::stri
     }
 
     if (tokens.size() < 3) {
-        // RPL_UMODEIS (221) typically shows the user’s current modes
-        // For a minimal approach, we just send an empty modes line
-        dvais::sendMessage(fd, ":ircserv 221 " + nick + " :\r\n");
+        handleUserModeShow(server, fd);
         return;
     }
     std::string modeStr = tokens[2];
@@ -145,8 +167,7 @@ void Command::handleChannelMode(Server &server, int fd, const std::vector<std::s
         return;
     }
     if (tokens.size() < 3) {
-        dvais::sendMessage(fd, ":ircserv 324 " + clientNick + " " + target + " :+it\r\n");
-        dvais::sendMessage(fd, ":ircserv 329 " + clientNick + " " + target + " 1678901234\r\n");
+        handleChannelModeShow(server, fd, channel);
         return;
     }
     std::string modeStr = tokens[2];
