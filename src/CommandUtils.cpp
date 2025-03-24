@@ -77,7 +77,7 @@ void Command::partClientAll(Server &server, Client &client, std::vector<std::str
             dvais::sendMessage(client.getFd(), msg);
             channel->rmClient(client.getFd());
             client.rmChannelInList(channel->getcName());
-            if (channel->getJoined().empty())
+            if (channel->getJoined().size() == 1)
                 server.rmChannel(*it);
         }
     }
@@ -103,7 +103,9 @@ void Command::handleUserModeShow(Server &server, int fd)
 {
     Client &client = server.getClient(fd);
     std::string nick = client.getNick();
-    std::string userModes = client.getUserModes(); // or build it manually
+    std::string userModes = client.getUserModes();
+    if (userModes == "+")
+        userModes = "No user modes are set";
     dvais::sendMessage(fd, ":ircserv 221 " + nick + " :" + userModes + "\r\n");
 }
 
@@ -166,7 +168,7 @@ void Command::handleUserMode(Server &server, int fd, const std::vector<std::stri
                 break;
         }
     }
-    dvais::sendMessage(fd, ":ircserv 221 " + nick + " :\r\n");
+    dvais::sendMessage(fd, ":" + nick + " MODE " + nick + " :" + modeStr + "\r\n");
 }
 
 void Command::handleChannelMode(Server &server, int fd, const std::vector<std::string> &tokens) {

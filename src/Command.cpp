@@ -77,7 +77,6 @@ void Command::commandNick(Server &server, int fd, const std::vector<std::string>
     std::string host = client.getIp();
     std::string msg = ":" + currentNick + "!" + user + "@" + host + " NICK :" + nickname + "\r\n";
     client.setNick(nickname);
-    dvais::sendMessage(fd, msg);
     server.broadcastAll(fd, msg);
 }
 
@@ -117,7 +116,6 @@ void Command::commandUser(Server &server, int fd, const std::vector<std::string>
     }
     client.setUser(username);
     client.setRealName(realname);
-    dvais::sendMessage(fd, "Username: " + username + " Realname: " + realname + "\r\n");
 }
 
 /**

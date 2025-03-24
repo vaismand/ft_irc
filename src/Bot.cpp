@@ -53,9 +53,8 @@ void Bot::sendRandomPhrase() {
 
     if (!initialDelayPassed_) {
         if (std::difftime(now, joinTime_) >= 8) {
-            std::string phrase = phrases_[std::rand() % phrases_.size()];
             for (size_t i = 0; i < channels_.size(); ++i) {
-                sendRawMessage("PRIVMSG " + channels_[i] + " :" + phrase);
+                sendRawMessage("PRIVMSG " + channels_[i] + " : Welcome to the channel!");
             }
             initialDelayPassed_ = true;
             lastPhraseTime_ = now;

@@ -5,11 +5,11 @@ _cKey(key), _cTopic("")
 {
     addClient(fd);
     _operators.push_back(fd);
-    _userLimit = 10;
+    _userLimit = 0;
     _noExternalMsgs = true;
     _isInviteOnly = false;
     _topicRestricted = true;
-    _modeList = "+ntl";
+    _modeList = "";
     _creationTime = std::time(NULL);
 }
 
@@ -48,10 +48,10 @@ void Channel::setModeList() {
     _modeList = "+";
     if (_isInviteOnly)
         _modeList += "i";
-    if (_topicRestricted)
-        _modeList += "t";
     if (_noExternalMsgs)
         _modeList += "n";
+    if (_topicRestricted)
+        _modeList += "t";
     if (!_cKey.empty())
         _modeList += "k";
     if (_userLimit > 0)

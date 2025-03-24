@@ -266,7 +266,7 @@ void Server::tryRegisterClient(int fd)
 {
     Client &client = getClient(fd);
     
-    if (client.getNick().empty() || client.getUser().empty())
+    if (client.getNick().empty() || client.getUser().empty() || client.getNick() == "*")
         return;
     if (client.getStatus() == REGISTERED)
         return;
@@ -274,6 +274,7 @@ void Server::tryRegisterClient(int fd)
         return;
     client.setStatus(REGISTERED);
     welcomeToServerMessage(fd, client.getNick());
+    _cmd.executeCommand(*this, fd, "MODE " + client.getNick() + " +i");
 }
 
 void Server::checkIdleClients()
