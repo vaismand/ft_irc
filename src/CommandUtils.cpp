@@ -45,7 +45,7 @@ void Command::initErrorMap()
     errorMap[472] = "is unknown mode char to me";
     errorMap[473] = "Cannot join channel (invite only)";
     errorMap[475] = "Cannot join channel (+k)";
-    errorMap[475] = "Illegal channel name";
+    errorMap[476] = "Illegal channel name";
     errorMap[482] = "You're not channel operator";
     errorMap[502] = "Can't change mode for other users";
 }
@@ -79,7 +79,27 @@ void Command::partClientAll(Server &server, Client &client, std::vector<std::str
             dvais::sendMessage(client.getFd(), msg);
             channel->rmClient(client.getFd());
             client.rmChannelInList(channel->getcName());
-            if (channel->getJoined().size() == 1)
+            std::vector<int> joined = channel->getJoined();
+    
+            // Check if only the bot remains by checking both count and bot identity
+            if (joined.size() == 1) {
+                // Get the last member's client info to verify it's the bot
+                Client* lastMember = NULL;
+                try {
+                    lastMember = &server.getClient(joined[0]);
+                } catch (const std::exception& e) {
+                    std::cerr << "Error getting last client: " << e.what() << std::endl;
+                }
+                
+                if (lastMember && lastMember->getNick() == server.getBot().getNick()) {
+                    std::cout << "Bot is last member in " << channel->getcName() << ", removing it" << std::endl;
+                    server.getBot().sendRawMessage("PART " + channel->getcName());
+                    server.getBot().rmChannelInList(channel->getcName());
+                    server.rmChannel(*it);
+                }
+            }
+            
+            if (channel && channel->getJoined().empty())
                 server.rmChannel(*it);
         }
     }

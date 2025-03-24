@@ -74,6 +74,7 @@ class Server
 		const std::map<int, Client*>& getClients() const;
 		Client *getClientByNick(const std::string &nickname);
 		std::size_t getChannelLimit() const;
+		Bot &getBot() const;
 
 		// Methods
 		void addChannel(const int &fd, const std::string &name, const std::string &pass);

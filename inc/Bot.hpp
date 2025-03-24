@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <ctime>
+#include <map>
 
 class Bot : public Client {
 public:
@@ -14,12 +15,11 @@ public:
     void joinChannel(const std::string& channel);
     void handleMessage(const std::string& message);
     void sendRandomPhrase();
+    void sendRawMessage(const std::string& message);
 
 private:
-    void sendRawMessage(const std::string& message);
     std::vector<std::string> phrases_;
-    std::vector<std::string> channels_;
-    time_t lastPhraseTime_;
     time_t joinTime_;
-    bool initialDelayPassed_;
+    std::map<std::string, time_t> channelJoinTimes_;
+    std::map<std::string, bool> channelInitialMessageSent_;
 };
