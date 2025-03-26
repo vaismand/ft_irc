@@ -686,40 +686,51 @@ void Command::commandInvite(Server &server, int fd, const std::vector<std::strin
  * @throws ERR_CHANOPRIVSNEEDED (482) - if client lacks operator status.
  * @throws ERR_USERNOTINCHANNEL (441) - if target isn't in the channel.
  */
-void Command::commandKick(Server &server, int fd, const std::vector<std::string> &tokens) {
+void Command::commandKick(Server &server, int fd, const std::vector<std::string> &tokens)
+{
     Client &client = server.getClient(fd);
     const std::string &client_nick = client.getNick();
+
     if (tokens.size() < 3) {
         sendError(fd, 461, client_nick, tokens[0]); // ERR_NEEDMOREPARAMS
         return;
     }
-    std::string comment = (tokens.size() >= 4 && !tokens[3].empty() && tokens[3][0] == ':') ? tokens[3] : ":" + tokens[2];
-    std::cout << "tokens[2]: " << tokens[2] << std::endl;
-    std::cout << "comment: " << comment << std::endl;
-
-    Channel* targetChannel = server.getChannel(tokens[1]);
+    const std::string &channelName = tokens[1];
+    const std::string &targetNick  = tokens[2];
+    Channel* targetChannel = server.getChannel(channelName);
     if (!targetChannel) {
-        sendError(fd, 403, client_nick, tokens[1]); // ERR_NOSUCHCHANNEL
+        sendError(fd, 403, client_nick, channelName); // ERR_NOSUCHCHANNEL
         return;
     }
-    if (targetChannel->isMember(fd) == false) {
-        sendError(fd, 442, "", targetChannel->getcName()); // ERR_NOTONCHANNEL
+    if (!targetChannel->isMember(fd)) {
+        sendError(fd, 442, client_nick, channelName); // ERR_NOTONCHANNEL
         return;
     }
-    if (targetChannel->isOperator(fd) == false) {
-        sendError(fd, 482, "", targetChannel->getcName()); // ERR_CHANOPRIVSNEEDED
+    if (!targetChannel->isOperator(fd)) {
+        sendError(fd, 482, client_nick, channelName); // ERR_CHANOPRIVSNEEDED
         return;
     }
-    Client* targetClient = server.getClientByNick(tokens[2]);
+    Client* targetClient = server.getClientByNick(targetNick);
     if (!targetClient || !targetChannel->isMember(targetClient->getFd())) {
-        sendError(fd, 441, tokens[2], targetChannel->getcName()); // ERR_USERNOTINCHANNEL
+        sendError(fd, 441, targetNick, channelName); // ERR_USERNOTINCHANNEL
         return;
+    }
+    std::string comment;
+    if (tokens.size() < 4) {
+        comment = ":" + targetNick;
+    } else {
+        if (tokens[3] == ":") {
+            comment = ":" + targetNick;
+        } else if (!tokens[3].empty() && tokens[3][0] == ':') {
+            comment = tokens[3];
+        } else {
+            comment = ":" + tokens[3];
+        }
     }
     std::string user = client.getUser();
     std::string host = client.getIp();
-    std::string kickMsg = ":" + client_nick + "!" + user + "@" + host + \
-                            " KICK " + targetChannel->getcName() + \
-                            " " + targetClient->getNick() + " " + comment + "\r\n";
+    std::string kickMsg = ":" + client_nick + "!" + user + "@" + host
+        + " KICK " + channelName + " " + targetClient->getNick() + " " + comment + "\r\n";
     targetChannel->broadcast(-1, kickMsg);
     targetChannel->rmClient(targetClient->getFd());
 }
