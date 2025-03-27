@@ -77,6 +77,8 @@ void Command::commandNick(Server &server, int fd, const std::vector<std::string>
     std::string host = client.getIp();
     std::string msg = ":" + currentNick + "!" + user + "@" + host + " NICK :" + nickname + "\r\n";
     client.setNick(nickname);
+    if (currentNick != "*")
+        dvais::sendMessage(fd, msg);
     server.broadcastAll(fd, msg);
 }
 
@@ -499,7 +501,7 @@ void Command::commandMsg(Server &server, int fd, const std::vector<std::string> 
                 sendError(fd, 401, server.getClient(fd).getNick(), cmd[1]);
             return;
         }
-        std::string msg = ":" + server.getClient(fd).getNick() + " " + cmd[0] + " " + targetClient->getNick() + " " + cmd[2] + " \r\n";
+        std::string msg = ":" + nick + " " + cmd[0] + " " + targetClient->getNick() + " " + cmd[2] + " \r\n";
         dvais::sendMessage(targetClient->getFd(), msg);
     }
 }
