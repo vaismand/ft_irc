@@ -77,7 +77,7 @@ void Command::commandNick(Server &server, int fd, const std::vector<std::string>
     std::string host = client.getIp();
     std::string msg = ":" + currentNick + "!" + user + "@" + host + " NICK :" + nickname + "\r\n";
     client.setNick(nickname);
-    if (currentNick != "*")
+    if (client.getStatus() == REGISTERED)
         dvais::sendMessage(fd, msg);
     server.broadcastAll(fd, msg);
 }
