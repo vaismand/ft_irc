@@ -72,33 +72,38 @@ void Command::partClientAll(Server &server, Client &client, std::vector<std::str
     std::string prefix = ":" + nick + "!" + user + "@" + host;
 
     for (std::vector<std::string>::iterator it = list.begin(); it != list.end(); it++) {
-        std::string msg = prefix + " PART " + *it + " " + reason + "\r\n";
         Channel* channel = server.getChannel(*it);
-        if (channel) {
-            channel->broadcast(client.getFd(), msg);
-            dvais::sendMessage(client.getFd(), msg);
-            channel->rmClient(client.getFd());
-            client.rmChannelInList(channel->getcName());
-            std::vector<int> joined = channel->getJoined();
-    
-            if (joined.size() == 1) {
-                Client* lastMember = NULL;
-                try {
-                    lastMember = &server.getClient(joined[0]);
-                } catch (const std::exception& e) {
-                    std::cerr << "Error getting last client: " << e.what() << std::endl;
-                }
-                if (lastMember && lastMember->getNick() == server.getBot().getNick()) {
-                    server.getBot().sendRawMessage("PART " + channel->getcName());
-                    server.getBot().rmChannelInList(channel->getcName());
-                    server.rmChannel(*it);
-                    continue;
-                }
-            }
-            
-            if (channel && channel->getJoined().empty())
-                server.rmChannel(*it);
+        if (!channel) {
+            continue;
         }
+        std::string msg = prefix + " PART " + *it + " " + reason + "\r\n";
+        channel->broadcast(client.getFd(), msg);
+        dvais::sendMessage(client.getFd(), msg);
+        channel->rmClient(client.getFd());
+        client.rmChannelInList(channel->getcName());
+        if (server.isChannelEmptyOrBotOnly(channel)) {
+            server.handleEmptyChannel(client.getFd(), channel);
+        }
+        //     std::vector<int> joined = channel->getJoined();
+    
+        //     if (joined.size() == 1) {
+        //         Client* lastMember = NULL;
+        //         try {
+        //             lastMember = &server.getClient(joined[0]);
+        //         } catch (const std::exception& e) {
+        //             std::cerr << "Error getting last client: " << e.what() << std::endl;
+        //         }
+        //         if (lastMember && lastMember->getNick() == server.getBot().getNick()) {
+        //             server.getBot().sendRawMessage("PART " + channel->getcName());
+        //             server.getBot().rmChannelInList(channel->getcName());
+        //             server.rmChannel(*it);
+        //             continue;
+        //         }
+        //     }
+            
+        //     if (channel && channel->getJoined().empty())
+        //         server.rmChannel(*it);
+        // }
     }
 }
 

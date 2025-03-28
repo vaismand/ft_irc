@@ -16,6 +16,7 @@ public:
     void handleMessage(const std::string& message);
     void sendRandomPhrase();
     void sendRawMessage(const std::string& message);
+    void setFd(int fd);
 
 private:
     std::vector<std::string> phrases_;

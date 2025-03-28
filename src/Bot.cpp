@@ -74,3 +74,7 @@ void Bot::sendRandomPhrase() {
         }
     }
 }
+
+void Bot::setFd(int fd) {
+    _fd = fd;
+}

@@ -5,6 +5,7 @@ CXXFLAGS = -Wall -Wextra -Werror -g -std=c++98
 
 SRC = src/main.cpp \
 		src/Server.cpp \
+		src/ServerUtils.cpp \
 		src/Client.cpp \
 		src/Channel.cpp \
 		src/Command.cpp \

@@ -59,6 +59,7 @@ class Server
 		void tryRegisterClient(int fd);
 		void checkIdleClients();
 		void setPollfd(int fd, short int events, std::vector<struct pollfd> &pollfds);
+		void rmPollfd(int fd);
 		void welcomeToServerMessage(int fd, const std::string &nick);
 
 	public:
@@ -86,6 +87,8 @@ class Server
 		void checkEmptyChannels();
 		bool isNickInUse(const std::string &nickname, int excludeFd = -1) const;
 		bool isValidNick(const std::string &nickname);
+		bool isLastMemberBot(int clientFd, Channel* channel);
+		bool isChannelEmptyOrBotOnly(Channel* channel) const;
+		void handleEmptyChannel(int fd, Channel* channel);
 		bool shareChannel(int fd1, int fd2) const;
-
 };
