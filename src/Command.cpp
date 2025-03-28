@@ -275,6 +275,15 @@ void Command::commandWhois(Server &server, int fd, const std::vector<std::string
         }
     }
     std::ostringstream oss;
+    oss << ":ircserv 311 " << requesterNick << " " << target->getNick() <<  "~" << target->getUser() << " " << target->getIp() << " * :" << target->getRealName() << "\r\n";
+    dvais::sendMessage(fd, oss.str());
+
+    oss.str("");
+    oss << ":ircserv 312 " << requesterNick << " " << target->getNick() << " ircserv" << " :Vienna, AT\r\n";
+    dvais::sendMessage(fd, oss.str());
+
+
+    std::ostringstream oss;
     oss << ":ircserv 311 " << requesterNick << " " << target->getNick()
         << " :[~" << target->getNick() << "@" << target->getIp() << "] :" << target->getRealName() << "\r\n";
     dvais::sendMessage(fd, oss.str());

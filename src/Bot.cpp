@@ -27,11 +27,6 @@ void Bot::connectToServer() {
     }
 }
 
-void Bot::rmBotFromChannel() 
-{
-
-}
-
 void Bot::joinChannel(const std::string& channel) {
     sendRawMessage("JOIN " + channel);
     if (std::find(_channelList.begin(), _channelList.end(), channel) == _channelList.end()) {

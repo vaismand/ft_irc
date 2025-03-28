@@ -67,6 +67,35 @@ Channel *Server::getChannel(const std::string &name)
     return _channels[name];
 }
 
+void Server::checkEmptyChannels()
+{
+    for (std::map<std::string, Channel*>::iterator it = _channels.begin(); it != _channels.end(); ++it)
+    {
+        if (it->second->getCreationTime() > time(NULL) - 10)
+            continue;
+        std::vector<int> joined = it->second->getJoined();
+        if (joined.empty() || joined.size() == 1)
+        {
+            if (joined.size() == 1) {
+                Client* lastMember = NULL;
+                try {
+                    lastMember = &getClient(joined[0]);
+                } catch (const std::exception& e) {
+                    std::cerr << "Error getting last client: " << e.what() << std::endl;
+                }
+                if (lastMember && lastMember->getNick() == getBot().getNick()) {
+                    getBot().sendRawMessage("PART " + it->second->getcName());
+                    getBot().rmChannelInList(it->second->getcName());
+                    rmChannel(it->first);
+                    continue;
+                }
+            }
+            rmChannel(it->first);
+        }
+        std::cout << "Channel deleted: " << it->first << std::endl;
+    }
+}
+
 bool Server::shareChannel(int fd1, int fd2) const
 {
     for (std::map<std::string, Channel*>::const_iterator it = _channels.begin(); it != _channels.end(); ++it)
@@ -212,10 +241,34 @@ void Server::setPollfd(int fd, short int events, std::vector<struct pollfd> &pol
 void Server::rmClient(int fd) 
 {
     std::cout << "Client disconnected: " << fd << std::endl;
+    std::vector<std::string> channelsToDel;
+
     for (std::map<std::string, Channel*>::iterator it = _channels.begin(); it != _channels.end(); ++it)
     {
         if (it->second->isMember(fd))
+        {
             it->second->rmClient(fd);
+            std::vector<int> joined = it->second->getJoined();
+            if (joined.empty() || joined.size() == 1)
+            {
+                std::cout << "test2" << std::endl;
+                if (joined.size() == 1) {
+                    Client* lastMember = NULL;
+                    try {
+                        lastMember = &getClient(joined[0]);
+                    } catch (const std::exception& e) {
+                        std::cerr << "Error getting last client: " << e.what() << std::endl;
+                    }
+                    if (lastMember && lastMember->getNick() == getBot().getNick()) {
+                        getBot().sendRawMessage("PART " + it->second->getcName());
+                        getBot().rmChannelInList(it->second->getcName());
+                        channelsToDel.push_back(it->first);
+                        continue;
+                    }
+                }
+                channelsToDel.push_back(it->first);    
+            }
+        }
     }
     close(fd);
     for (std::vector<struct pollfd>::reverse_iterator it = _pollfds.rbegin(); it != _pollfds.rend(); it++)
@@ -229,6 +282,11 @@ void Server::rmClient(int fd)
     Client* toDelete = _clients[fd];
     _clients.erase(fd);
     delete toDelete;
+    for (std::vector<std::string>::iterator it = channelsToDel.begin(); it != channelsToDel.end(); it++)
+    {
+        std::cout << "Channel deleted: " << *it << std::endl;
+        rmChannel(*it);
+    }
 }
 
 void Server::addChannel(const int &fd, const std::string &name, const std::string &pass)
@@ -324,6 +382,7 @@ void Server::handleClient(int fd)
     if (bytes_received <= 0)
     {
         rmClient(fd);
+        std::cout << "teast " << fd << std::endl;
         return;
     }
     _clients[fd]->setLastActivity(time(NULL));
@@ -377,4 +436,6 @@ void Server::createBot() {
 
     bot_ = new Bot(sockfd, "127.0.0.1", "BEEPBOOP");
     bot_->connectToServer();
+    std::cout << "Bot connected successfully: FD=" << sockfd << std::endl;
+
 }

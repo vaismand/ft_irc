@@ -92,6 +92,7 @@ void Command::partClientAll(Server &server, Client &client, std::vector<std::str
                     server.getBot().sendRawMessage("PART " + channel->getcName());
                     server.getBot().rmChannelInList(channel->getcName());
                     server.rmChannel(*it);
+                    continue;
                 }
             }
             
