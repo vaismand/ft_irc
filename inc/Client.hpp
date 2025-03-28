@@ -19,6 +19,7 @@ class Client
 		// Getters
 		std::string getUser() const;
 		std::string getRealName() const;
+		std::string getHostName() const;
 		std::string getNick() const;
 		std::string getIp() const;
 		std::string& getBuffer();
@@ -59,6 +60,7 @@ class Client
 		std::string _ip;
 		std::string _username;
 		std::string _realname;
+		std::string _hostname;
 		std::string _nickname;
 		std::string _buffer;
 		std::string _userModes;

@@ -27,15 +27,16 @@ void Bot::connectToServer() {
     }
 }
 
+void Bot::rmBotFromChannel() 
+{
+
+}
+
 void Bot::joinChannel(const std::string& channel) {
     sendRawMessage("JOIN " + channel);
-    
-    // Store the channel in the list if not already present
     if (std::find(_channelList.begin(), _channelList.end(), channel) == _channelList.end()) {
         _channelList.push_back(channel);
     }
-    
-    // Set join time for this specific channel
     channelJoinTimes_[channel] = std::time(0);
     channelInitialMessageSent_[channel] = false;
 }

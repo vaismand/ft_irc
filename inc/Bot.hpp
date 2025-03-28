@@ -16,6 +16,7 @@ public:
     void handleMessage(const std::string& message);
     void sendRandomPhrase();
     void sendRawMessage(const std::string& message);
+    void rmBotFromChannel(Server &server, Client &client, const std::string& channel);
 
 private:
     std::vector<std::string> phrases_;

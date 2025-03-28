@@ -29,8 +29,9 @@ bool argCheck(int argc, char **argv) {
 		return false;
 	}
 	std::string password = argv[2];
-	if (password.size() > 16) {
-		std::cerr << "Invalid Password. Only 16 characters allowed." << std::endl;
+	if (password.size() > 16 || password.size() < 4 || password.empty() \
+	|| password.find(" ") != std::string::npos) {
+		std::cerr << "Invalid Password: Password should be 4-16 characters, no spaces." << std::endl;
 		return false;
 	}
 	for (std::size_t i = 0; i < password.size(); i++) {

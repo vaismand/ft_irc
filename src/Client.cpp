@@ -24,6 +24,7 @@ Client& Client::operator=(const Client& rhs) {
 void Client::ClientInit() {
 	_username = "";
 	_realname = "";
+	_hostname = "localhost";
 	_nickname = "*";
 	_status = UNREGISTERED;
 	_isAdmin = false;
@@ -36,6 +37,7 @@ void Client::ClientInit() {
 // ----- getter Functions -----
 std::string Client::getUser() const { return _username; }
 std::string Client::getRealName() const { return _realname; }
+std::string Client::getHostName() const { return _hostname; }
 std::string Client::getNick() const { return _nickname; }
 std::string Client::getIp() const { return _ip; }
 std::string& Client::getBuffer() { return _buffer; }

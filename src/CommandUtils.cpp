@@ -81,18 +81,14 @@ void Command::partClientAll(Server &server, Client &client, std::vector<std::str
             client.rmChannelInList(channel->getcName());
             std::vector<int> joined = channel->getJoined();
     
-            // Check if only the bot remains by checking both count and bot identity
             if (joined.size() == 1) {
-                // Get the last member's client info to verify it's the bot
                 Client* lastMember = NULL;
                 try {
                     lastMember = &server.getClient(joined[0]);
                 } catch (const std::exception& e) {
                     std::cerr << "Error getting last client: " << e.what() << std::endl;
                 }
-                
                 if (lastMember && lastMember->getNick() == server.getBot().getNick()) {
-                    std::cout << "Bot is last member in " << channel->getcName() << ", removing it" << std::endl;
                     server.getBot().sendRawMessage("PART " + channel->getcName());
                     server.getBot().rmChannelInList(channel->getcName());
                     server.rmChannel(*it);
