@@ -189,7 +189,8 @@ void Command::commandJoin(Server &server, int fd, const std::vector<std::string>
                 sendError(fd, 473, nick, channels[i]); // ERR_INVITEONLYCHAN
                 continue;
             }
-            if (!ChannelToJoin->getcKey().empty() && (keys.empty() || keys[i] != ChannelToJoin->getcKey())) {
+            std::string providedKey = (i < keys.size()) ? keys[i] : "";
+            if (!ChannelToJoin->getcKey().empty() && providedKey != ChannelToJoin->getcKey()) {
                 sendError(fd, 475, nick, channels[i]); // ERR_BADCHANNELKEY 
                 continue;
             }
@@ -197,7 +198,7 @@ void Command::commandJoin(Server &server, int fd, const std::vector<std::string>
         ChannelToJoin->addClient(fd);
         std::string user = client.getUser();
         std::string host = client.getIp();
-        client.setChannelList(ChannelToJoin->getcName());
+        client.addChannelToList(ChannelToJoin->getcName());
         std::string prefix = ":" + nick + "!" + user + "@" + host;
         ChannelToJoin->broadcast(-1, prefix + " " + tokens[0] + " " + channels[i] + "\r\n");
         printChannelWelcome(server, client, *ChannelToJoin, newChannel);
@@ -543,7 +544,7 @@ void Command::commandTopic(Server &server, int fd, const std::vector<std::string
     }
     if (cmd.size() < 3)
     {
-        std::string currentTopic = channel->getTopic();
+        std::string currentTopic = channel->getcTopic();
         if (currentTopic.empty())
         {
             sendError(fd, 331, nick, channelName); // ERR_NOTOPIC

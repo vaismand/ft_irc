@@ -1,6 +1,6 @@
 #include "../inc/Server.hpp"
 
-bool g_running = true;
+volatile bool g_running = true;
 
 static void signalHandler(int signal)
 {

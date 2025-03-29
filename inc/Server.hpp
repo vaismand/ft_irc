@@ -25,7 +25,7 @@
 #define BUILD_DATE __DATE__
 #define BUILD_TIME __TIME__
 
-extern bool g_running;
+extern volatile bool g_running;
 
 enum Limits {
 	MAX_DEFAULT_LEN = 16,
@@ -35,32 +35,6 @@ enum Limits {
 
 class Server
 {
-	private:
-		// Constructors
-		Server();
-		Server(const Server &src);
-		Server &operator=(const Server &src);
-
-		// Attributes
-		const std::string _port;
-		const std::string _pass;
-		int _socket;
-		std::size_t _channelLimit;
-		std::vector <struct pollfd> _pollfds;
-		std::map <int, Client*> _clients;
-		std::map <std::string, Channel*> _channels;
-		Bot* bot_;
-		Command _cmd;
-
-		// Methods
-		void bindSocket();
-		void addClient();
-		void handleClient(int fd);
-		void tryRegisterClient(int fd);
-		void checkIdleClients();
-		void setPollfd(int fd, short int events, std::vector<struct pollfd> &pollfds);
-		void welcomeToServerMessage(int fd, const std::string &nick);
-
 	public:
 		// Constructors
 		Server(const std::string &port, const std::string &pass);
@@ -87,5 +61,29 @@ class Server
 		bool isNickInUse(const std::string &nickname, int excludeFd = -1) const;
 		bool isValidNick(const std::string &nickname);
 		bool shareChannel(int fd1, int fd2) const;
+	
+	private:
+		// Constructors
+		Server();
+		
+		// Methods
+		void bindSocket();
+		void addClient();
+		private:
+		void handleClient(int fd);
+		void tryRegisterClient(int fd);
+		void checkIdleClients();
+		void setPollfd(int fd, short int events, std::vector<struct pollfd> &pollfds);
+		void welcomeToServerMessage(int fd, const std::string &nick);
 
-};
+		// Attributes
+		const std::string 					_port;
+		const std::string 					_pass;
+		int 								_socket;
+		std::size_t 						_channelLimit;
+		std::vector <struct pollfd> 		_pollfds;
+		std::map <int, Client*> 			_clients;
+		std::map <std::string, Channel*> 	_channels;
+		Bot* 								bot_;
+		Command 							_cmd;
+	};

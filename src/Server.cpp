@@ -1,10 +1,9 @@
 #include "../inc/Server.hpp"
 
+// ----- Constructors -----
 Server::Server(const std::string &port, const std::string &pass) : _port(port), _pass(pass), _socket(-1), _channelLimit(10), bot_(NULL)
 {
 }
-
-Server::Server(const Server &src) : _port(src._port), _pass(src._pass) {}
 
 Server::~Server()
 {
@@ -30,7 +29,7 @@ Server::~Server()
     }
 }
 
-// ----- getter Functions -----
+// ----- Getter Functions -----
 std::string Server::getPass() const { return _pass; }
 
 const std::map<int, Client*>& Server::getClients() const { return _clients; }
@@ -92,7 +91,6 @@ void Server::checkEmptyChannels()
             }
             rmChannel(it->first);
         }
-        std::cout << "Channel deleted: " << it->first << std::endl;
     }
 }
 
@@ -112,19 +110,26 @@ Bot &Server::getBot() const
     return *bot_;
 }
 
-// ----- methods -----
+// ----- Methods -----
 void Server::bindSocket()
 {
 	struct sockaddr_in server_addr;
 
     _socket = socket(AF_INET, SOCK_STREAM, 0);
     if (_socket < 0)
-        throw std::runtime_error("Error: Failed to create socket.");
+    { 
+        std::ostringstream oss; 
+        oss << "Error in bindSocket: Failed to create socket. (" << strerror(errno) << ")"; 
+        throw std::runtime_error(oss.str());
+    }
 
     int opt = 1;
     if (setsockopt(_socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
-        throw std::runtime_error("Error: Setsockopt failed.");
-
+    {
+        std::ostringstream oss;
+        oss << "Error in bindSocket: setsockopt failed. (" << strerror(errno) << ")";
+        throw std::runtime_error(oss.str());
+    }
     memset(&server_addr, 0, sizeof(server_addr));
     server_addr.sin_family = AF_INET;
     server_addr.sin_addr.s_addr = INADDR_ANY;
@@ -209,9 +214,6 @@ void Server::addClient()
     int client_fd = accept(_socket, (struct sockaddr*)&client_addr, &addr_len);
     char ip_str[INET_ADDRSTRLEN];
     inet_ntop(AF_INET, &(client_addr.sin_addr), ip_str, INET_ADDRSTRLEN);
-    std::cout << "Connection from IP: " << ip_str 
-              << ", Port: " << ntohs(client_addr.sin_port) 
-              << ", FD: " << client_fd << std::endl;
     
     if (client_fd < 0)
     {
@@ -251,7 +253,6 @@ void Server::rmClient(int fd)
             std::vector<int> joined = it->second->getJoined();
             if (joined.empty() || joined.size() == 1)
             {
-                std::cout << "test2" << std::endl;
                 if (joined.size() == 1) {
                     Client* lastMember = NULL;
                     try {
@@ -284,7 +285,6 @@ void Server::rmClient(int fd)
     delete toDelete;
     for (std::vector<std::string>::iterator it = channelsToDel.begin(); it != channelsToDel.end(); it++)
     {
-        std::cout << "Channel deleted: " << *it << std::endl;
         rmChannel(*it);
     }
 }
@@ -382,7 +382,6 @@ void Server::handleClient(int fd)
     if (bytes_received <= 0)
     {
         rmClient(fd);
-        std::cout << "teast " << fd << std::endl;
         return;
     }
     _clients[fd]->setLastActivity(time(NULL));
@@ -417,7 +416,6 @@ void Server::handleClient(int fd)
 
 void Server::createBot() {
     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    std::cout <<"sockfd: " << sockfd << std::endl;
     if (sockfd == -1) {
         std::cerr << "Failed to create socket" << std::endl;
         return;
@@ -436,6 +434,6 @@ void Server::createBot() {
 
     bot_ = new Bot(sockfd, "127.0.0.1", "BEEPBOOP");
     bot_->connectToServer();
-    std::cout << "Bot connected successfully: FD=" << sockfd << std::endl;
+    std::cout << "Bot connected successfully: FD = " << sockfd << std::endl;
 
 }

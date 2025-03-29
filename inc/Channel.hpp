@@ -18,13 +18,12 @@ class Channel
 		const std::string& getcName() const;
 		const std::string& getcTopic() const;
 		const std::string& getcKey() const;
-		const bool& getChannelType() const;
-		const bool& getTopicRestricted() const;
-		const bool& getNoExternalMsgs() const;
 		const std::vector<int>& getJoined() const;
-		const size_t& getUserLimit() const;
+		bool getTopicRestricted() const;
+		bool getNoExternalMsgs() const;
+		bool getChannelType() const;
+		size_t getUserLimit() const;
 		time_t getCreationTime() const;
-		std::string getTopic() const;
         std::string getTopicSetter() const;
         std::time_t getTopicSetTime() const;
 		std::string getChannelModes() const;
@@ -33,7 +32,7 @@ class Channel
 		void setcName(const std::string& name);
 		void setcTopic(const std::string& topic);
 		void setcKey(const std::string& key);
-		void setChannelType();
+		void setChannelType(bool inviteOnly);
         void setTopic(const std::string &topic, const std::string &setter);
 		void setTopicRestricted(bool restricted);
 		void setUserLimit(int limit);

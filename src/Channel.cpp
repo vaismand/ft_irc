@@ -23,13 +23,12 @@ Channel::~Channel() {
 const std::string& Channel::getcName() const { return _cName; }
 const std::string& Channel::getcTopic() const { return _cTopic; }
 const std::string& Channel::getcKey() const { return _cKey; }
-const bool& Channel::getChannelType() const { return _isInviteOnly; }
-const bool& Channel::getTopicRestricted() const { return _topicRestricted; }
-const bool& Channel::getNoExternalMsgs() const { return _noExternalMsgs; }
+bool Channel::getChannelType() const { return _isInviteOnly; }
+bool Channel::getTopicRestricted() const { return _topicRestricted; }
+bool Channel::getNoExternalMsgs() const { return _noExternalMsgs; }
 const std::vector<int>& Channel::getJoined() const { return _joined; }
-const size_t& Channel::getUserLimit() const { return _userLimit; }
+size_t Channel::getUserLimit() const { return _userLimit; }
 time_t Channel::getCreationTime() const { return _creationTime; }
-std::string Channel::getTopic() const { return _cTopic; }
 std::string Channel::getTopicSetter() const { return _topicSetter; }
 std::string Channel::getChannelModes() const { return _modeList; }
 std::time_t Channel::getTopicSetTime() const { return _topicSetTime; }
@@ -38,7 +37,7 @@ std::time_t Channel::getTopicSetTime() const { return _topicSetTime; }
 void Channel::setcName(const std::string& name) { _cName = name; }
 void Channel::setcTopic(const std::string& topic) { _cTopic = topic; }
 void Channel::setcKey(const std::string& key) { _cKey = key; }
-void Channel::setChannelType() { _isInviteOnly = !_isInviteOnly; }
+void Channel::setChannelType(bool inviteOnly) { _isInviteOnly = inviteOnly; }
 void Channel::setTopicRestricted(bool restricted) { _topicRestricted = restricted; }
 void Channel::setUserLimit(int limit) { _userLimit = limit; }
 void Channel::setNoExternalMsgs(bool noExternalMsgs) { _noExternalMsgs = noExternalMsgs; }
@@ -96,7 +95,7 @@ void Channel::addOperator(int fd)
         return;
     }
     if(!isOperator(fd)) {
-        dvais::sendMessage(fd, ":ircserv 442 :You have not the rights\r\n"); // handle error message correctly
+        dvais::sendMessage(fd, ":ircserv 482 :You're not channel operator\r\n"); // handle error message correctly
         return;
     }
 	for(size_t i = 0; i < _operators.size(); i++)

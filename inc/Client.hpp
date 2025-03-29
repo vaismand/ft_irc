@@ -38,16 +38,16 @@ class Client
 		void setRealName(const std::string& name);
 		void setNick(const std::string& name);
 		void setStatus(AuthState status);
-		void setRights();
+		void setRights(bool isAdmin);
 		void setPassAccepted(bool passAccepted);
-		void setChannelList(const std::string& channelName);
 		void setPingSent(bool pingSent);
 		void setInvisible(bool invisible);
 		void setUserModes();
 		void setLastActivity(time_t lastActivity);
-
+		
 		// Method
 		void rmChannelInList(const std::string& channelName);
+		void addChannelToList(const std::string& channelName);
 		
 	protected:
 		// Constructors
@@ -55,21 +55,21 @@ class Client
 		Client& operator= (const Client& rhs);
 
 		// Attributes
-		int _fd;
-		time_t _lastActivity;
-		std::string _ip;
-		std::string _username;
-		std::string _realname;
-		std::string _hostname;
-		std::string _nickname;
-		std::string _buffer;
-		std::string _userModes;
-		std::vector<std::string> _channelList;
-		AuthState	_status;
-		bool		_isAdmin;
-		bool 		_passAccepted;
-		bool        _pingSent;
-		bool		_invisible;
+		int 						_fd;
+		time_t 						_lastActivity;
+		std::string 				_ip;
+		std::string 				_username;
+		std::string 				_realname;
+		std::string 				_hostname;
+		std::string 				_nickname;
+		std::string 				_buffer;
+		std::string 				_userModes;
+		std::vector<std::string> 	_channelList;
+		AuthState					_status;
+		bool						_isAdmin;
+		bool 						_passAccepted;
+		bool        				_pingSent;
+		bool						_invisible;
 
 		// Methods
 		void ClientInit();

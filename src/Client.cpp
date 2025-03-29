@@ -5,7 +5,23 @@ Client::Client(int fd, const std::string& ip) : _fd(fd), _ip(ip)
 	ClientInit();
 }
 
-Client::Client(const Client& ref) : _fd(ref._fd), _ip(ref._ip) {}
+Client::Client(const Client& ref) 
+{
+	_fd = ref._fd;
+	_ip = ref._ip;
+	_nickname = ref._nickname;
+	_username = ref._username;
+	_realname = ref._realname;
+	_hostname = ref._hostname;
+	_status = ref._status;
+	_isAdmin = ref._isAdmin;
+	_passAccepted = ref._passAccepted;
+	_pingSent = ref._pingSent;
+	_lastActivity = ref._lastActivity;
+	_invisible = ref._invisible;
+	_buffer.clear();
+	_channelList.clear();
+}
 
 Client::~Client() {}
 
@@ -17,6 +33,13 @@ Client& Client::operator=(const Client& rhs) {
 		_nickname = rhs._nickname;
 		_username = rhs._username;
 		_realname = rhs._realname;
+		_hostname = rhs._hostname;
+		_status = rhs._status;
+		_isAdmin = rhs._isAdmin;
+		_passAccepted = rhs._passAccepted;
+		_pingSent = rhs._pingSent;
+		_lastActivity = rhs._lastActivity;
+		_invisible = rhs._invisible;
 	}
 	return *this;
 }
@@ -56,12 +79,16 @@ void Client::setUser(const std::string& name) { _username = name; }
 void Client::setRealName(const std::string& name) { _realname = name; }
 void Client::setNick(const std::string& name) { _nickname = name; }
 void Client::setStatus(AuthState status) { _status = status; }
-void Client::setRights() { _isAdmin = !_isAdmin; }
+void Client::setRights(bool isAdmin) { _isAdmin = isAdmin; }
 void Client::setPassAccepted(bool passAccepted) { _passAccepted = passAccepted; }
 void Client::setInvisible(bool invisible) { _invisible = invisible; }
 void Client::setPingSent(bool pingSent) { _pingSent = pingSent; }
 void Client::setLastActivity(time_t lastActivity) { _lastActivity = lastActivity; }
-void Client::setChannelList(const std::string& channelName) { _channelList.push_back(channelName); }
+
+void Client::addChannelToList(const std::string& channelName) 
+{ 
+	_channelList.push_back(channelName); 
+}
 
 void Client::setUserModes() {
 	_userModes.clear();

@@ -255,7 +255,7 @@ void Command::handleChannelMode(Server &server, int fd, const std::vector<std::s
             }
 
             case 'i':
-                channel->setChannelType();
+                channel->setChannelType(adding);
                 break;
             case 't':
                 channel->setTopicRestricted(adding);

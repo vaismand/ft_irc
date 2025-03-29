@@ -8,9 +8,11 @@
 
 class Bot : public Client {
 public:
+    // Constructor and Destructor
     Bot(int fd, const std::string& ip, const std::string& nick);
     ~Bot();
 
+    // Methods
     void connectToServer();
     void joinChannel(const std::string& channel);
     void handleMessage(const std::string& message);
@@ -18,6 +20,7 @@ public:
     void sendRawMessage(const std::string& message);
 
 private:
+    // Attributes
     std::vector<std::string> phrases_;
     time_t joinTime_;
     std::map<std::string, time_t> channelJoinTimes_;
