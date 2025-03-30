@@ -1,24 +1,26 @@
 #include "../inc/Client.hpp"
 
+Client::Client() {}
+
 Client::Client(int fd, const std::string& ip) : _fd(fd), _ip(ip) 
 {
 	ClientInit();
 }
 
-Client::Client(const Client& ref) 
+Client::Client(const Client& obj) 
 {
-	_fd = ref._fd;
-	_ip = ref._ip;
-	_nickname = ref._nickname;
-	_username = ref._username;
-	_realname = ref._realname;
-	_hostname = ref._hostname;
-	_status = ref._status;
-	_isAdmin = ref._isAdmin;
-	_passAccepted = ref._passAccepted;
-	_pingSent = ref._pingSent;
-	_lastActivity = ref._lastActivity;
-	_invisible = ref._invisible;
+	_fd = obj._fd;
+	_ip = obj._ip;
+	_nickname = obj._nickname;
+	_username = obj._username;
+	_realname = obj._realname;
+	_hostname = obj._hostname;
+	_status = obj._status;
+	_isAdmin = obj._isAdmin;
+	_passAccepted = obj._passAccepted;
+	_pingSent = obj._pingSent;
+	_lastActivity = obj._lastActivity;
+	_invisible = obj._invisible;
 	_buffer.clear();
 	_channelList.clear();
 }
@@ -40,6 +42,9 @@ Client& Client::operator=(const Client& rhs) {
 		_pingSent = rhs._pingSent;
 		_lastActivity = rhs._lastActivity;
 		_invisible = rhs._invisible;
+		_buffer = rhs._buffer;
+		_channelList = rhs._channelList;
+		_userModes = rhs._userModes;
 	}
 	return *this;
 }
@@ -78,6 +83,7 @@ const std::vector<std::string>& Client::getChannelList() const { return _channel
 void Client::setUser(const std::string& name) { _username = name; }
 void Client::setRealName(const std::string& name) { _realname = name; }
 void Client::setNick(const std::string& name) { _nickname = name; }
+void Client::setFd(int fd) { _fd = fd; }
 void Client::setStatus(AuthState status) { _status = status; }
 void Client::setRights(bool isAdmin) { _isAdmin = isAdmin; }
 void Client::setPassAccepted(bool passAccepted) { _passAccepted = passAccepted; }

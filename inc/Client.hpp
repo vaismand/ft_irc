@@ -35,6 +35,7 @@ class Client
 
 		// Setters
 		void setUser(const std::string& name);
+		void setFd(int fd);
 		void setRealName(const std::string& name);
 		void setNick(const std::string& name);
 		void setStatus(AuthState status);
@@ -51,7 +52,8 @@ class Client
 		
 	protected:
 		// Constructors
-		Client (const Client& ref);
+		Client();
+		Client (const Client& obj);
 		Client& operator= (const Client& rhs);
 
 		// Attributes

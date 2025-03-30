@@ -44,7 +44,7 @@ void Command::initErrorMap()
     errorMap[471] = "Channel is full";
     errorMap[472] = "is unknown mode char to me";
     errorMap[473] = "Cannot join channel (invite only)";
-    errorMap[475] = "Cannot join channel (+k)";
+    errorMap[475] = "Cannot join channel (bad channel key)";
     errorMap[476] = "Illegal channel name";
     errorMap[482] = "You're not channel operator";
     errorMap[502] = "Can't change mode for other users";
@@ -77,7 +77,7 @@ void Command::partClientAll(Server &server, Client &client, std::vector<std::str
         if (channel) {
             channel->broadcast(client.getFd(), msg);
             dvais::sendMessage(client.getFd(), msg);
-            channel->rmClient(client.getFd());
+            channel->rmClientFromChannel(client.getFd());
             client.rmChannelInList(channel->getcName());
             std::vector<int> joined = channel->getJoined();
     
@@ -324,4 +324,5 @@ void Command::handleChannelMode(Server &server, int fd, const std::vector<std::s
     }
     modeMsg << "\r\n";
     channel->broadcast(fd, modeMsg.str());
+    dvais::sendMessage(fd, modeMsg.str());
 }

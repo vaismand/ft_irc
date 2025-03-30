@@ -7,17 +7,55 @@
 #include <cstdlib>
 #include <ctime>
 
+//Constructors
+Bot::Bot() {}
+
 Bot::Bot(int fd, const std::string& ip, const std::string& nick)
-    : Client(fd, ip), joinTime_(std::time(0)) {
+    : Client(fd, ip), joinTime_(std::time(0)), isConnected_(false), isPending_(true) {
     setNick(nick);
     phrases_.push_back("Hello, world!");
     phrases_.push_back("How's it going?");
     phrases_.push_back("Nice to meet you!");
     phrases_.push_back("Have a great day!");
     std::srand(std::time(0));
+    //_fd = -1;
+}
+
+Bot::Bot(const Bot& obj) : Client(obj), phrases_(obj.phrases_), joinTime_(obj.joinTime_) {
+    *this = obj;
+}
+
+Bot& Bot::operator=(const Bot& rhs) {
+    if (this != &rhs) {
+        Client::operator=(rhs);
+        phrases_ = rhs.phrases_;
+        joinTime_ = rhs.joinTime_;
+    }
+    return *this;
 }
 
 Bot::~Bot() {}
+
+bool Bot::isConnected() const {
+    return isConnected_;
+}
+
+bool Bot::isPending() const {
+    return isPending_;
+}
+
+void Bot::setPending(bool pending) {
+    isPending_ = pending;
+}
+
+void Bot::setFd(int fd) {
+    _fd = fd;
+    isConnected_ = true;
+}
+
+void Bot::setConnected(bool connected) {
+    isConnected_ = connected;
+}
 
 void Bot::connectToServer() {
     sendRawMessage("NICK " + getNick());

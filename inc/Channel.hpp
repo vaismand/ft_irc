@@ -40,10 +40,10 @@ class Channel
 		void setModeList();
 
 		// Methods
-		void addClient(int fd);
+		void addClientToChannel(int fd);
 		bool isMember(const int& fd) const;
 		bool isInvited(const int& fd) const;
-		void rmClient(int fd);
+		void rmClientFromChannel(int fd);
 		void addOperator(int fd);
 		bool isOperator(const int& fd) const;
 		void rmOperator(int fd);
@@ -53,6 +53,10 @@ class Channel
 		void clearTopic();
 
 	private:
+		// Constructors
+		Channel();
+		Channel(const Channel& obj);
+		Channel& operator=(const Channel& rhs);
 		// Attributes
 		std::size_t 		_userLimit;
 		std::string 		_cName;

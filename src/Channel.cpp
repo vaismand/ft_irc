@@ -1,9 +1,11 @@
 #include "../inc/Channel.hpp"
 
+Channel::Channel() {}
+
 Channel::Channel(const int &fd, const std::string& name, const std::string& key) : _cName(name), 
 _cKey(key), _cTopic("")
 {
-    addClient(fd);
+    addClientToChannel(fd);
     _operators.push_back(fd);
     _userLimit = 0;
     _noExternalMsgs = true;
@@ -11,12 +13,52 @@ _cKey(key), _cTopic("")
     _topicRestricted = true;
     _modeList = "";
     _creationTime = std::time(NULL);
+    _topicSetTime = 0;
+    _topicSetter = "";
 }
 
 Channel::~Channel() {
     _joined.clear();
     _invited.clear();
     _operators.clear();
+}
+
+Channel::Channel(const Channel& obj)
+{
+    _userLimit = obj._userLimit;
+    _cName = obj._cName;
+    _cKey = obj._cKey;
+    _cTopic = obj._cTopic;
+    _topicSetter = obj._topicSetter;
+    _modeList = obj._modeList;
+    _topicSetTime = obj._topicSetTime;
+    _creationTime = obj._creationTime;
+    _joined = obj._joined;
+    _invited = obj._invited;
+    _operators = obj._operators;
+    _topicRestricted = obj._topicRestricted;
+    _isInviteOnly = obj._isInviteOnly;
+    _noExternalMsgs = obj._noExternalMsgs;
+}
+Channel& Channel::operator=(const Channel& rhs)
+{
+    if (this != &rhs) {
+        _userLimit = rhs._userLimit;
+        _cName = rhs._cName;
+        _cKey = rhs._cKey;
+        _cTopic = rhs._cTopic;
+        _topicSetter = rhs._topicSetter;
+        _modeList = rhs._modeList;
+        _topicSetTime = rhs._topicSetTime;
+        _creationTime = rhs._creationTime;
+        _joined = rhs._joined;
+        _invited = rhs._invited;
+        _operators = rhs._operators;
+        _topicRestricted = rhs._topicRestricted;
+        _isInviteOnly = rhs._isInviteOnly;
+        _noExternalMsgs = rhs._noExternalMsgs;
+    }
+    return *this;
 }
 
 // ----- getter Functions -----
@@ -58,7 +100,7 @@ void Channel::setModeList() {
 }
 
 // ----- methods -----
-void Channel::addClient(int fd) 
+void Channel::addClientToChannel(int fd) 
 {   
     if (_joined.empty()) {
 	    _joined.push_back(fd);
@@ -76,7 +118,7 @@ bool Channel::isMember(const int &fd) const {
     return std::find(_joined.begin(), _joined.end(), fd) != _joined.end();
 }
 
-void Channel::rmClient(int fd)
+void Channel::rmClientFromChannel(int fd)
 {
     for (std::vector<int>::iterator it = _joined.begin(); it != _joined.end(); )
     {

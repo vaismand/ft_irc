@@ -1,8 +1,12 @@
 #include "../inc/Server.hpp"
 
 // ----- Constructors -----
-Server::Server(const std::string &port, const std::string &pass) : _port(port), _pass(pass), _socket(-1), _channelLimit(10), bot_(NULL)
+
+Server::Server() {}
+
+Server::Server(const std::string &port, const std::string &pass) :_port(port), _pass(pass), _socket(-1), _channelLimit(10), bot_(NULL)
 {
+    signal(SIGPIPE, SIG_IGN);
 }
 
 Server::~Server()
@@ -24,9 +28,23 @@ Server::~Server()
         close(it->fd);
     }
     _pollfds.clear();
-    if (bot_) {
-        delete bot_;
+}
+
+Server::Server(const Server &obj) : _port(obj._port), _pass(obj._pass), _socket(obj._socket), _channelLimit(obj._channelLimit)
+{
+    *this = obj;
+}
+
+Server &Server::operator=(const Server &rhs)
+{
+    if (this != &rhs)
+    {
+        _clients = rhs._clients;
+        _channels = rhs._channels;
+        _pollfds = rhs._pollfds;
+        bot_ = rhs.bot_;
     }
+    return *this;
 }
 
 // ----- Getter Functions -----
@@ -208,7 +226,6 @@ bool Server::isValidNick(const std::string &nickname) {
 
 void Server::addClient()
 {
-    
     struct sockaddr_in client_addr;
     socklen_t addr_len = sizeof(client_addr);
     int client_fd = accept(_socket, (struct sockaddr*)&client_addr, &addr_len);
@@ -227,8 +244,17 @@ void Server::addClient()
         return;
     }
     setPollfd(client_fd, POLLIN, _pollfds);
-    _clients[client_fd] = new Client(client_fd, inet_ntoa(client_addr.sin_addr));
-    std::cout << "Client Connected: " << client_fd << std::endl;
+    
+    if (bot_ && bot_->isPending()) {
+        bot_->setFd(client_fd);
+        bot_->setPending(false);
+        _clients[client_fd] = bot_;
+        std::cout << "Bot connected successfully: FD = " << client_fd << std::endl;
+    } else {
+        Client* newClient = new Client(client_fd, inet_ntoa(client_addr.sin_addr));
+        _clients[client_fd] = newClient;
+        std::cout << "Client Connected: " << client_fd << std::endl;
+    }
 }
 
 void Server::setPollfd(int fd, short int events, std::vector<struct pollfd> &pollfds)
@@ -249,7 +275,7 @@ void Server::rmClient(int fd)
     {
         if (it->second->isMember(fd))
         {
-            it->second->rmClient(fd);
+            it->second->rmClientFromChannel(fd);
             std::vector<int> joined = it->second->getJoined();
             if (joined.empty() || joined.size() == 1)
             {
@@ -434,6 +460,4 @@ void Server::createBot() {
 
     bot_ = new Bot(sockfd, "127.0.0.1", "BEEPBOOP");
     bot_->connectToServer();
-    std::cout << "Bot connected successfully: FD = " << sockfd << std::endl;
-
 }

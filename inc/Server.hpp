@@ -65,6 +65,8 @@ class Server
 	private:
 		// Constructors
 		Server();
+		Server (const Server &obj);
+		Server& operator= (const Server &rhs);
 		
 		// Methods
 		void bindSocket();

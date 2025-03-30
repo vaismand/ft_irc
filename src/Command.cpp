@@ -6,14 +6,14 @@ Command::Command()
     initErrorMap();
 }
 
-Command::Command(const Command &src)
+Command::Command(const Command &obj)
 {
-    (void)src;
+    (void)obj;
 }
 
-Command &Command::operator=(const Command &src)
+Command &Command::operator=(const Command &rhs)
 {
-    (void)src;
+    (void)rhs;
     return *this;
 }
 
@@ -195,7 +195,7 @@ void Command::commandJoin(Server &server, int fd, const std::vector<std::string>
                 continue;
             }
         }
-        ChannelToJoin->addClient(fd);
+        ChannelToJoin->addClientToChannel(fd);
         std::string user = client.getUser();
         std::string host = client.getIp();
         client.addChannelToList(ChannelToJoin->getcName());
@@ -734,7 +734,7 @@ void Command::commandKick(Server &server, int fd, const std::vector<std::string>
     std::string kickMsg = ":" + client_nick + "!" + user + "@" + host
         + " KICK " + channelName + " " + targetClient->getNick() + " " + comment + "\r\n";
     targetChannel->broadcast(-1, kickMsg);
-    targetChannel->rmClient(targetClient->getFd());
+    targetChannel->rmClientFromChannel(targetClient->getFd());
 }
 
 void Command::executeCommand(Server &server, int fd, const std::string &cmd) {

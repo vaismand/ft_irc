@@ -15,8 +15,6 @@ class Command
     public:
         // Constructors
         Command();
-        Command(const Command &src);
-        Command &operator=(const Command &src);
         ~Command();
 
         // Methods
@@ -41,6 +39,10 @@ class Command
         void sendError(int fd, int error, const std::string &nick, const std::string &command);
 
     private:
+        // Constructors
+        Command(const Command &obj);
+        Command &operator=(const Command &src);
+        
         // Attributes
         std::map<int, std::string> errorMap;
 
@@ -53,6 +55,6 @@ class Command
         void handleUserModeShow(Server &server, int fd);
         void handleChannelModeShow(Server &server, int fd, Channel* channel);
         void updateAllModes(Server &server, int fd);
-
+        void broadcastModeChange(Server &server, int fd, Channel* channel, const std::string &modeStr, bool adding);
 };
 
