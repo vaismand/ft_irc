@@ -260,10 +260,12 @@ void Server::addChannel(const int &fd, const std::string &name, const std::strin
     }
 }
 
-void Server::rmChannel(const std::string &name)
-{
-    delete _channels[name];
-    _channels.erase(name);
+void Server::rmChannel(const std::string &name) {
+    std::map<std::string, Channel*>::iterator it = _channels.find(name);
+    if (it != _channels.end()) {
+        delete it->second;
+        _channels.erase(it);
+    }
 }
 
 void Server::broadcastAll(int fd, const std::string &msg)
