@@ -48,6 +48,7 @@ void Command::initErrorMap()
     errorMap[476] = "Illegal channel name";
     errorMap[482] = "You're not channel operator";
     errorMap[502] = "Can't change mode for other users";
+    errorMap[998] = "You must send PASS first";
 }
 
 void Command::sendError(int fd, int errorCode, const std::string &nick, const std::string &command)

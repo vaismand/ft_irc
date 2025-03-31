@@ -76,7 +76,6 @@ void Bot::joinChannel(const std::string& channel) {
 
 void Bot::handleMessage(const std::string& message) {
     if (message.find("PING") == 0) {
-        std::cout << "Bot responding to PING" << std::endl;
         sendRawMessage("PONG " + message.substr(5));
     }
 }

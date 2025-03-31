@@ -77,6 +77,10 @@ class Server
 		void checkIdleClients();
 		void setPollfd(int fd, short int events, std::vector<struct pollfd> &pollfds);
 		void welcomeToServerMessage(int fd, const std::string &nick);
+		void rmPollfd(int fd);
+		bool isChannelEmptyOrBotOnly(Channel* channel) const;
+		void handleEmptyChannel(int fd, Channel* channel);
+		bool isLastMemberBot(int clientFd, Channel* channel);
 
 		// Attributes
 		const std::string 					_port;

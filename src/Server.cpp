@@ -84,34 +84,6 @@ Channel *Server::getChannel(const std::string &name)
     return _channels[name];
 }
 
-void Server::checkEmptyChannels()
-{
-    for (std::map<std::string, Channel*>::iterator it = _channels.begin(); it != _channels.end(); ++it)
-    {
-        if (it->second->getCreationTime() > time(NULL) - 10)
-            continue;
-        std::vector<int> joined = it->second->getJoined();
-        if (joined.empty() || joined.size() == 1)
-        {
-            if (joined.size() == 1) {
-                Client* lastMember = NULL;
-                try {
-                    lastMember = &getClient(joined[0]);
-                } catch (const std::exception& e) {
-                    std::cerr << "Error getting last client: " << e.what() << std::endl;
-                }
-                if (lastMember && lastMember->getNick() == getBot().getNick()) {
-                    getBot().sendRawMessage("PART " + it->second->getcName());
-                    getBot().rmChannelInList(it->second->getcName());
-                    rmChannel(it->first);
-                    continue;
-                }
-            }
-            rmChannel(it->first);
-        }
-    }
-}
-
 bool Server::shareChannel(int fd1, int fd2) const
 {
     for (std::map<std::string, Channel*>::const_iterator it = _channels.begin(); it != _channels.end(); ++it)
@@ -248,6 +220,7 @@ void Server::addClient()
     if (bot_ && bot_->isPending()) {
         bot_->setFd(client_fd);
         bot_->setPending(false);
+        bot_->setPassAccepted(true);
         _clients[client_fd] = bot_;
         std::cout << "Bot connected successfully: FD = " << client_fd << std::endl;
     } else {
@@ -257,62 +230,26 @@ void Server::addClient()
     }
 }
 
-void Server::setPollfd(int fd, short int events, std::vector<struct pollfd> &pollfds)
-{
-	struct pollfd pollfd;
-	pollfd.fd = fd;
-	pollfd.events = events;
-	pollfd.revents = 0;
-	pollfds.push_back(pollfd);
-}
-
 void Server::rmClient(int fd) 
 {
     std::cout << "Client disconnected: " << fd << std::endl;
-    std::vector<std::string> channelsToDel;
+    Client* clientToDel = _clients[fd];
+    const std::vector<std::string>& channelList = clientToDel->getChannelList();
 
-    for (std::map<std::string, Channel*>::iterator it = _channels.begin(); it != _channels.end(); ++it)
-    {
-        if (it->second->isMember(fd))
-        {
-            it->second->rmClientFromChannel(fd);
-            std::vector<int> joined = it->second->getJoined();
-            if (joined.empty() || joined.size() == 1)
-            {
-                if (joined.size() == 1) {
-                    Client* lastMember = NULL;
-                    try {
-                        lastMember = &getClient(joined[0]);
-                    } catch (const std::exception& e) {
-                        std::cerr << "Error getting last client: " << e.what() << std::endl;
-                    }
-                    if (lastMember && lastMember->getNick() == getBot().getNick()) {
-                        getBot().sendRawMessage("PART " + it->second->getcName());
-                        getBot().rmChannelInList(it->second->getcName());
-                        channelsToDel.push_back(it->first);
-                        continue;
-                    }
-                }
-                channelsToDel.push_back(it->first);    
-            }
+    for (std::vector<std::string>::const_iterator it = channelList.begin(); it != channelList.end(); ++it) {
+        Channel* channel = getChannel(*it);
+        if (!channel) {
+            continue;
+        }
+        channel->rmClientFromChannel(fd);
+        if (isChannelEmptyOrBotOnly(channel)) {
+            handleEmptyChannel(fd, channel);
         }
     }
     close(fd);
-    for (std::vector<struct pollfd>::reverse_iterator it = _pollfds.rbegin(); it != _pollfds.rend(); it++)
-    {
-        if (it->fd == fd)
-        {
-            _pollfds.erase(it.base() - 1);
-            break;
-        }
-    }
-    Client* toDelete = _clients[fd];
+    rmPollfd(fd);
     _clients.erase(fd);
-    delete toDelete;
-    for (std::vector<std::string>::iterator it = channelsToDel.begin(); it != channelsToDel.end(); it++)
-    {
-        rmChannel(*it);
-    }
+    delete clientToDel;
 }
 
 void Server::addChannel(const int &fd, const std::string &name, const std::string &pass)
@@ -361,11 +298,11 @@ void Server::tryRegisterClient(int fd)
 {
     Client &client = getClient(fd);
     
+    if (!client.getPassAccepted())
+        return;
     if (client.getNick().empty() || client.getUser().empty() || client.getNick() == "*")
         return;
     if (client.getStatus() == REGISTERED)
-        return;
-    if (!client.getPassAccepted())
         return;
     client.setStatus(REGISTERED);
     welcomeToServerMessage(fd, client.getNick());
@@ -420,9 +357,17 @@ void Server::handleClient(int fd)
         std::string command = dvais::extractCommand(clientBuffer);
         if (command.empty())
             continue;
-        std::cout << "Received from " << fd << ": " << command << std::endl;
+        std::cout << "Received from socket " << fd << ": " << command << std::endl;
         try
         {
+            Client &client = getClient(fd);
+            if (!client.getPassAccepted()) 
+            {
+                if (command.find("PASS ") != 0 && command.find("CAP ") != 0) {
+                    _cmd.sendError(fd, 998, "", "");
+                    continue;
+                }
+            }
             _cmd.executeCommand(*this, fd, command);
         } 
         catch (const std::exception &e)

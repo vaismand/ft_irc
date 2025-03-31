@@ -1,0 +1,493 @@
+17:05:batman % make re                     
+ircserv object files removed
+ircserv removed
+Compiling src/main.cpp...
+Compiling src/Server.cpp...
+Compiling src/ServerUtils.cpp...
+Compiling src/Client.cpp...
+Compiling src/Channel.cpp...
+Compiling src/Command.cpp...
+Compiling src/CommandUtils.cpp...
+Compiling src/Tools.cpp...
+Compiling src/Bot.cpp...
+ircserv compiled
+17:05:batman % valgrind ./ircserv 6660 1234
+==612223== Memcheck, a memory error detector
+==612223== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==612223== Using Valgrind-3.18.1 and LibVEX; rerun with -h for copyright info
+==612223== Command: ./ircserv 6660 1234
+==612223== 
+Server started, listening on port 6660
+Bot connected successfully: FD = 5
+Received from socket 5: NICK BEEPBOOP
+Received from socket 5: USER BEEPBOOP 0 * :BEEPBOOP
+Client Connected: 6
+Received from socket 6: CAP LS
+Received from socket 6: PASS 1234
+Received from socket 6: NICK rpinchas
+Received from socket 6: USER rpinchas rpinchas localhost :Ruben Pinchasov
+Received from socket 6: CAP END
+Received from socket 6: MODE rpinchas +i
+Received from socket 6: PING ircserv
+Client Connected: 7
+Received from socket 7: PASS 1234
+Received from socket 7: USER clix 0 * :clix flix
+Received from socket 7: NICK clix
+Received from socket 6: PING ircserv
+Received from socket 6: JOIN #chan,#1,#2
+Received from socket 6: MODE #chan
+Received from socket 6: MODE #1
+Received from socket 6: MODE #2
+Received from socket 6: WHO #chan
+Received from socket 6: WHO #1
+Received from socket 6: WHO #2
+Received from socket 6: MODE #chan b
+Received from socket 6: MODE #1 b
+Received from socket 6: MODE #2 b
+Received from socket 7: JOIN #chan
+Received from socket 6: PING ircserv
+Received from socket 6: PRIVMSG #chan :hallo
+Received from socket 7: PRIVMSG hey ho
+Received from socket 7: PRIVMSG #chan :hey ho
+Received from socket 6: PING ircserv
+Received from socket 6: NOTICE #chan ::test test
+Received from socket 6: PING ircserv
+Received from socket 6: NOTICE #chan :test test
+Received from socket 7: NOTICE #chan :test test
+Received from socket 7: JOIN #testnew
+Received from socket 6: JOIN #testnew
+Received from socket 6: MODE #testnew
+Received from socket 6: WHO #testnew
+Received from socket 6: MODE #testnew b
+Received from socket 6: PING ircserv
+Received from socket 6: NOTICE #testnew :test test
+Received from socket 7: NOTICE #testnew :test test
+Received from socket 6: NOTICE #testnew :test test
+Received from socket 6: PING ircserv
+Received from socket 6: NOTICE #testnew test
+Received from socket 6: PRIVMSG #testnew :test test
+Received from socket 6: PRIVMSG test :test
+Received from socket 6: PING ircserv
+Received from socket 6: PRIVMSG #chan :hallo wie gehts
+Received from socket 6: PING ircserv
+Received from socket 6: PING ircserv
+Received from socket 6: PRIVMSG #chan :hello test
+Received from socket 6: PING ircserv
+Received from socket 6: PING ircserv
+Received from socket 6: PING ircserv
+Received from socket 7: NOTICE #chan :test test
+Received from socket 6: PING ircserv
+Received from socket 7: PRIVMSG #chan :hallo wie gehts
+Received from socket 6: PING ircserv
+Received from socket 6: NOTICE #chan :test
+Received from socket 7: NOTICE #chan test
+Received from socket 7: NOTICE #chan :test
+Received from socket 6: PING ircserv
+Client disconnected: 7
+Received from socket 6: PRIVMSG #chan :hallo
+Received from socket 6: WHOIS clix
+Received from socket 6: WHOWAS clix 1
+Received from socket 6: PING ircserv
+Received from socket 6: PING ircserv
+Received from socket 6: PING ircserv
+Received from socket 6: PING ircserv
+Received from socket 6: PING ircserv
+Received from socket 6: PING ircserv
+Client Connected: 7
+Received from socket 7: PASS 1234
+Received from socket 7: USER asdf asdf asdf asdf
+Received from socket 7: NICK nick
+Received from socket 7: WHOIS rpinchas
+Received from socket 6: PING ircserv
+Received from socket 6: WHOIS rpinchas
+Received from socket 7: WHOIS rpinchas
+Received from socket 6: WHOIS nick
+Received from socket 6: PING ircserv
+Received from socket 7: WHOIS nick
+Received from socket 6: PING ircserv
+Client Connected: 8
+Received from socket 8: PASS 1234
+Received from socket 8: NICK clix
+Received from socket 8: USER clix lcix clix lic
+Received from socket 8: WHOIS nick
+Received from socket 8: WHOIS rpinchas
+Received from socket 6: PING ircserv
+Client Connected: 9
+Received from socket 9: CAP LS
+Received from socket 9: PASS 1234
+Received from socket 9: NICK rpinchas
+Received from socket 9: USER rpinchas rpinchas localhost :Ruben Pinchasov
+Received from socket 9: CAP END
+Received from socket 9: NICK rpinchas_
+Received from socket 9: MODE rpinchas_ +i
+Received from socket 9: WHOIS rpinchas
+Received from socket 9: PING ircserv
+Received from socket 9: WHOIS rpinchas
+Received from socket 9: WHOWAS rpinchas 1
+Received from socket 6: PING ircserv
+Received from socket 9: WHOIS rpinchas_
+Received from socket 9: WHOIS rpinchas
+Received from socket 9: WHOWAS rpinchas 1
+Received from socket 9: PING ircserv
+Received from socket 7: WHOIS nick
+Received from socket 7: WHOIS clix
+Received from socket 7: WHOIS rpinchas
+Received from socket 7: WHOIS rpinchas_
+Received from socket 6: PING ircserv
+Received from socket 9: PING ircserv
+Received from socket 6: QUIT :leaving
+Client disconnected: 6
+==612223== Invalid read of size 8
+==612223==    at 0x49BF9EE: std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::compare(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30)
+==612223==    by 0x40CCAC: bool std::operator< <char, std::char_traits<char>, std::allocator<char> >(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (basic_string.h:6343)
+==612223==    by 0x40CBE0: std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >::operator()(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const (stl_function.h:400)
+==612223==    by 0x40E68C: std::_Rb_tree<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*>, std::_Select1st<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*> > >::equal_range(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (stl_tree.h:1973)
+==612223==    by 0x40E5C0: std::_Rb_tree<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*>, std::_Select1st<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*> > >::erase(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (stl_tree.h:2510)
+==612223==    by 0x40991C: std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, Channel*, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*> > >::erase(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (stl_map.h:1069)
+==612223==    by 0x407C93: Server::rmChannel(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Server.cpp:266)
+==612223==    by 0x40EDEA: Server::handleEmptyChannel(int, Channel*) (ServerUtils.cpp:41)
+==612223==    by 0x406DF4: Server::rmClient(int) (Server.cpp:246)
+==612223==    by 0x41F0FE: Command::commandQuit(Server&, int, std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > const&) (Command.cpp:623)
+==612223==    by 0x4180F8: Command::executeCommand(Server&, int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Command.cpp:782)
+==612223==    by 0x407722: Server::handleClient(int) (Server.cpp:371)
+==612223==  Address 0x4deab20 is 16 bytes inside a block of size 264 free'd
+==612223==    at 0x484B8AF: operator delete(void*) (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==612223==    by 0x407C7F: Server::rmChannel(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Server.cpp:265)
+==612223==    by 0x40EDEA: Server::handleEmptyChannel(int, Channel*) (ServerUtils.cpp:41)
+==612223==    by 0x406DF4: Server::rmClient(int) (Server.cpp:246)
+==612223==    by 0x41F0FE: Command::commandQuit(Server&, int, std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > const&) (Command.cpp:623)
+==612223==    by 0x4180F8: Command::executeCommand(Server&, int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Command.cpp:782)
+==612223==    by 0x407722: Server::handleClient(int) (Server.cpp:371)
+==612223==    by 0x4069D1: Server::run() (Server.cpp:168)
+==612223==    by 0x404FE6: main (main.cpp:55)
+==612223==  Block was alloc'd at
+==612223==    at 0x4849013: operator new(unsigned long) (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==612223==    by 0x407B89: Server::addChannel(int const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Server.cpp:257)
+==612223==    by 0x418C8A: Command::commandJoin(Server&, int, std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > const&) (Command.cpp:177)
+==612223==    by 0x417C89: Command::executeCommand(Server&, int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Command.cpp:753)
+==612223==    by 0x407722: Server::handleClient(int) (Server.cpp:371)
+==612223==    by 0x4069D1: Server::run() (Server.cpp:168)
+==612223==    by 0x404FE6: main (main.cpp:55)
+==612223== 
+==612223== Invalid read of size 8
+==612223==    at 0x49BFA01: std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::compare(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30)
+==612223==    by 0x40CCAC: bool std::operator< <char, std::char_traits<char>, std::allocator<char> >(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (basic_string.h:6343)
+==612223==    by 0x40CBE0: std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >::operator()(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const (stl_function.h:400)
+==612223==    by 0x40E68C: std::_Rb_tree<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*>, std::_Select1st<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*> > >::equal_range(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (stl_tree.h:1973)
+==612223==    by 0x40E5C0: std::_Rb_tree<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*>, std::_Select1st<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*> > >::erase(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (stl_tree.h:2510)
+==612223==    by 0x40991C: std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, Channel*, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*> > >::erase(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (stl_map.h:1069)
+==612223==    by 0x407C93: Server::rmChannel(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Server.cpp:266)
+==612223==    by 0x40EDEA: Server::handleEmptyChannel(int, Channel*) (ServerUtils.cpp:41)
+==612223==    by 0x406DF4: Server::rmClient(int) (Server.cpp:246)
+==612223==    by 0x41F0FE: Command::commandQuit(Server&, int, std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > const&) (Command.cpp:623)
+==612223==    by 0x4180F8: Command::executeCommand(Server&, int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Command.cpp:782)
+==612223==    by 0x407722: Server::handleClient(int) (Server.cpp:371)
+==612223==  Address 0x4deab18 is 8 bytes inside a block of size 264 free'd
+==612223==    at 0x484B8AF: operator delete(void*) (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==612223==    by 0x407C7F: Server::rmChannel(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Server.cpp:265)
+==612223==    by 0x40EDEA: Server::handleEmptyChannel(int, Channel*) (ServerUtils.cpp:41)
+==612223==    by 0x406DF4: Server::rmClient(int) (Server.cpp:246)
+==612223==    by 0x41F0FE: Command::commandQuit(Server&, int, std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > const&) (Command.cpp:623)
+==612223==    by 0x4180F8: Command::executeCommand(Server&, int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Command.cpp:782)
+==612223==    by 0x407722: Server::handleClient(int) (Server.cpp:371)
+==612223==    by 0x4069D1: Server::run() (Server.cpp:168)
+==612223==    by 0x404FE6: main (main.cpp:55)
+==612223==  Block was alloc'd at
+==612223==    at 0x4849013: operator new(unsigned long) (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==612223==    by 0x407B89: Server::addChannel(int const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Server.cpp:257)
+==612223==    by 0x418C8A: Command::commandJoin(Server&, int, std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > const&) (Command.cpp:177)
+==612223==    by 0x417C89: Command::executeCommand(Server&, int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Command.cpp:753)
+==612223==    by 0x407722: Server::handleClient(int) (Server.cpp:371)
+==612223==    by 0x4069D1: Server::run() (Server.cpp:168)
+==612223==    by 0x404FE6: main (main.cpp:55)
+==612223== 
+==612223== Invalid read of size 1
+==612223==    at 0x485204D: bcmp (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==612223==    by 0x49BFA0B: std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::compare(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30)
+==612223==    by 0x40CCAC: bool std::operator< <char, std::char_traits<char>, std::allocator<char> >(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (basic_string.h:6343)
+==612223==    by 0x40CBE0: std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >::operator()(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const (stl_function.h:400)
+==612223==    by 0x40E68C: std::_Rb_tree<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*>, std::_Select1st<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*> > >::equal_range(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (stl_tree.h:1973)
+==612223==    by 0x40E5C0: std::_Rb_tree<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*>, std::_Select1st<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*> > >::erase(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (stl_tree.h:2510)
+==612223==    by 0x40991C: std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, Channel*, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*> > >::erase(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (stl_map.h:1069)
+==612223==    by 0x407C93: Server::rmChannel(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Server.cpp:266)
+==612223==    by 0x40EDEA: Server::handleEmptyChannel(int, Channel*) (ServerUtils.cpp:41)
+==612223==    by 0x406DF4: Server::rmClient(int) (Server.cpp:246)
+==612223==    by 0x41F0FE: Command::commandQuit(Server&, int, std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > const&) (Command.cpp:623)
+==612223==    by 0x4180F8: Command::executeCommand(Server&, int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Command.cpp:782)
+==612223==  Address 0x4deab28 is 24 bytes inside a block of size 264 free'd
+==612223==    at 0x484B8AF: operator delete(void*) (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==612223==    by 0x407C7F: Server::rmChannel(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Server.cpp:265)
+==612223==    by 0x40EDEA: Server::handleEmptyChannel(int, Channel*) (ServerUtils.cpp:41)
+==612223==    by 0x406DF4: Server::rmClient(int) (Server.cpp:246)
+==612223==    by 0x41F0FE: Command::commandQuit(Server&, int, std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > const&) (Command.cpp:623)
+==612223==    by 0x4180F8: Command::executeCommand(Server&, int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Command.cpp:782)
+==612223==    by 0x407722: Server::handleClient(int) (Server.cpp:371)
+==612223==    by 0x4069D1: Server::run() (Server.cpp:168)
+==612223==    by 0x404FE6: main (main.cpp:55)
+==612223==  Block was alloc'd at
+==612223==    at 0x4849013: operator new(unsigned long) (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==612223==    by 0x407B89: Server::addChannel(int const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Server.cpp:257)
+==612223==    by 0x418C8A: Command::commandJoin(Server&, int, std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > const&) (Command.cpp:177)
+==612223==    by 0x417C89: Command::executeCommand(Server&, int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Command.cpp:753)
+==612223==    by 0x407722: Server::handleClient(int) (Server.cpp:371)
+==612223==    by 0x4069D1: Server::run() (Server.cpp:168)
+==612223==    by 0x404FE6: main (main.cpp:55)
+==612223== 
+==612223== Invalid read of size 8
+==612223==    at 0x49BF9EA: std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::compare(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30)
+==612223==    by 0x40CCAC: bool std::operator< <char, std::char_traits<char>, std::allocator<char> >(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (basic_string.h:6343)
+==612223==    by 0x40CBE0: std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >::operator()(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const (stl_function.h:400)
+==612223==    by 0x40E6D4: std::_Rb_tree<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*>, std::_Select1st<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*> > >::equal_range(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (stl_tree.h:1975)
+==612223==    by 0x40E5C0: std::_Rb_tree<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*>, std::_Select1st<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*> > >::erase(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (stl_tree.h:2510)
+==612223==    by 0x40991C: std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, Channel*, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*> > >::erase(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (stl_map.h:1069)
+==612223==    by 0x407C93: Server::rmChannel(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Server.cpp:266)
+==612223==    by 0x40EDEA: Server::handleEmptyChannel(int, Channel*) (ServerUtils.cpp:41)
+==612223==    by 0x406DF4: Server::rmClient(int) (Server.cpp:246)
+==612223==    by 0x41F0FE: Command::commandQuit(Server&, int, std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > const&) (Command.cpp:623)
+==612223==    by 0x4180F8: Command::executeCommand(Server&, int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Command.cpp:782)
+==612223==    by 0x407722: Server::handleClient(int) (Server.cpp:371)
+==612223==  Address 0x4deab20 is 16 bytes inside a block of size 264 free'd
+==612223==    at 0x484B8AF: operator delete(void*) (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==612223==    by 0x407C7F: Server::rmChannel(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Server.cpp:265)
+==612223==    by 0x40EDEA: Server::handleEmptyChannel(int, Channel*) (ServerUtils.cpp:41)
+==612223==    by 0x406DF4: Server::rmClient(int) (Server.cpp:246)
+==612223==    by 0x41F0FE: Command::commandQuit(Server&, int, std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > const&) (Command.cpp:623)
+==612223==    by 0x4180F8: Command::executeCommand(Server&, int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Command.cpp:782)
+==612223==    by 0x407722: Server::handleClient(int) (Server.cpp:371)
+==612223==    by 0x4069D1: Server::run() (Server.cpp:168)
+==612223==    by 0x404FE6: main (main.cpp:55)
+==612223==  Block was alloc'd at
+==612223==    at 0x4849013: operator new(unsigned long) (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==612223==    by 0x407B89: Server::addChannel(int const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Server.cpp:257)
+==612223==    by 0x418C8A: Command::commandJoin(Server&, int, std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > const&) (Command.cpp:177)
+==612223==    by 0x417C89: Command::executeCommand(Server&, int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Command.cpp:753)
+==612223==    by 0x407722: Server::handleClient(int) (Server.cpp:371)
+==612223==    by 0x4069D1: Server::run() (Server.cpp:168)
+==612223==    by 0x404FE6: main (main.cpp:55)
+==612223== 
+==612223== Invalid read of size 8
+==612223==    at 0x49BFA04: std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::compare(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30)
+==612223==    by 0x40CCAC: bool std::operator< <char, std::char_traits<char>, std::allocator<char> >(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (basic_string.h:6343)
+==612223==    by 0x40CBE0: std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >::operator()(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const (stl_function.h:400)
+==612223==    by 0x40E6D4: std::_Rb_tree<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*>, std::_Select1st<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*> > >::equal_range(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (stl_tree.h:1975)
+==612223==    by 0x40E5C0: std::_Rb_tree<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*>, std::_Select1st<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*> > >::erase(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (stl_tree.h:2510)
+==612223==    by 0x40991C: std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, Channel*, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*> > >::erase(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (stl_map.h:1069)
+==612223==    by 0x407C93: Server::rmChannel(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Server.cpp:266)
+==612223==    by 0x40EDEA: Server::handleEmptyChannel(int, Channel*) (ServerUtils.cpp:41)
+==612223==    by 0x406DF4: Server::rmClient(int) (Server.cpp:246)
+==612223==    by 0x41F0FE: Command::commandQuit(Server&, int, std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > const&) (Command.cpp:623)
+==612223==    by 0x4180F8: Command::executeCommand(Server&, int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Command.cpp:782)
+==612223==    by 0x407722: Server::handleClient(int) (Server.cpp:371)
+==612223==  Address 0x4deab18 is 8 bytes inside a block of size 264 free'd
+==612223==    at 0x484B8AF: operator delete(void*) (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==612223==    by 0x407C7F: Server::rmChannel(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Server.cpp:265)
+==612223==    by 0x40EDEA: Server::handleEmptyChannel(int, Channel*) (ServerUtils.cpp:41)
+==612223==    by 0x406DF4: Server::rmClient(int) (Server.cpp:246)
+==612223==    by 0x41F0FE: Command::commandQuit(Server&, int, std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > const&) (Command.cpp:623)
+==612223==    by 0x4180F8: Command::executeCommand(Server&, int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Command.cpp:782)
+==612223==    by 0x407722: Server::handleClient(int) (Server.cpp:371)
+==612223==    by 0x4069D1: Server::run() (Server.cpp:168)
+==612223==    by 0x404FE6: main (main.cpp:55)
+==612223==  Block was alloc'd at
+==612223==    at 0x4849013: operator new(unsigned long) (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==612223==    by 0x407B89: Server::addChannel(int const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Server.cpp:257)
+==612223==    by 0x418C8A: Command::commandJoin(Server&, int, std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > const&) (Command.cpp:177)
+==612223==    by 0x417C89: Command::executeCommand(Server&, int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Command.cpp:753)
+==612223==    by 0x407722: Server::handleClient(int) (Server.cpp:371)
+==612223==    by 0x4069D1: Server::run() (Server.cpp:168)
+==612223==    by 0x404FE6: main (main.cpp:55)
+==612223== 
+==612223== Invalid read of size 1
+==612223==    at 0x4852037: bcmp (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==612223==    by 0x49BFA0B: std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::compare(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30)
+==612223==    by 0x40CCAC: bool std::operator< <char, std::char_traits<char>, std::allocator<char> >(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (basic_string.h:6343)
+==612223==    by 0x40CBE0: std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >::operator()(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const (stl_function.h:400)
+==612223==    by 0x40E6D4: std::_Rb_tree<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*>, std::_Select1st<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*> > >::equal_range(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (stl_tree.h:1975)
+==612223==    by 0x40E5C0: std::_Rb_tree<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*>, std::_Select1st<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*> > >::erase(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (stl_tree.h:2510)
+==612223==    by 0x40991C: std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, Channel*, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*> > >::erase(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (stl_map.h:1069)
+==612223==    by 0x407C93: Server::rmChannel(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Server.cpp:266)
+==612223==    by 0x40EDEA: Server::handleEmptyChannel(int, Channel*) (ServerUtils.cpp:41)
+==612223==    by 0x406DF4: Server::rmClient(int) (Server.cpp:246)
+==612223==    by 0x41F0FE: Command::commandQuit(Server&, int, std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > const&) (Command.cpp:623)
+==612223==    by 0x4180F8: Command::executeCommand(Server&, int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Command.cpp:782)
+==612223==  Address 0x4deab28 is 24 bytes inside a block of size 264 free'd
+==612223==    at 0x484B8AF: operator delete(void*) (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==612223==    by 0x407C7F: Server::rmChannel(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Server.cpp:265)
+==612223==    by 0x40EDEA: Server::handleEmptyChannel(int, Channel*) (ServerUtils.cpp:41)
+==612223==    by 0x406DF4: Server::rmClient(int) (Server.cpp:246)
+==612223==    by 0x41F0FE: Command::commandQuit(Server&, int, std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > const&) (Command.cpp:623)
+==612223==    by 0x4180F8: Command::executeCommand(Server&, int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Command.cpp:782)
+==612223==    by 0x407722: Server::handleClient(int) (Server.cpp:371)
+==612223==    by 0x4069D1: Server::run() (Server.cpp:168)
+==612223==    by 0x404FE6: main (main.cpp:55)
+==612223==  Block was alloc'd at
+==612223==    at 0x4849013: operator new(unsigned long) (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==612223==    by 0x407B89: Server::addChannel(int const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Server.cpp:257)
+==612223==    by 0x418C8A: Command::commandJoin(Server&, int, std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > const&) (Command.cpp:177)
+==612223==    by 0x417C89: Command::executeCommand(Server&, int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Command.cpp:753)
+==612223==    by 0x407722: Server::handleClient(int) (Server.cpp:371)
+==612223==    by 0x4069D1: Server::run() (Server.cpp:168)
+==612223==    by 0x404FE6: main (main.cpp:55)
+==612223== 
+==612223== Invalid read of size 1
+==612223==    at 0x4852049: bcmp (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==612223==    by 0x49BFA0B: std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::compare(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30)
+==612223==    by 0x40CCAC: bool std::operator< <char, std::char_traits<char>, std::allocator<char> >(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (basic_string.h:6343)
+==612223==    by 0x40CBE0: std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >::operator()(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const (stl_function.h:400)
+==612223==    by 0x40E6D4: std::_Rb_tree<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*>, std::_Select1st<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*> > >::equal_range(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (stl_tree.h:1975)
+==612223==    by 0x40E5C0: std::_Rb_tree<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*>, std::_Select1st<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*> > >::erase(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (stl_tree.h:2510)
+==612223==    by 0x40991C: std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, Channel*, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*> > >::erase(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (stl_map.h:1069)
+==612223==    by 0x407C93: Server::rmChannel(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Server.cpp:266)
+==612223==    by 0x40EDEA: Server::handleEmptyChannel(int, Channel*) (ServerUtils.cpp:41)
+==612223==    by 0x406DF4: Server::rmClient(int) (Server.cpp:246)
+==612223==    by 0x41F0FE: Command::commandQuit(Server&, int, std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > const&) (Command.cpp:623)
+==612223==    by 0x4180F8: Command::executeCommand(Server&, int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Command.cpp:782)
+==612223==  Address 0x4deab29 is 25 bytes inside a block of size 264 free'd
+==612223==    at 0x484B8AF: operator delete(void*) (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==612223==    by 0x407C7F: Server::rmChannel(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Server.cpp:265)
+==612223==    by 0x40EDEA: Server::handleEmptyChannel(int, Channel*) (ServerUtils.cpp:41)
+==612223==    by 0x406DF4: Server::rmClient(int) (Server.cpp:246)
+==612223==    by 0x41F0FE: Command::commandQuit(Server&, int, std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > const&) (Command.cpp:623)
+==612223==    by 0x4180F8: Command::executeCommand(Server&, int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Command.cpp:782)
+==612223==    by 0x407722: Server::handleClient(int) (Server.cpp:371)
+==612223==    by 0x4069D1: Server::run() (Server.cpp:168)
+==612223==    by 0x404FE6: main (main.cpp:55)
+==612223==  Block was alloc'd at
+==612223==    at 0x4849013: operator new(unsigned long) (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==612223==    by 0x407B89: Server::addChannel(int const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Server.cpp:257)
+==612223==    by 0x418C8A: Command::commandJoin(Server&, int, std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > const&) (Command.cpp:177)
+==612223==    by 0x417C89: Command::executeCommand(Server&, int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Command.cpp:753)
+==612223==    by 0x407722: Server::handleClient(int) (Server.cpp:371)
+==612223==    by 0x4069D1: Server::run() (Server.cpp:168)
+==612223==    by 0x404FE6: main (main.cpp:55)
+==612223== 
+==612223== Invalid read of size 8
+==612223==    at 0x49BF9EA: std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::compare(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30)
+==612223==    by 0x40CCAC: bool std::operator< <char, std::char_traits<char>, std::allocator<char> >(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (basic_string.h:6343)
+==612223==    by 0x40CBE0: std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >::operator()(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const (stl_function.h:400)
+==612223==    by 0x40E903: std::_Rb_tree<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*>, std::_Select1st<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*> > >::_M_upper_bound(std::_Rb_tree_node<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*> >*, std::_Rb_tree_node_base*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (stl_tree.h:1937)
+==612223==    by 0x40E75B: std::_Rb_tree<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*>, std::_Select1st<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*> > >::equal_range(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (stl_tree.h:1985)
+==612223==    by 0x40E5C0: std::_Rb_tree<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*>, std::_Select1st<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*> > >::erase(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (stl_tree.h:2510)
+==612223==    by 0x40991C: std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, Channel*, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*> > >::erase(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (stl_map.h:1069)
+==612223==    by 0x407C93: Server::rmChannel(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Server.cpp:266)
+==612223==    by 0x40EDEA: Server::handleEmptyChannel(int, Channel*) (ServerUtils.cpp:41)
+==612223==    by 0x406DF4: Server::rmClient(int) (Server.cpp:246)
+==612223==    by 0x41F0FE: Command::commandQuit(Server&, int, std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > const&) (Command.cpp:623)
+==612223==    by 0x4180F8: Command::executeCommand(Server&, int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Command.cpp:782)
+==612223==  Address 0x4deab20 is 16 bytes inside a block of size 264 free'd
+==612223==    at 0x484B8AF: operator delete(void*) (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==612223==    by 0x407C7F: Server::rmChannel(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Server.cpp:265)
+==612223==    by 0x40EDEA: Server::handleEmptyChannel(int, Channel*) (ServerUtils.cpp:41)
+==612223==    by 0x406DF4: Server::rmClient(int) (Server.cpp:246)
+==612223==    by 0x41F0FE: Command::commandQuit(Server&, int, std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > const&) (Command.cpp:623)
+==612223==    by 0x4180F8: Command::executeCommand(Server&, int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Command.cpp:782)
+==612223==    by 0x407722: Server::handleClient(int) (Server.cpp:371)
+==612223==    by 0x4069D1: Server::run() (Server.cpp:168)
+==612223==    by 0x404FE6: main (main.cpp:55)
+==612223==  Block was alloc'd at
+==612223==    at 0x4849013: operator new(unsigned long) (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==612223==    by 0x407B89: Server::addChannel(int const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Server.cpp:257)
+==612223==    by 0x418C8A: Command::commandJoin(Server&, int, std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > const&) (Command.cpp:177)
+==612223==    by 0x417C89: Command::executeCommand(Server&, int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Command.cpp:753)
+==612223==    by 0x407722: Server::handleClient(int) (Server.cpp:371)
+==612223==    by 0x4069D1: Server::run() (Server.cpp:168)
+==612223==    by 0x404FE6: main (main.cpp:55)
+==612223== 
+==612223== Invalid read of size 8
+==612223==    at 0x49BFA04: std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::compare(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30)
+==612223==    by 0x40CCAC: bool std::operator< <char, std::char_traits<char>, std::allocator<char> >(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (basic_string.h:6343)
+==612223==    by 0x40CBE0: std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >::operator()(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const (stl_function.h:400)
+==612223==    by 0x40E903: std::_Rb_tree<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*>, std::_Select1st<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*> > >::_M_upper_bound(std::_Rb_tree_node<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*> >*, std::_Rb_tree_node_base*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (stl_tree.h:1937)
+==612223==    by 0x40E75B: std::_Rb_tree<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*>, std::_Select1st<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*> > >::equal_range(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (stl_tree.h:1985)
+==612223==    by 0x40E5C0: std::_Rb_tree<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*>, std::_Select1st<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*> > >::erase(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (stl_tree.h:2510)
+==612223==    by 0x40991C: std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, Channel*, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*> > >::erase(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (stl_map.h:1069)
+==612223==    by 0x407C93: Server::rmChannel(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Server.cpp:266)
+==612223==    by 0x40EDEA: Server::handleEmptyChannel(int, Channel*) (ServerUtils.cpp:41)
+==612223==    by 0x406DF4: Server::rmClient(int) (Server.cpp:246)
+==612223==    by 0x41F0FE: Command::commandQuit(Server&, int, std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > const&) (Command.cpp:623)
+==612223==    by 0x4180F8: Command::executeCommand(Server&, int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Command.cpp:782)
+==612223==  Address 0x4deab18 is 8 bytes inside a block of size 264 free'd
+==612223==    at 0x484B8AF: operator delete(void*) (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==612223==    by 0x407C7F: Server::rmChannel(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Server.cpp:265)
+==612223==    by 0x40EDEA: Server::handleEmptyChannel(int, Channel*) (ServerUtils.cpp:41)
+==612223==    by 0x406DF4: Server::rmClient(int) (Server.cpp:246)
+==612223==    by 0x41F0FE: Command::commandQuit(Server&, int, std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > const&) (Command.cpp:623)
+==612223==    by 0x4180F8: Command::executeCommand(Server&, int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Command.cpp:782)
+==612223==    by 0x407722: Server::handleClient(int) (Server.cpp:371)
+==612223==    by 0x4069D1: Server::run() (Server.cpp:168)
+==612223==    by 0x404FE6: main (main.cpp:55)
+==612223==  Block was alloc'd at
+==612223==    at 0x4849013: operator new(unsigned long) (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==612223==    by 0x407B89: Server::addChannel(int const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Server.cpp:257)
+==612223==    by 0x418C8A: Command::commandJoin(Server&, int, std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > const&) (Command.cpp:177)
+==612223==    by 0x417C89: Command::executeCommand(Server&, int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Command.cpp:753)
+==612223==    by 0x407722: Server::handleClient(int) (Server.cpp:371)
+==612223==    by 0x4069D1: Server::run() (Server.cpp:168)
+==612223==    by 0x404FE6: main (main.cpp:55)
+==612223== 
+==612223== Invalid read of size 8
+==612223==    at 0x4852078: bcmp (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==612223==    by 0x49BFA0B: std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::compare(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30)
+==612223==    by 0x40CCAC: bool std::operator< <char, std::char_traits<char>, std::allocator<char> >(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (basic_string.h:6343)
+==612223==    by 0x40CBE0: std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >::operator()(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const (stl_function.h:400)
+==612223==    by 0x40E68C: std::_Rb_tree<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*>, std::_Select1st<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*> > >::equal_range(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (stl_tree.h:1973)
+==612223==    by 0x40E5C0: std::_Rb_tree<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*>, std::_Select1st<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*> > >::erase(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (stl_tree.h:2510)
+==612223==    by 0x40991C: std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, Channel*, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*> > >::erase(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (stl_map.h:1069)
+==612223==    by 0x407C93: Server::rmChannel(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Server.cpp:266)
+==612223==    by 0x40EDEA: Server::handleEmptyChannel(int, Channel*) (ServerUtils.cpp:41)
+==612223==    by 0x406DF4: Server::rmClient(int) (Server.cpp:246)
+==612223==    by 0x41F0FE: Command::commandQuit(Server&, int, std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > const&) (Command.cpp:623)
+==612223==    by 0x4180F8: Command::executeCommand(Server&, int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Command.cpp:782)
+==612223==  Address 0x4df7c98 is 24 bytes inside a block of size 264 free'd
+==612223==    at 0x484B8AF: operator delete(void*) (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==612223==    by 0x407C7F: Server::rmChannel(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Server.cpp:265)
+==612223==    by 0x40EDEA: Server::handleEmptyChannel(int, Channel*) (ServerUtils.cpp:41)
+==612223==    by 0x406DF4: Server::rmClient(int) (Server.cpp:246)
+==612223==    by 0x41F0FE: Command::commandQuit(Server&, int, std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > const&) (Command.cpp:623)
+==612223==    by 0x4180F8: Command::executeCommand(Server&, int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Command.cpp:782)
+==612223==    by 0x407722: Server::handleClient(int) (Server.cpp:371)
+==612223==    by 0x4069D1: Server::run() (Server.cpp:168)
+==612223==    by 0x404FE6: main (main.cpp:55)
+==612223==  Block was alloc'd at
+==612223==    at 0x4849013: operator new(unsigned long) (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==612223==    by 0x407B89: Server::addChannel(int const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Server.cpp:257)
+==612223==    by 0x418C8A: Command::commandJoin(Server&, int, std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > const&) (Command.cpp:177)
+==612223==    by 0x417C89: Command::executeCommand(Server&, int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Command.cpp:753)
+==612223==    by 0x407722: Server::handleClient(int) (Server.cpp:371)
+==612223==    by 0x4069D1: Server::run() (Server.cpp:168)
+==612223==    by 0x404FE6: main (main.cpp:55)
+==612223== 
+==612223== Invalid read of size 8
+==612223==    at 0x485207B: bcmp (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==612223==    by 0x49BFA0B: std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::compare(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30)
+==612223==    by 0x40CCAC: bool std::operator< <char, std::char_traits<char>, std::allocator<char> >(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (basic_string.h:6343)
+==612223==    by 0x40CBE0: std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >::operator()(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const (stl_function.h:400)
+==612223==    by 0x40E6D4: std::_Rb_tree<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*>, std::_Select1st<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*> > >::equal_range(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (stl_tree.h:1975)
+==612223==    by 0x40E5C0: std::_Rb_tree<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*>, std::_Select1st<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*> > >::erase(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (stl_tree.h:2510)
+==612223==    by 0x40991C: std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, Channel*, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, Channel*> > >::erase(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (stl_map.h:1069)
+==612223==    by 0x407C93: Server::rmChannel(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Server.cpp:266)
+==612223==    by 0x40EDEA: Server::handleEmptyChannel(int, Channel*) (ServerUtils.cpp:41)
+==612223==    by 0x406DF4: Server::rmClient(int) (Server.cpp:246)
+==612223==    by 0x41F0FE: Command::commandQuit(Server&, int, std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > const&) (Command.cpp:623)
+==612223==    by 0x4180F8: Command::executeCommand(Server&, int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Command.cpp:782)
+==612223==  Address 0x4df7c98 is 24 bytes inside a block of size 264 free'd
+==612223==    at 0x484B8AF: operator delete(void*) (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==612223==    by 0x407C7F: Server::rmChannel(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Server.cpp:265)
+==612223==    by 0x40EDEA: Server::handleEmptyChannel(int, Channel*) (ServerUtils.cpp:41)
+==612223==    by 0x406DF4: Server::rmClient(int) (Server.cpp:246)
+==612223==    by 0x41F0FE: Command::commandQuit(Server&, int, std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > const&) (Command.cpp:623)
+==612223==    by 0x4180F8: Command::executeCommand(Server&, int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Command.cpp:782)
+==612223==    by 0x407722: Server::handleClient(int) (Server.cpp:371)
+==612223==    by 0x4069D1: Server::run() (Server.cpp:168)
+==612223==    by 0x404FE6: main (main.cpp:55)
+==612223==  Block was alloc'd at
+==612223==    at 0x4849013: operator new(unsigned long) (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==612223==    by 0x407B89: Server::addChannel(int const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Server.cpp:257)
+==612223==    by 0x418C8A: Command::commandJoin(Server&, int, std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > const&) (Command.cpp:177)
+==612223==    by 0x417C89: Command::executeCommand(Server&, int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (Command.cpp:753)
+==612223==    by 0x407722: Server::handleClient(int) (Server.cpp:371)
+==612223==    by 0x4069D1: Server::run() (Server.cpp:168)
+==612223==    by 0x404FE6: main (main.cpp:55)
+==612223== 
+Received from socket 9: QUIT :leaving
+Client disconnected: 9
