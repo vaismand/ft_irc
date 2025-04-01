@@ -226,7 +226,7 @@ void Server::addClient()
     } else {
         Client* newClient = new Client(client_fd, inet_ntoa(client_addr.sin_addr));
         _clients[client_fd] = newClient;
-        std::cout << "New client connected: FD = " << client_fd << ", IP = " << ip_str << std::endl;
+        std::cout << "New client connected: FD = " << client_fd << std::endl;
     }
 }
 
@@ -241,6 +241,9 @@ void Server::rmClient(int fd)
         if (!channel) {
             continue;
         }
+        std::string quitMsg = ":" + clientToDel->getNick() + "!~" + clientToDel->getUser()
+                        + "@" + clientToDel->getIp() + " QUIT :Client disconnected\r\n";
+        channel->broadcast(fd, quitMsg);
         channel->rmClientFromChannel(fd);
         if (isChannelEmptyOrBotOnly(channel)) {
             handleEmptyChannel(fd, channel);
