@@ -242,7 +242,7 @@ void Server::rmClient(int fd)
         if (!channel) {
             continue;
         }
-        if (clientToDel->getHasQuit()) {
+        if (!clientToDel->getHasQuit()) {
         std::string quitMsg = ":" + clientToDel->getNick() + "!~" + clientToDel->getUser()
                         + "@" + clientToDel->getIp() + " QUIT :Client disconnected\r\n";
         channel->broadcast(fd, quitMsg);
