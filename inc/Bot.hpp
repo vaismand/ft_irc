@@ -14,7 +14,7 @@ class Bot : public Client
         ~Bot();
 
         // Methods
-        void connectToServer();
+        void connectToServer(std::string pass);
         void joinChannel(const std::string& channel);
         void handleMessage(const std::string& message);
         void sendRandomPhrase();

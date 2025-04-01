@@ -217,16 +217,16 @@ void Server::addClient()
     }
     setPollfd(client_fd, POLLIN, _pollfds);
     
-    if (bot_ && bot_->isPending()) {
-        bot_->setFd(client_fd);
-        bot_->setPending(false);
-        bot_->setPassAccepted(true);
+    if (!bot_) {
+        bot_ = new Bot(client_fd, inet_ntoa(client_addr.sin_addr), "BEEPBOOP");
         _clients[client_fd] = bot_;
+        bot_->connectToServer(_pass);
         std::cout << "Bot connected successfully: FD = " << client_fd << std::endl;
+        bot_->setConnected(true);
     } else {
         Client* newClient = new Client(client_fd, inet_ntoa(client_addr.sin_addr));
         _clients[client_fd] = newClient;
-        std::cout << "Client Connected: " << client_fd << std::endl;
+        std::cout << "New client connected: FD = " << client_fd << ", IP = " << ip_str << std::endl;
     }
 }
 
@@ -389,10 +389,7 @@ void Server::handleClient(int fd)
 
 void Server::createBot() {
     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    if (sockfd == -1) {
-        std::cerr << "Failed to create socket" << std::endl;
-        return;
-    }
+    if (sockfd == -1) return;
 
     sockaddr_in server_addr;
     server_addr.sin_family = AF_INET;
@@ -400,11 +397,7 @@ void Server::createBot() {
     inet_pton(AF_INET, "127.0.0.1", &server_addr.sin_addr);
 
     if (connect(sockfd, (sockaddr*)&server_addr, sizeof(server_addr)) == -1) {
-        std::cerr << "Failed to connect to server" << std::endl;
         close(sockfd);
         return;
     }
-
-    bot_ = new Bot(sockfd, "127.0.0.1", "BEEPBOOP");
-    bot_->connectToServer();
 }

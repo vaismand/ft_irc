@@ -286,19 +286,21 @@ void Command::commandWhois(Server &server, int fd, const std::vector<std::string
     
     oss.str("");
     if (!target->getChannelList().empty())
+{
+    oss << ":ircserv 319 " << requesterNick << " " << target->getNick() << " :";
+    std::vector<std::string> channelList = target->getChannelList();
+    for (std::vector<std::string>::iterator it = channelList.begin(); it != channelList.end(); it++)
     {
-        oss << ":ircserv 319 " << requesterNick << " " << target->getNick() << " :";
-        std::vector<std::string> channelList = target->getChannelList();
-        for (std::vector<std::string>::iterator it = channelList.begin(); it != channelList.end(); it++)
-        {
-            Channel* channel = server.getChannel(*it);
-            if (channel->isOperator(target->getFd()))
-                oss << "@";
-            oss << *it << " ";
-        }
-        oss << "\r\n";
-        dvais::sendMessage(fd, oss.str());
+        Channel* channel = server.getChannel(*it);
+        if (!channel)
+            continue;
+        if (channel->isOperator(target->getFd()))
+            oss << "@";
+        oss << *it << " ";
     }
+    oss << "\r\n";
+    dvais::sendMessage(fd, oss.str());
+}
     oss.str("");
     oss << ":ircserv 318 " << requesterNick << " " << target->getNick() << " :End of WHOIS list\r\n";
     dvais::sendMessage(fd, oss.str());

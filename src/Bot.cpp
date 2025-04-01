@@ -57,7 +57,8 @@ void Bot::setConnected(bool connected) {
     isConnected_ = connected;
 }
 
-void Bot::connectToServer() {
+void Bot::connectToServer(std::string pass) {
+    sendRawMessage("PASS " + pass);
     sendRawMessage("NICK " + getNick());
     sendRawMessage("USER " + getNick() + " 0 * :" + getNick());
     for (size_t i = 0; i < _channelList.size(); ++i) {
@@ -66,10 +67,21 @@ void Bot::connectToServer() {
 }
 
 void Bot::joinChannel(const std::string& channel) {
-    sendRawMessage("JOIN " + channel);
-    if (std::find(_channelList.begin(), _channelList.end(), channel) == _channelList.end()) {
-        _channelList.push_back(channel);
+    if (std::find(_channelList.begin(), _channelList.end(), channel) != _channelList.end())
+        return;
+    if (!isConnected_) {
+        std::cerr << "Bot is not connected to the server." << std::endl;
+        return;
     }
+    if (getFd() == -1) {
+        std::cerr << "Invalid file descriptor." << std::endl;
+        return;
+    }
+    if (channel.empty()) {
+        std::cerr << "Channel name cannot be empty." << std::endl;
+        return;
+    }
+    sendRawMessage("JOIN " + channel);
     channelJoinTimes_[channel] = std::time(0);
     channelInitialMessageSent_[channel] = false;
 }
@@ -82,7 +94,7 @@ void Bot::handleMessage(const std::string& message) {
 
 void Bot::sendRawMessage(const std::string& message) {
     std::string msg = message + "\r\n";
-    send(getFd(), msg.c_str(), msg.length(), 0);
+    send(4, msg.c_str(), msg.length(), 0);
 }
 
 void Bot::sendRandomPhrase() {
@@ -96,8 +108,8 @@ void Bot::sendRandomPhrase() {
         
         if (!channelInitialMessageSent_[channel]) {
             if (std::difftime(now, channelJoinTimes_[channel]) >= 10) {
-                std::string phrase = phrases_[std::rand() % phrases_.size()];
-                sendRawMessage("PRIVMSG " + channel + " :" + phrase);
+                std::string phrase = "Welcome to channel! I'm a dummy bot here to help!";
+                sendRawMessage("NOTICE " + channel + " :" + phrase);
                 channelInitialMessageSent_[channel] = true;
                 channelJoinTimes_[channel] = now;
             }
@@ -106,7 +118,7 @@ void Bot::sendRandomPhrase() {
         
         if (std::difftime(now, channelJoinTimes_[channel]) >= 40) {
             std::string phrase = phrases_[std::rand() % phrases_.size()];
-            sendRawMessage("PRIVMSG " + channel + " :" + phrase);
+            sendRawMessage("NOTICE " + channel + " :" + phrase);
             channelJoinTimes_[channel] = now;
         }
     }
