@@ -172,6 +172,7 @@ void Server::run()
         if (bot_) {
             bot_->sendRandomPhrase();
         }
+        checkIdleClients();
     }
     std::cerr << "Server shutting down..." << std::endl;
 }
@@ -241,9 +242,11 @@ void Server::rmClient(int fd)
         if (!channel) {
             continue;
         }
+        if (clientToDel->getHasQuit()) {
         std::string quitMsg = ":" + clientToDel->getNick() + "!~" + clientToDel->getUser()
                         + "@" + clientToDel->getIp() + " QUIT :Client disconnected\r\n";
         channel->broadcast(fd, quitMsg);
+        }
         channel->rmClientFromChannel(fd);
         if (isChannelEmptyOrBotOnly(channel)) {
             handleEmptyChannel(channel);
@@ -320,19 +323,17 @@ void Server::checkIdleClients()
     {
         Client *client = it->second;
         double diff = difftime(now, client->getLastActivity());
-        if (diff > 120 && !client->getPingSent())
+        if (diff > 20 && !client->getPingSent())
         {
             dvais::sendMessage(client->getFd(), "PING :ircserv\r\n");
             client->setPingSent(true);
             client->setLastActivity(now);
         }
-        else if (diff > 160)
+        else if (diff > 30 && client != bot_)
         {
             int fd = client->getFd();
-            std::map<int, Client*>::iterator next = it;
-            ++next;
             rmClient(fd);
-            it = next;
+            it = _clients.find(fd);
         }
         else
         {

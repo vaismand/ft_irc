@@ -30,6 +30,7 @@ class Client
 		bool getRights() const;
 		bool getPingSent() const;
 		bool getPassAccepted() const;
+		bool getHasQuit() const;
 		bool isInvisible() const;
 		const std::vector<std::string>& getChannelList() const;
 
@@ -40,6 +41,7 @@ class Client
 		void setNick(const std::string& name);
 		void setStatus(AuthState status);
 		void setRights(bool isAdmin);
+		void setHasQuit(bool hasQuit);
 		void setPassAccepted(bool passAccepted);
 		void setPingSent(bool pingSent);
 		void setInvisible(bool invisible);
@@ -72,6 +74,7 @@ class Client
 		bool 						_passAccepted;
 		bool        				_pingSent;
 		bool						_invisible;
+		bool 						_hasQuit;
 
 		// Methods
 		void ClientInit();

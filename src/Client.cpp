@@ -60,6 +60,7 @@ void Client::ClientInit() {
 	_pingSent = false;
 	_lastActivity = time(NULL);
 	_invisible = false;
+	_hasQuit = false;
 }
 
 // ----- getter Functions -----
@@ -76,6 +77,7 @@ bool Client::getRights() const { return _isAdmin; }
 bool Client::getPassAccepted() const { return _passAccepted; }
 bool Client::getPingSent() const { return _pingSent; }
 bool Client::isInvisible() const { return _invisible; }
+bool Client::getHasQuit() const { return _hasQuit; }
 int  Client::getFd() const { return _fd; }
 const std::vector<std::string>& Client::getChannelList() const { return _channelList; }
 
@@ -84,6 +86,7 @@ void Client::setUser(const std::string& name) { _username = name; }
 void Client::setRealName(const std::string& name) { _realname = name; }
 void Client::setNick(const std::string& name) { _nickname = name; }
 void Client::setFd(int fd) { _fd = fd; }
+void Client::setHasQuit(bool hasQuit) { _hasQuit = hasQuit; }
 void Client::setStatus(AuthState status) { _status = status; }
 void Client::setRights(bool isAdmin) { _isAdmin = isAdmin; }
 void Client::setPassAccepted(bool passAccepted) { _passAccepted = passAccepted; }

@@ -622,6 +622,7 @@ void Command::commandQuit(Server &server, int fd, const std::vector<std::string>
     std::string prefix = ":" + nick + "!" + user + "@" + host;
     std::string msg = prefix + " QUIT " + reason + "\r\n";
     server.broadcastAll(fd, msg);
+    server.getClient(fd).setHasQuit(true);
     server.rmClient(fd);
 }
 
