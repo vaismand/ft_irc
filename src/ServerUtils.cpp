@@ -29,29 +29,22 @@ bool Server::isChannelEmptyOrBotOnly(Channel* channel) const {
 	if (joined.empty())
 		return true;
 	if (joined.size() == 1) {
-		Client& lastMember = getClient(joined[0]);
-        return lastMember.getNick() == getBot().getNick();
-	}
+		Client* lastMember = _clients.at(joined[0]);
+		return lastMember == bot_;
+    }
 	return false;
 }
 
-void Server::handleEmptyChannel(int fd, Channel* channel) {
-	if (channel->getJoined().size() == 1)
-		isLastMemberBot(fd, channel);
-	rmChannel(channel->getcName());
-}
+void Server::handleEmptyChannel(Channel* channel) {
+	if (!channel)
+		return;
 
-bool Server::isLastMemberBot(int clientFd, Channel* channel)
-{
-    try {
-        Client& lastMember = getClient(clientFd);
-        if (lastMember.getNick() == getBot().getNick()) {
-            getBot().sendRawMessage("PART " + channel->getcName());
-            getBot().rmChannelInList(channel->getcName());
-            return true;
-        }
-    } catch (const std::exception& e) {
-        std::cerr << "Error getting last client: " << e.what() << std::endl;
-    }
-    return false;
+	if (isChannelEmptyOrBotOnly(channel)) {
+		const std::vector<int>& joined = channel->getJoined();
+		if (joined.size() == 1 && _clients.at(joined[0]) == bot_) {
+			bot_->sendRawMessage("PART " + channel->getcName());
+			bot_->rmChannelInList(channel->getcName());
+		}
+		rmChannel(channel->getcName());
+	}
 }

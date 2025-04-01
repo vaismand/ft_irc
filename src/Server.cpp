@@ -246,7 +246,7 @@ void Server::rmClient(int fd)
         channel->broadcast(fd, quitMsg);
         channel->rmClientFromChannel(fd);
         if (isChannelEmptyOrBotOnly(channel)) {
-            handleEmptyChannel(fd, channel);
+            handleEmptyChannel(channel);
         }
     }
     close(fd);

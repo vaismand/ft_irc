@@ -79,7 +79,7 @@ class Server
 		void welcomeToServerMessage(int fd, const std::string &nick);
 		void rmPollfd(int fd);
 		bool isChannelEmptyOrBotOnly(Channel* channel) const;
-		void handleEmptyChannel(int fd, Channel* channel);
+		void handleEmptyChannel(Channel* channel);
 		bool isLastMemberBot(int clientFd, Channel* channel);
 
 		// Attributes
