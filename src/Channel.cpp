@@ -132,20 +132,15 @@ void Channel::rmClientFromChannel(int fd)
 
 void Channel::addOperator(int fd) 
 {
-    if(!isMember(fd)) {
-        dvais::sendMessage(fd, ":ircserv 442 :You're not on that channel\r\n"); // handle error message correctly
+    if (!isMember(fd)) {
+        dvais::sendMessage(fd, ":ircserv 442 :You're not on that channel\r\n");
         return;
     }
-    if(!isOperator(fd)) {
-        dvais::sendMessage(fd, ":ircserv 482 :You're not channel operator\r\n"); // handle error message correctly
-        return;
+    for (size_t i = 0; i < _operators.size(); i++) {
+        if (_operators[i] == fd)
+            return;
     }
-	for(size_t i = 0; i < _operators.size(); i++)
-	{
-		if (_operators[i] == fd)
-			return;
-	}
-	_operators.push_back(fd);
+    _operators.push_back(fd);
 }
 
 bool Channel::isOperator(const int &fd) const {

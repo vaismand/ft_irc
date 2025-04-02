@@ -568,6 +568,7 @@ void Command::commandTopic(Server &server, int fd, const std::vector<std::string
     if (channel->getTopicRestricted() && !channel->isOperator(fd))
     {
         sendError(fd, 482, nick, channelName); // ERR_CHANOPRIVSNEEDED
+        return;
     }
     if (rawTopic.empty())
     {

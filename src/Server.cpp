@@ -323,13 +323,13 @@ void Server::checkIdleClients()
     {
         Client *client = it->second;
         double diff = difftime(now, client->getLastActivity());
-        if (diff > 20 && !client->getPingSent())
+        if (diff > 60 && !client->getPingSent())
         {
             dvais::sendMessage(client->getFd(), "PING :ircserv\r\n");
             client->setPingSent(true);
             client->setLastActivity(now);
         }
-        else if (diff > 30 && client != bot_)
+        else if (diff > 100 && client != bot_)
         {
             int fd = client->getFd();
             rmClient(fd);
