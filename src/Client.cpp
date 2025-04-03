@@ -73,6 +73,7 @@ std::string& Client::getBuffer() { return _buffer; }
 std::string Client::getUserModes() const { return _userModes; }
 AuthState Client::getStatus() const { return _status; }
 time_t Client::getLastActivity() const { return _lastActivity; }
+time_t Client::getPingSentTime() const { return _pingSentTime; }
 bool Client::getRights() const { return _isAdmin; }
 bool Client::getPassAccepted() const { return _passAccepted; }
 bool Client::getPingSent() const { return _pingSent; }
@@ -93,6 +94,7 @@ void Client::setPassAccepted(bool passAccepted) { _passAccepted = passAccepted; 
 void Client::setInvisible(bool invisible) { _invisible = invisible; }
 void Client::setPingSent(bool pingSent) { _pingSent = pingSent; }
 void Client::setLastActivity(time_t lastActivity) { _lastActivity = lastActivity; }
+void Client::setPingSentTime(time_t pingSentTime) { _pingSentTime = pingSentTime; }
 
 void Client::addChannelToList(const std::string& channelName) 
 { 

@@ -26,6 +26,7 @@ class Client
 		std::string getUserModes() const;
 		AuthState getStatus() const;
 		time_t getLastActivity() const;
+		time_t getPingSentTime() const;
 		virtual int  getFd() const;
 		bool getRights() const;
 		bool getPingSent() const;
@@ -38,6 +39,7 @@ class Client
 		void setUser(const std::string& name);
 		void setFd(int fd);
 		void setRealName(const std::string& name);
+		void setPingSentTime(time_t pingSentTime);
 		void setNick(const std::string& name);
 		void setStatus(AuthState status);
 		void setRights(bool isAdmin);
@@ -61,6 +63,7 @@ class Client
 		// Attributes
 		int 						_fd;
 		time_t 						_lastActivity;
+		time_t						_pingSentTime;
 		std::string 				_ip;
 		std::string 				_username;
 		std::string 				_realname;

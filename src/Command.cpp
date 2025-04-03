@@ -256,12 +256,12 @@ void Command::commandPart(Server &server, int fd, const std::vector<std::string>
 void Command::commandWhois(Server &server, int fd, const std::vector<std::string> &tokens) {
     Client &client = server.getClient(fd);
     const std::string &requesterNick = client.getNick();
-    std::string targetNick = tokens[1];
 
-    if (targetNick.empty()) {
+    if (tokens.size() < 2 || tokens[1].empty()) {
         sendError(fd, 461, requesterNick, "WHOIS"); // ERR_NEEDMOREPARAMS 
         return;
     }
+    std::string targetNick = tokens[1];
     Client* target = server.getClientByNick(targetNick);
     if (!target) {
         sendError(fd, 401, requesterNick, targetNick); // ERR_NOSUCHNICK

@@ -1,7 +1,7 @@
 .SILENT:
 
 CXX = c++
-CXXFLAGS = -Wall -Wextra -Werror -g -std=c++98
+CXXFLAGS = -Wall -Wextra -Werror -g -o -std=c++98
 
 SRC = src/main.cpp \
 		src/Server.cpp \

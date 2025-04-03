@@ -318,22 +318,34 @@ void Server::tryRegisterClient(int fd)
 
 void Server::checkIdleClients()
 {
-    time_t now = time(NULL);
+    const time_t now = time(NULL);
+    const int pingInterval = 180;
+    const int pingTimeout  = 60; 
+
     for (std::map<int, Client*>::iterator it = _clients.begin(); it != _clients.end();)
     {
         Client *client = it->second;
-        double diff = difftime(now, client->getLastActivity());
-        if (diff > 60 && !client->getPingSent())
+
+        if (!client->getStatus() || client == bot_) {
+            ++it;
+            continue;
+        }
+
+        double idleTime = difftime(now, client->getLastActivity());
+
+        if (idleTime >= pingInterval && !client->getPingSent())
         {
             dvais::sendMessage(client->getFd(), "PING :ircserv\r\n");
             client->setPingSent(true);
-            client->setLastActivity(now);
+            client->setPingSentTime(now); // 👈 new timestamp
+            ++it;
         }
-        else if (diff > 100 && client != bot_)
+        else if (client->getPingSent() && difftime(now, client->getPingSentTime()) >= pingTimeout)
         {
             int fd = client->getFd();
+            std::cout << "Client " << client->getNick() << " timed out. Disconnecting.\n";
             rmClient(fd);
-            it = _clients.find(fd);
+            it = _clients.erase(it);
         }
         else
         {
@@ -356,6 +368,13 @@ void Server::handleClient(int fd)
     _clients[fd]->setLastActivity(time(NULL));
     buffer[bytes_received] = '\0';
     std::string &clientBuffer = _clients[fd]->getBuffer();
+    if (clientBuffer.length() + bytes_received > 512)
+    {
+        std::cerr << "Client sent oversized message, disconnecting." << std::endl;
+        dvais::sendMessage(fd, ":ircserv 417 * :Message too long (limit is 512 chars)\r\n");
+        rmClient(fd);
+        return;
+    }
     clientBuffer += buffer;
 
     while (clientBuffer.find('\n') != std::string::npos)
