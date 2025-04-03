@@ -140,7 +140,7 @@ void Server::run()
     createBot();
     while (g_running)
     {
-        int poll_count = poll(_pollfds.data(), _pollfds.size(), -1);
+        int poll_count = poll(_pollfds.data(), _pollfds.size(), 1000);
         if (poll_count < 0)
         {
             if (errno == EINTR)
@@ -326,7 +326,7 @@ void Server::checkIdleClients()
     {
         Client *client = it->second;
 
-        if (!client->getStatus() || client == bot_) {
+        if (!client->getStatus()) {
             ++it;
             continue;
         }
@@ -337,15 +337,15 @@ void Server::checkIdleClients()
         {
             dvais::sendMessage(client->getFd(), "PING :ircserv\r\n");
             client->setPingSent(true);
-            client->setPingSentTime(now); // 👈 new timestamp
+            client->setPingSentTime(now);
             ++it;
         }
         else if (client->getPingSent() && difftime(now, client->getPingSentTime()) >= pingTimeout)
         {
             int fd = client->getFd();
             std::cout << "Client " << client->getNick() << " timed out. Disconnecting.\n";
-            rmClient(fd);
-            it = _clients.erase(it);
+            ++it;
+            rmClient(fd);    
         }
         else
         {
