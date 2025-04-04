@@ -370,9 +370,9 @@ void Server::handleClient(int fd)
     std::string &clientBuffer = _clients[fd]->getBuffer();
     if (clientBuffer.length() + bytes_received > 512)
     {
-        std::cerr << "Client sent oversized message, disconnecting." << std::endl;
+        std::cerr << "Client sent oversized message, ignoring message." << std::endl;
         dvais::sendMessage(fd, ":ircserv 417 * :Message too long (limit is 512 chars)\r\n");
-        rmClient(fd);
+        clientBuffer.clear();
         return;
     }
     clientBuffer += buffer;
