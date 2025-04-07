@@ -73,6 +73,18 @@ void Command::commandNick(Server &server, int fd, const std::vector<std::string>
     }
     if (nickname.size() > MAX_DEFAULT_LEN)
         nickname.resize(MAX_DEFAULT_LEN);
+    Client* existing = server.getClientByNick(nickname);
+    if (existing && existing->getFd() != fd) {
+        char buf;
+        ssize_t result = recv(existing->getFd(), &buf, 1, MSG_PEEK | MSG_DONTWAIT);
+        if (result == 0 || (result == -1 && errno != EAGAIN && errno != EWOULDBLOCK)) {
+            std::cout << "Removing stale ghost client with nick: " << nickname << std::endl;
+            server.rmClient(existing->getFd());
+        } else {
+            sendError(fd, 433, currentNick, nickname); // ERR_NICKNAMEINUSE
+            return;
+        }
+    }
     std::string user = client.getUser();
     std::string host = client.getIp();
     std::string msg = ":" + currentNick + "!" + user + "@" + host + " NICK :" + nickname + "\r\n";
@@ -257,7 +269,7 @@ void Command::commandWhois(Server &server, int fd, const std::vector<std::string
     Client &client = server.getClient(fd);
     const std::string &requesterNick = client.getNick();
 
-    if (tokens.size() < 2 || tokens[1].empty()) {
+    if (tokens.size() != 2 || tokens[1].empty()) {
         sendError(fd, 461, requesterNick, "WHOIS"); // ERR_NEEDMOREPARAMS 
         return;
     }
@@ -317,38 +329,35 @@ void Command::commandWhois(Server &server, int fd, const std::vector<std::string
 void Command::commandWho(Server &server, int fd, const std::vector<std::string> &tokens) {
     std::string requesterNick = server.getClient(fd).getNick();
 
-    if (tokens.size() < 2) {
+    if (tokens.size() != 2) {
         sendError(fd, 461, requesterNick, "WHO"); // ERR_NEEDMOREPARAMS
         return;
     }
     std::string target = tokens[1];
-    if (target[0] == '#')
-    {
+    if (target[0] == '#') {
         Channel* channel = server.getChannel(target);
         if (!channel) {
             sendError(fd, 403, requesterNick, target); // ERR_NOSUCHCHANNEL
             return;
         }
-    const std::vector<int>& joined = server.getChannel(target)->getJoined();
-    for (size_t i = 0; i < joined.size(); ++i)
-    {
-        Client &c = server.getClient(joined[i]);
-        if (c.isInvisible())
+        const std::vector<int>& joined = server.getChannel(target)->getJoined();
+        for (size_t i = 0; i < joined.size(); ++i)
         {
-            continue;
+            Client &c = server.getClient(joined[i]);
+            if (c.isInvisible())
+            {
+                continue;
+            }
+            std::ostringstream reply;
+            reply << ":ircserv 352 " << requesterNick << " " << target << " "
+                    << c.getUser() << " " << c.getIp() << " ircserv "
+                    << c.getNick() << " H :0 " << c.getUser() << "\r\n";
+            dvais::sendMessage(fd, reply.str());
         }
-        std::ostringstream reply;
-        reply << ":ircserv 352 " << requesterNick << " " << target << " "
-                << c.getUser() << " " << c.getIp() << " ircserv "
-                << c.getNick() << " H :0 " << c.getUser() << "\r\n";
-        dvais::sendMessage(fd, reply.str());
-    }
-    std::ostringstream end;
-    end << ":ircserv 315 " << requesterNick << " " << target << " :End of WHO list\r\n";
-    dvais::sendMessage(fd, end.str());
-    }
-    else
-    {
+        std::ostringstream end;
+        end << ":ircserv 315 " << requesterNick << " " << target << " :End of WHO list\r\n";
+        dvais::sendMessage(fd, end.str());
+    } else {
         Client *client = server.getClientByNick(target);
         if (!client) {
             sendError(fd, 401, requesterNick, target); // ERR_NOSUCHNICK
@@ -717,6 +726,10 @@ void Command::commandKick(Server &server, int fd, const std::vector<std::string>
         return;
     }
     Client* targetClient = server.getClientByNick(targetNick);
+    if (targetNick == server.getBot().getNick()) {
+        sendError(fd, 482, client_nick, channelName); // ERR_CHANOPRIVSNEEDED
+        return;
+    }
     if (!targetClient || !targetChannel->isMember(targetClient->getFd())) {
         sendError(fd, 441, targetNick, channelName); // ERR_USERNOTINCHANNEL
         return;

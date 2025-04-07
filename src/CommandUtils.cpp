@@ -324,7 +324,8 @@ void Command::handleChannelMode(Server &server, int fd, const std::vector<std::s
             }
         }
     }
-
+    if (modeStr.find_first_not_of("+-b") == std::string::npos && appliedModes.str().size() <= 1)
+        return;
     std::ostringstream modeMsg;
     modeMsg << ":" << clientNick << "!" << server.getClient(fd).getUser()
             << "@" << server.getClient(fd).getIp()

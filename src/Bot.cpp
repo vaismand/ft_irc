@@ -13,10 +13,11 @@ Bot::Bot() {}
 Bot::Bot(int fd, const std::string& ip, const std::string& nick)
     : Client(fd, ip), joinTime_(std::time(0)), isConnected_(false), isPending_(true) {
     setNick(nick);
-    phrases_.push_back("Hello, world!");
-    phrases_.push_back("How's it going?");
-    phrases_.push_back("Nice to meet you!");
-    phrases_.push_back("Have a great day!");
+    phrases_.push_back("I have an important message for you: 01001000 01101001 00100001");
+    phrases_.push_back("How's evaluation going, looks fine, right?");
+    phrases_.push_back("Nice to meet you, you can write me whatever you want, but don't expect the answer though...");
+    phrases_.push_back("Have a great day....after you give 110 points to the project!");
+    phrases_.push_back("I am a bot, I don't have feelings, but I can pretend to be your friend!");
     std::srand(std::time(0));
     //_fd = -1;
 }
@@ -84,12 +85,6 @@ void Bot::joinChannel(const std::string& channel) {
     sendRawMessage("JOIN " + channel);
     channelJoinTimes_[channel] = std::time(0);
     channelInitialMessageSent_[channel] = false;
-}
-
-void Bot::handleMessage(const std::string& message) {
-    if (message.find("PING") == 0) {
-        sendRawMessage("PONG " + message.substr(5));
-    }
 }
 
 void Bot::sendRawMessage(const std::string& message) {

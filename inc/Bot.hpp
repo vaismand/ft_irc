@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Client.hpp"
+#include <sstream>
 #include <string>
 #include <vector>
 #include <ctime>
@@ -10,13 +11,13 @@ class Bot : public Client
 {
     public:
         // Constructor
+        Bot();
         Bot(int fd, const std::string& ip, const std::string& nick);
         ~Bot();
 
         // Methods
         void connectToServer(std::string pass);
         void joinChannel(const std::string& channel);
-        void handleMessage(const std::string& message);
         void sendRandomPhrase();
         void sendRawMessage(const std::string& message);
         bool isConnected() const;
@@ -29,7 +30,6 @@ class Bot : public Client
 
     private:
         // Constructors
-        Bot();
         Bot(const Bot& obj);
         Bot& operator=(const Bot& rhs);
 

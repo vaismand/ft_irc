@@ -325,7 +325,13 @@ void Server::checkIdleClients()
     for (std::map<int, Client*>::iterator it = _clients.begin(); it != _clients.end();)
     {
         Client *client = it->second;
+        int fd = it->first;
 
+        if (bot_ && fd == bot_->getFd())
+        {
+            ++it;
+            continue;
+        }
         if (!client->getStatus()) {
             ++it;
             continue;
