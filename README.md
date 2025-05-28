@@ -29,7 +29,6 @@ This project is a custom-built IRC server implemented in C++98 as part of the 42
 
 ### 💡 Bonus Features (if implemented)
 - IRC Bot with automated responses
-- File transfer support
 
 ## ⚙️ Usage
 
@@ -89,9 +88,9 @@ com^Dman^Dd
 
 This project was developed by a group of 3 students from [42Vienna].
 
-- [Student 1]
-- [Student 2]
-- [Student 3]
+- vaismand
+- RubenPin90
+- Poddani
 
 ## 📚 Resources
 
